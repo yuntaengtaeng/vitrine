@@ -1,0 +1,40 @@
+{
+  "name": "vitrine",
+  "displayName": "Vitrine",
+  "description": "Compose-style inline preview for React components, inside VS Code.",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vitrine.open",
+        "title": "Vitrine: Open Preview"
+      }
+    ],
+    "configuration": {
+      "title": "Vitrine",
+      "properties": {
+        "vitrine.devServerUrl": {
+          "type": "string",
+          "default": "http://localhost:5173/__vitrine",
+          "description": "URL of the Vite dev server's vitrine gallery route."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3"
+  }
+}

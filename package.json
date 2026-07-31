@@ -1,0 +1,17 @@
+{
+  "name": "vitrine-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Compose-style inline preview for React components, inside the editor.",
+  "scripts": {
+    "build": "pnpm --filter @vitrine/vite-plugin build",
+    "build:extension": "pnpm --filter vitrine build",
+    "dev:example": "pnpm --filter example dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}
