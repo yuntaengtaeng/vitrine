@@ -1,5 +1,7 @@
 # vitrine
 
+[한국어](./README.ko.md)
+
 > Bring the Jetpack Compose Preview experience to React — without leaving the editor.
 
 Vitrine lets you annotate a component export with `/** @preview */` and see it
@@ -68,16 +70,16 @@ export const DangerButton = () => <Button variant="danger" />;
 ## Usage
 
 ```bash
-npm install
-npm run build              # builds @vitrine/vite-plugin
-npm run dev:example        # starts the example app's Vite dev server
+pnpm install
+pnpm run build              # builds @vitrine/vite-plugin
+pnpm run dev:example        # starts the example app's Vite dev server
 ```
 
 Then open `http://localhost:5173/__vitrine` in a browser to see the gallery
 directly, or run the VS Code extension:
 
 ```bash
-npm run build:extension    # builds packages/vscode-extension
+pnpm run build:extension    # builds packages/vscode-extension
 ```
 
 Open this folder in VS Code, press **F5** (uses `.vscode/launch.json`) to
@@ -96,10 +98,10 @@ the `/__vitrine` route, the `\0`-prefixed data virtual module
 (`virtual:vitrine-preview-gallery`), and the AST scan (including the
 `name=...` option with spaces) all resolve and serve correctly.
 
-The VS Code extension side (webview CSP, iframe rendering, F5 debugging) is
-implemented per the VS Code Webview API's documented CSP model, but hasn't
-been exercised in a live Extension Development Host session yet — do that
-once before relying on it.
+The VS Code extension side (webview CSP, iframe rendering, F5 debugging) has
+also been verified live in an Extension Development Host session: the
+`Vitrine: Open Preview` command opens a webview panel that correctly renders
+the example app's previews from the dev server.
 
 ## Future direction (not implemented)
 
@@ -112,3 +114,7 @@ These were considered and deliberately deferred, not forgotten:
 - Theme / responsive / zoom toggles
 - Provider auto-detection (Router / QueryClient / ThemeProvider) and mocks
 - Per-preview iframe isolation
+- Auto-detect the dev server's actual port (Vite picks a different port than
+  `vitrine.devServerUrl`'s default when 5173 is taken). Likely approach: the
+  vite-plugin writes the resolved URL to a file on server start; the
+  extension reads it first and falls back to the configured setting.
