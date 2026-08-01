@@ -5,7 +5,7 @@ import type { Plugin } from "vite";
 import { scanPreviews, renderPreviewsModule } from "./scan.js";
 
 export interface VitrinePluginOptions {
-  /** Glob patterns (relative to project root) to scan for @preview exports. */
+  /** 프로젝트 루트 기준 @preview export 스캔 글롭 패턴 */
   include?: string[];
 }
 
@@ -14,12 +14,12 @@ const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
 const GALLERY_MODULE_ID = "virtual:vitrine-preview-gallery";
 export const GALLERY_ROUTE = "/__vitrine";
 
-// packages/vite-plugin/src/index.ts (dev) and packages/vite-plugin/dist/index.js (built)
-// both sit exactly one directory below the package root, so this resolves correctly
-// in either case without a separate copy step for the client asset.
+// dev의 src/index.ts와 빌드된 dist/index.js 모두 패키지 루트 한 단계 아래 위치,
+// 별도 복사 스텝 없이 client 에셋 경로 동일 계산
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const galleryClientPath = path.join(packageRoot, "client", "gallery-client.js");
 
+/** @preview export를 스캔해 갤러리 라우트로 제공하는 Vite 플러그인 */
 export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
   let root = process.cwd();
 

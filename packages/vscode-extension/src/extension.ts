@@ -48,6 +48,7 @@ async function isDevServerReachable(url: string): Promise<boolean> {
 }
 
 function renderIframeHtml(devServerUrl: string): string {
+  // CSP frame-src는 origin 단위로만 매칭, path/query 포함 전체 URL은 iframe src에만 필요
   const origin = new URL(devServerUrl).origin;
   return `<!doctype html>
 <html>

@@ -4,13 +4,14 @@ import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule from "@babel/traverse";
 
-// @babel/traverse's CJS/ESM interop is inconsistent across bundlers/resolutions;
-// the default export sometimes arrives wrapped in a `default` property.
+// 번들러/모듈 해석 방식에 따라 @babel/traverse의 CJS/ESM interop이 달라짐,
+// default export가 default 프로퍼티에 한 번 더 감싸여 오는 경우 보정
 const traverse = (
   (traverseModule as unknown as { default?: typeof traverseModule }).default ??
   traverseModule
 );
 
+/** 스캔된 프리뷰 export 하나의 정보 */
 export interface PreviewEntry {
   id: string;
   name: string;
@@ -18,6 +19,7 @@ export interface PreviewEntry {
   exportName: string;
 }
 
+/** 프리뷰 스캔 옵션 */
 export interface ScanOptions {
   root: string;
   include?: string[];
@@ -26,6 +28,7 @@ export interface ScanOptions {
 const PREVIEW_TAG = "@preview";
 const NAME_OPTION_RE = /name\s*=\s*(?:"([^"]*)"|'([^']*)'|(.+))/;
 
+/** include 글롭 패턴 기준 프로젝트 전체 @preview export 스캔 */
 export async function scanPreviews(options: ScanOptions): Promise<PreviewEntry[]> {
   const { root, include = ["src/**/*.{tsx,jsx}"] } = options;
   const files = await fg(include, {
@@ -41,6 +44,7 @@ export async function scanPreviews(options: ScanOptions): Promise<PreviewEntry[]
   return entries;
 }
 
+/** 단일 파일에서 @preview export 스캔 */
 export function scanFile(file: string, root: string): PreviewEntry[] {
   const code = fs.readFileSync(file, "utf-8");
 
@@ -89,9 +93,8 @@ function findPreviewComment(
   const leading = node.leadingComments?.find((c) => c.value.includes(PREVIEW_TAG));
   if (leading) return leading.value;
 
-  // Fallback: leadingComments attachment can miss comments in unusual positions
-  // (e.g. blank line between comment and export). Fall back to the nearest
-  // preceding comment in source order that mentions @preview.
+  // leadingComments 첨부가 특이 위치(주석과 export 사이 빈 줄 등)를 놓치는 경우 대비,
+  // ast.comments에서 @preview를 포함한 가장 가까운 선행 주석으로 폴백
   if (node.start == null) return null;
   const preceding = allComments
     .filter(
@@ -114,6 +117,7 @@ function makeEntry(file: string, exportName: string, comment: string): PreviewEn
   };
 }
 
+/** 스캔된 프리뷰 목록을 가상 모듈 JS 문자열로 직렬화 */
 export function renderPreviewsModule(entries: PreviewEntry[]): string {
   const items = entries.map(
     (entry) =>
