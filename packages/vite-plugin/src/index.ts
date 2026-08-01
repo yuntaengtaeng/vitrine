@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
-import { scanPreviews, type PreviewEntry } from "./scan.js";
+import { scanPreviews, renderPreviewsModule } from "./scan.js";
 
 export interface VitrinePluginOptions {
   /** Glob patterns (relative to project root) to scan for @preview exports. */
@@ -56,16 +56,6 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       });
     },
   };
-}
-
-function renderPreviewsModule(entries: PreviewEntry[]): string {
-  const items = entries.map(
-    (entry) =>
-      `  { id: ${JSON.stringify(entry.id)}, name: ${JSON.stringify(entry.name)}, ` +
-      `file: ${JSON.stringify(entry.file)}, exportName: ${JSON.stringify(entry.exportName)}, ` +
-      `load: () => import(${JSON.stringify("/" + entry.file)}) }`,
-  );
-  return `export default [\n${items.join(",\n")}\n];\n`;
 }
 
 const GALLERY_HTML = `<!doctype html>

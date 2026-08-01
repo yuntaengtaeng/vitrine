@@ -113,3 +113,13 @@ function makeEntry(file: string, exportName: string, comment: string): PreviewEn
     exportName,
   };
 }
+
+export function renderPreviewsModule(entries: PreviewEntry[]): string {
+  const items = entries.map(
+    (entry) =>
+      `  { id: ${JSON.stringify(entry.id)}, name: ${JSON.stringify(entry.name)}, ` +
+      `file: ${JSON.stringify(entry.file)}, exportName: ${JSON.stringify(entry.exportName)}, ` +
+      `load: () => import(${JSON.stringify("/" + entry.file)}) }`,
+  );
+  return `export default [\n${items.join(",\n")}\n];\n`;
+}
