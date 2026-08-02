@@ -96,6 +96,9 @@ function renderApp(entries) {
       if (activeButton) activeButton.style.cssText = STYLE.sidebarItem.base;
       activeButton = item;
       item.style.cssText = STYLE.sidebarItem.base + STYLE.sidebarItem.active;
+      // 수동 클릭과 커서 동기화로 인한 프로그램적 클릭 모두 여기로 모임, 부모(webview 래퍼)에
+      // 알려서 익스텐션의 커서 추적 상태가 실제 표시 중인 프리뷰와 어긋나지 않게 함
+      window.parent.postMessage({ type: "previewSelected", id: entry.id }, "*");
 
       try {
         const mod = await entry.load();

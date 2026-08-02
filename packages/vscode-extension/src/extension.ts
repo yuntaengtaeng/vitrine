@@ -47,6 +47,11 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
 
     currentPanel.webview.onDidReceiveMessage((message) => {
       if (message?.type === "switchProject") void switchProject();
+      // 갤러리 안에서 수동 클릭으로 프리뷰가 바뀐 경우, 커서 추적 상태를 실제 표시 중인
+      // 프리뷰와 맞춰서 커서가 그 자리로 돌아왔을 때 재동기화가 스킵되지 않도록 함
+      if (message?.type === "previewSelected" && typeof message.id === "string") {
+        lastSelectedPreviewId = message.id;
+      }
     }, null, context.subscriptions);
   }
 
@@ -262,6 +267,10 @@ function renderShell(options: {
       const galleryFrame = document.querySelector("iframe");
       const galleryOrigin = ${JSON.stringify(options.galleryOrigin ?? null)};
       window.addEventListener("message", (event) => {
+        if (galleryFrame && event.source === galleryFrame.contentWindow) {
+          if (event.data?.type === "previewSelected") vscodeApi.postMessage(event.data);
+          return;
+        }
         if (!galleryFrame || !galleryOrigin) return;
         if (event.data?.type !== "selectPreview") return;
         galleryFrame.contentWindow.postMessage(event.data, galleryOrigin);
