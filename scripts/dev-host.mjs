@@ -7,7 +7,13 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const extensionPath = path.join(repoRoot, "packages", "vscode-extension");
 
-spawnSync("code", [`--extensionDevelopmentPath=${extensionPath}`, repoRoot], {
+// shell:true는 인자를 이스케이프 없이 이어붙임, 공백 포함 경로가 쪼개지지 않도록 직접 따옴표 처리
+const quoteIfNeeded = (value) => (/\s/.test(value) ? `"${value}"` : value);
+
+spawnSync("code", [
+  quoteIfNeeded(`--extensionDevelopmentPath=${extensionPath}`),
+  quoteIfNeeded(repoRoot),
+], {
   stdio: "inherit",
   shell: true,
 });
