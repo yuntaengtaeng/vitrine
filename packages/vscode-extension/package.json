@@ -16,17 +16,7 @@
         "command": "vitrine.open",
         "title": "Vitrine: Open Preview"
       }
-    ],
-    "configuration": {
-      "title": "Vitrine",
-      "properties": {
-        "vitrine.devServerUrl": {
-          "type": "string",
-          "default": "http://localhost:5173/__vitrine",
-          "description": "URL of the Vite dev server's vitrine gallery route."
-        }
-      }
-    }
+    ]
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

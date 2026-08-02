@@ -73,6 +73,7 @@ export const DangerButton = () => <Button variant="danger" />;
 pnpm install
 pnpm run build              # builds @vitrine/vite-plugin
 pnpm run dev:example        # starts the example app's Vite dev server
+pnpm run test                # runs the Vitest suite
 ```
 
 Then open `http://localhost:5173/__vitrine` in a browser to see the gallery
@@ -87,8 +88,12 @@ launch an Extension Development Host, then run **Vitrine: Open Preview** from
 the command palette. The dev server must already be running — if it isn't,
 the panel shows a message instead of a blank screen.
 
-`vitrine.devServerUrl` (VS Code setting) controls the target URL, default
-`http://localhost:5173/__vitrine`.
+The dev server's port is detected automatically — no setting to configure.
+The Vite plugin writes the resolved port to `<project-root>/.vitrine/port.json`
+on startup (and self-`.gitignore`s that folder); the extension resolves which
+project to target by walking up from the active editor's file, falling back
+to a workspace-wide scan (prompting with a picker if more than one dev server
+is running at once).
 
 ## Verified so far
 
@@ -103,6 +108,15 @@ also been verified live in an Extension Development Host session: the
 `Vitrine: Open Preview` command opens a webview panel that correctly renders
 the example app's previews from the dev server.
 
+Port auto-detection has been checked live end-to-end on the Vite plugin side
+(the port/PID file is written on server start, removed on graceful
+`server.close()`, and a killed process's PID is correctly detected as dead),
+plus a Vitest suite covering both the plugin's file-writing logic and the
+extension's discovery logic (walk-up, workspace scan, `node_modules`
+exclusion, PID liveness). The extension-side picker UI for multiple
+simultaneous dev servers hasn't been manually exercised in an Extension
+Development Host session yet.
+
 ## Future direction (not implemented)
 
 These were considered and deliberately deferred, not forgotten:
@@ -114,7 +128,3 @@ These were considered and deliberately deferred, not forgotten:
 - Theme / responsive / zoom toggles
 - Provider auto-detection (Router / QueryClient / ThemeProvider) and mocks
 - Per-preview iframe isolation
-- Auto-detect the dev server's actual port (Vite picks a different port than
-  `vitrine.devServerUrl`'s default when 5173 is taken). Likely approach: the
-  vite-plugin writes the resolved URL to a file on server start; the
-  extension reads it first and falls back to the configured setting.

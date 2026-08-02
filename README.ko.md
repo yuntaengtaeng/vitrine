@@ -76,6 +76,7 @@ export const DangerButton = () => <Button variant="danger" />;
 pnpm install
 pnpm run build              # @vitrine/vite-plugin 빌드
 pnpm run dev:example        # example 앱의 Vite dev server 시작
+pnpm run test                # Vitest 스위트 실행
 ```
 
 이후 브라우저에서 `http://localhost:5173/__vitrine`을 열어 갤러리를 바로
@@ -90,8 +91,11 @@ Development Host를 실행한 뒤, 커맨드 팔레트에서 **Vitrine: Open Pre
 실행하세요. dev server가 이미 실행 중이어야 하며, 그렇지 않으면 빈 화면 대신
 안내 메시지가 표시됩니다.
 
-`vitrine.devServerUrl` (VS Code 설정)으로 대상 URL을 지정할 수 있으며, 기본값은
-`http://localhost:5173/__vitrine`입니다.
+dev server의 포트는 자동으로 감지되므로 따로 설정할 값이 없습니다. Vite
+플러그인이 서버 시작 시 실제 포트를 `<project-root>/.vitrine/port.json`에
+기록하고(해당 폴더는 스스로 `.gitignore` 처리) 확장은 활성 에디터 파일에서
+위로 올라가며 대상 프로젝트를 찾고, 없으면 워크스페이스 전체를 스캔합니다
+(동시에 여러 dev server가 떠 있으면 선택 목록을 띄웁니다).
 
 ## 현재까지 검증된 내용
 
@@ -106,6 +110,14 @@ Development Host 세션에서 검증을 마쳤습니다: `Vitrine: Open Preview`
 커맨드를 실행하면 webview 패널이 열리고 dev server의 example 앱 프리뷰가
 정상적으로 렌더링됩니다.
 
+dev server 포트 자동 감지는 Vite 플러그인 쪽을 실제로 라이브 검증했습니다
+(서버 시작 시 포트/PID 파일 기록, 정상 종료 시 삭제, 강제 종료된 프로세스의
+PID가 정확히 죽은 것으로 감지됨). 플러그인의 파일 기록 로직과 확장의 탐색
+로직(상위 탐색, 워크스페이스 스캔, `node_modules` 제외, PID 생존 확인)은
+Vitest 스위트로도 커버했습니다. 여러 dev server가 동시에 떠 있을 때 뜨는
+확장 쪽 선택 목록 UI는 아직 Extension Development Host에서 직접 확인하지
+않았습니다.
+
 ## 앞으로의 방향 (아직 구현 안 됨)
 
 아래 항목들은 검토했지만 의도적으로 미룬 것들이며, 잊은 게 아닙니다:
@@ -117,7 +129,3 @@ Development Host 세션에서 검증을 마쳤습니다: `Vitrine: Open Preview`
 - 테마 / 반응형 / 줌 토글
 - Provider 자동 감지 (Router / QueryClient / ThemeProvider) 및 목(mock) 처리
 - 프리뷰별 iframe 격리
-- dev server의 실제 포트 자동 감지 (5173이 이미 사용 중이면 Vite가 다른
-  포트로 올라가는데, `vitrine.devServerUrl` 기본값은 그걸 못 따라감). 유력한
-  방식: vite-plugin이 서버 시작 시 실제 resolve된 URL을 파일로 써두고,
-  확장이 그 파일을 먼저 읽고 없으면 설정값으로 폴백.

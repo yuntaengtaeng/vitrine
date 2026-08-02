@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { scanPreviews, renderPreviewsModule } from "./scan.js";
+import { removePortFile, writePortFile } from "./port-file.js";
 
 export interface VitrinePluginOptions {
   /** 프로젝트 루트 기준 @preview export 스캔 글롭 패턴 */
@@ -54,6 +55,22 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         res.setHeader("Content-Type", "text/html");
         res.end(html);
       });
+
+      // middleware 모드는 실제로 바인딩되는 포트가 없어 발행 대상이 아님
+      const httpServer = server.httpServer;
+      if (!httpServer) return;
+
+      const publishPort = () => {
+        const address = httpServer.address();
+        if (address && typeof address === "object") {
+          writePortFile(root, { port: address.port, pid: process.pid });
+        }
+      };
+
+      if (httpServer.listening) publishPort();
+      else httpServer.once("listening", publishPort);
+
+      httpServer.once("close", () => removePortFile(root));
     },
   };
 }
