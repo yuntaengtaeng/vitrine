@@ -153,3 +153,5 @@ dev server를 대상으로 직접 확인했습니다.
 - 테마 / 반응형 / 줌 토글
 - Provider 자동 감지 (Router / QueryClient / ThemeProvider) 및 목(mock) 처리
 - 프리뷰별 iframe 격리
+- 사용법/가이드 문서를 이 README에서 분리해 별도 문서 사이트로 구성 (예 VitePress),
+  콘텐츠와 실사용자가 늘어서 빌드/배포 비용을 들일 가치가 생기면

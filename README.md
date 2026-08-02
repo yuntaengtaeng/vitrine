@@ -155,3 +155,6 @@ These were considered and deliberately deferred, not forgotten:
 - Theme / responsive / zoom toggles
 - Provider auto-detection (Router / QueryClient / ThemeProvider) and mocks
 - Per-preview iframe isolation
+- Split usage/guide docs out of this README into a dedicated docs site (e.g.
+  VitePress) once there's enough content and real users to justify the
+  build/deploy overhead
