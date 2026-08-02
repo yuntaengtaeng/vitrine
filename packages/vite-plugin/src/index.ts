@@ -14,6 +14,7 @@ const PREVIEWS_MODULE_ID = "virtual:vitrine-previews";
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
 const GALLERY_MODULE_ID = "virtual:vitrine-preview-gallery";
 export const GALLERY_ROUTE = "/__vitrine";
+export const MANIFEST_ROUTE = "/__vitrine/manifest";
 
 // dev의 src/index.ts와 빌드된 dist/index.js 모두 패키지 루트 한 단계 아래 위치,
 // 별도 복사 스텝 없이 client 에셋 경로 동일 계산
@@ -50,6 +51,14 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
     },
 
     configureServer(server) {
+      // connect는 prefix 매칭이라 "/__vitrine" 라우트가 이 경로까지 삼키므로,
+      // 더 구체적인 경로를 먼저 등록해야 함
+      server.middlewares.use(MANIFEST_ROUTE, async (_req, res) => {
+        const entries = await scanPreviews({ root, include: options.include });
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify(entries));
+      });
+
       server.middlewares.use(GALLERY_ROUTE, async (_req, res) => {
         const html = await server.transformIndexHtml(GALLERY_ROUTE, GALLERY_HTML);
         res.setHeader("Content-Type", "text/html");

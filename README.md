@@ -93,7 +93,17 @@ The Vite plugin writes the resolved port to `<project-root>/.vitrine/port.json`
 on startup (and self-`.gitignore`s that folder); the extension resolves which
 project to target by walking up from the active editor's file, falling back
 to a workspace-wide scan (prompting with a picker if more than one dev server
-is running at once).
+is running at once). A **Switch Project** button inside the panel lets you
+jump to a different running project at any time, regardless of which file you
+currently have open.
+
+## Cursor-aware preview
+
+Moving your cursor onto a `@preview`-annotated export automatically switches
+the panel to that preview — no click needed. This only reacts within the
+project the panel is currently showing; moving the cursor into a different
+project's file does nothing (use **Switch Project** first). See Known issues
+below.
 
 ## Verified so far
 
@@ -114,15 +124,32 @@ Port auto-detection has been checked live end-to-end on the Vite plugin side
 plus a Vitest suite covering both the plugin's file-writing logic and the
 extension's discovery logic (walk-up, workspace scan, `node_modules`
 exclusion, PID liveness). The extension-side picker UI for multiple
-simultaneous dev servers hasn't been manually exercised in an Extension
-Development Host session yet.
+simultaneous dev servers, and the Switch Project button, have both been
+exercised live in an Extension Development Host session with two dev servers
+running at once.
+
+Cursor-aware preview has been verified live end-to-end within a single
+project: moving the cursor between `@preview` exports in the same file
+switches the panel automatically. The line-range scanning (`scan.ts`) and
+cursor-to-entry matching (`preview-lookup.ts`) are also covered by Vitest,
+and the `/__vitrine/manifest` endpoint was checked directly against a live
+dev server.
+
+## Known issues
+
+- **Cursor tracking doesn't cross projects.** If the panel is showing project
+  A and you move your cursor into a file belonging to project B, nothing
+  happens — cursor-aware preview is deliberately scoped to the
+  currently-displayed project only, so it can't fight with a manual
+  **Switch Project** choice. Switch projects explicitly first, then cursor
+  tracking resumes within the new project. This is a scope decision, not a
+  bug — worth revisiting if it turns out to be inconvenient in practice.
 
 ## Future direction (not implemented)
 
 These were considered and deliberately deferred, not forgotten:
 
 - Automatic component discovery (no `@preview` annotation needed)
-- Cursor-aware preview (follow the active editor selection)
 - Manifest HMR (new/removed `@preview` reflected without a full reload)
 - Props controls generated from TypeScript prop types
 - Theme / responsive / zoom toggles

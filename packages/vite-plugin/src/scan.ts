@@ -17,6 +17,9 @@ export interface PreviewEntry {
   name: string;
   file: string;
   exportName: string;
+  /** export 선언문의 시작/끝 라인 (1-indexed), 커서 위치 매칭에 사용 */
+  startLine: number;
+  endLine: number;
 }
 
 /** 프리뷰 스캔 옵션 */
@@ -72,13 +75,13 @@ export function scanFile(file: string, root: string): PreviewEntry[] {
           if (decl.id.type !== "Identifier") continue;
           const comment = findPreviewComment(nodePath.node, ast.comments ?? []);
           if (!comment) continue;
-          entries.push(makeEntry(relFile, decl.id.name, comment));
+          entries.push(makeEntry(relFile, decl.id.name, comment, nodePath.node.loc));
         }
       }
 
       if (declaration.type === "FunctionDeclaration" && declaration.id) {
         const comment = findPreviewComment(nodePath.node, ast.comments ?? []);
-        if (comment) entries.push(makeEntry(relFile, declaration.id.name, comment));
+        if (comment) entries.push(makeEntry(relFile, declaration.id.name, comment, nodePath.node.loc));
       }
     },
   });
@@ -105,7 +108,12 @@ function findPreviewComment(
   return preceding?.value ?? null;
 }
 
-function makeEntry(file: string, exportName: string, comment: string): PreviewEntry {
+function makeEntry(
+  file: string,
+  exportName: string,
+  comment: string,
+  loc: { start: { line: number }; end: { line: number } } | null | undefined,
+): PreviewEntry {
   const nameMatch = comment.match(NAME_OPTION_RE);
   const rawName = nameMatch ? nameMatch[1] ?? nameMatch[2] ?? nameMatch[3] : undefined;
   const name = rawName?.trim() || exportName;
@@ -114,6 +122,8 @@ function makeEntry(file: string, exportName: string, comment: string): PreviewEn
     name,
     file,
     exportName,
+    startLine: loc?.start.line ?? 1,
+    endLine: loc?.end.line ?? 1,
   };
 }
 

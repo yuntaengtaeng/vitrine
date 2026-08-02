@@ -8,7 +8,7 @@
     "build:extension": "pnpm --filter vitrine build",
     "dev:example": "pnpm --filter example dev",
     "dev:example2": "pnpm --filter example2 dev",
-    "dev:host": "code --extensionDevelopmentPath=packages/vscode-extension .",
+    "dev:host": "node scripts/dev-host.mjs",
     "test": "vitest run"
   },
   "devDependencies": {

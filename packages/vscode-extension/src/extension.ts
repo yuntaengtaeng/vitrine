@@ -7,14 +7,25 @@ import {
   isProcessAlive,
   type PortFileMatch,
 } from "./port-discovery.js";
+import { findEntryAtLine, toProjectRelativeFile, type ManifestEntry } from "./preview-lookup.js";
 
 const GALLERY_ROUTE = "/__vitrine";
+const MANIFEST_ROUTE = "/__vitrine/manifest";
+const SELECTION_DEBOUNCE_MS = 200;
 
 let currentPanel: vscode.WebviewPanel | undefined;
+/** 패널이 지금 보여주는 프로젝트, 커서 추적이 프로젝트를 넘나들지 않도록 범위를 제한하는 데 사용 */
+let currentMatch: PortFileMatch | null = null;
+let lastSelectedPreviewId: string | null = null;
+let selectionDebounce: ReturnType<typeof setTimeout> | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("vitrine.open", () => openPreviewPanel(context)),
+    vscode.window.onDidChangeTextEditorSelection((event) => {
+      clearTimeout(selectionDebounce);
+      selectionDebounce = setTimeout(() => void onSelectionChanged(event), SELECTION_DEBOUNCE_MS);
+    }),
   );
 }
 
@@ -88,6 +99,9 @@ async function pickFromWorkspace(): Promise<PortFileMatch | null> {
 async function renderPanel(match: PortFileMatch | null): Promise<void> {
   if (!currentPanel) return;
 
+  currentMatch = match;
+  lastSelectedPreviewId = null;
+
   if (!match) {
     currentPanel.webview.html = renderNotFoundHtml();
     return;
@@ -98,6 +112,39 @@ async function renderPanel(match: PortFileMatch | null): Promise<void> {
   currentPanel.webview.html = reachable
     ? renderIframeHtml(devServerUrl, match)
     : renderUnreachableHtml(devServerUrl);
+}
+
+/** 커서 이동 시, 패널이 보여주는 프로젝트 안의 @preview 위라면 그 프리뷰로 전환 신호 전송 */
+async function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent): Promise<void> {
+  if (!currentPanel || !currentMatch) return;
+
+  const relFile = toProjectRelativeFile(
+    currentMatch.root,
+    event.textEditor.document.uri.fsPath,
+  );
+  if (!relFile) return; // 지금 패널이 보여주는 프로젝트 밖 파일, 무시
+
+  const cursorLine = event.selections[0]?.active.line;
+  if (cursorLine == null) return;
+
+  const manifest = await fetchManifest(currentMatch.port);
+  if (!manifest) return;
+
+  const entry = findEntryAtLine(manifest, relFile, cursorLine + 1); // VS Code는 0-indexed, Babel loc은 1-indexed
+  if (!entry || entry.id === lastSelectedPreviewId) return;
+
+  lastSelectedPreviewId = entry.id;
+  currentPanel.webview.postMessage({ type: "selectPreview", id: entry.id });
+}
+
+async function fetchManifest(port: number): Promise<ManifestEntry[] | null> {
+  try {
+    const res = await fetch(`http://localhost:${port}${MANIFEST_ROUTE}`);
+    if (!res.ok) return null;
+    return (await res.json()) as ManifestEntry[];
+  } catch {
+    return null;
+  }
 }
 
 async function isDevServerReachable(url: string): Promise<boolean> {
@@ -119,6 +166,7 @@ function renderIframeHtml(devServerUrl: string, match: PortFileMatch): string {
     projectLabel: path.basename(match.root),
     extraCsp: `frame-src ${origin};`,
     body: `<iframe src="${devServerUrl}"></iframe>`,
+    galleryOrigin: origin,
   });
 }
 
@@ -151,6 +199,8 @@ function renderShell(options: {
   projectLabel: string | null;
   body: string;
   extraCsp?: string;
+  /** iframe이 있는 렌더(현재는 renderIframeHtml)에서만 전달, 커서 추적 메시지를 iframe에 중계할 때 씀 */
+  galleryOrigin?: string;
 }): string {
   const nonce = crypto.randomBytes(16).toString("hex");
   return `<!doctype html>
@@ -207,6 +257,14 @@ function renderShell(options: {
       const vscodeApi = acquireVsCodeApi();
       document.getElementById("vitrine-switch-project").addEventListener("click", () => {
         vscodeApi.postMessage({ type: "switchProject" });
+      });
+
+      const galleryFrame = document.querySelector("iframe");
+      const galleryOrigin = ${JSON.stringify(options.galleryOrigin ?? null)};
+      window.addEventListener("message", (event) => {
+        if (!galleryFrame || !galleryOrigin) return;
+        if (event.data?.type !== "selectPreview") return;
+        galleryFrame.contentWindow.postMessage(event.data, galleryOrigin);
       });
     </script>
   </body>

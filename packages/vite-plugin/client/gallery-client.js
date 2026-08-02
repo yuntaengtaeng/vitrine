@@ -78,6 +78,7 @@ function renderApp(entries) {
 
   const reactRoot = createRoot(canvas);
   let activeButton = null;
+  const buttonsById = new Map();
 
   for (const entry of entries) {
     const item = el("button", STYLE.sidebarItem.base);
@@ -110,6 +111,7 @@ function renderApp(entries) {
       }
     });
 
+    buttonsById.set(entry.id, item);
     sidebar.append(item);
   }
 
@@ -117,6 +119,13 @@ function renderApp(entries) {
 
   const firstItem = sidebar.querySelector("button");
   if (firstItem) firstItem.click();
+
+  // 부모(webview 래퍼)가 에디터 커서 위치에 맞는 프리뷰 id를 postMessage로 전달하면 클릭과 동일하게 처리
+  window.addEventListener("message", (event) => {
+    if (event.source !== window.parent) return;
+    if (event.data?.type !== "selectPreview") return;
+    buttonsById.get(event.data.id)?.click();
+  });
 }
 
 renderApp(previews);
