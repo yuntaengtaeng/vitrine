@@ -18,6 +18,8 @@ let currentPanel: vscode.WebviewPanel | undefined;
 let currentMatch: PortFileMatch | null = null;
 let lastSelectedPreviewId: string | null = null;
 let selectionDebounce: ReturnType<typeof setTimeout> | undefined;
+/** manifest fetch 도중 더 최신 커서 이벤트가 겹치는 경우 낡은 응답을 버리는 용도 */
+let selectionRequestSeq = 0;
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -132,8 +134,11 @@ async function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent):
   const cursorLine = event.selections[0]?.active.line;
   if (cursorLine == null) return;
 
+  const seq = ++selectionRequestSeq;
   const manifest = await fetchManifest(currentMatch.port);
   if (!manifest) return;
+  // fetch 도중 패널이 닫히거나 더 최신 커서 이벤트가 먼저 반영된 경우 낡은 응답 폐기
+  if (!currentPanel || seq !== selectionRequestSeq) return;
 
   const entry = findEntryAtLine(manifest, relFile, cursorLine + 1); // VS Code는 0-indexed, Babel loc은 1-indexed
   if (!entry || entry.id === lastSelectedPreviewId) return;
