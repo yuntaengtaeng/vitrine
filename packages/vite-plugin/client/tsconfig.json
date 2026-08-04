@@ -1,7 +1,8 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "noEmit": true
   },
-  "include": ["gallery-client.ts", "vitrine-previews.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx"]
 }
