@@ -1,6 +1,11 @@
-import { createElement, Component } from "react";
+import { createElement, Component, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import previews from "virtual:vitrine-previews";
+
+/** 갤러리(iframe) -> 웹뷰 래퍼 방향 메시지, extension.ts의 WebviewToExtensionMessage와 계약 공유 */
+type GalleryToWrapperMessage = { type: "previewSelected"; id: string };
+/** 웹뷰 래퍼 -> 갤러리(iframe) 방향 메시지, extension.ts의 ExtensionToWebviewMessage와 계약 공유 */
+type WrapperToGalleryMessage = { type: "selectPreview"; id: string };
 
 const COLOR = {
   border: "#e5e7eb",
@@ -28,13 +33,13 @@ const STYLE = {
     active: `background:${COLOR.activeBg}; color:${COLOR.activeText}; font-weight:600;`,
     hover: `background:${COLOR.hoverBg};`,
   },
-  errorText: { color: COLOR.error, whiteSpace: "pre-wrap", fontSize: "0.85rem" },
+  errorText: { color: COLOR.error, whiteSpace: "pre-wrap", fontSize: "0.85rem" } satisfies CSSProperties,
 };
 
-class PreviewErrorBoundary extends Component {
-  state = { error: null };
+class PreviewErrorBoundary extends Component<{ children?: ReactNode }, { error: Error | null }> {
+  state: { error: Error | null } = { error: null };
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error) {
     return { error };
   }
 
@@ -50,14 +55,18 @@ class PreviewErrorBoundary extends Component {
   }
 }
 
-function el(tag, style, text) {
+function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  style?: string,
+  text?: string,
+): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   if (style) node.style.cssText = style;
   if (text != null) node.textContent = text;
   return node;
 }
 
-function renderApp(entries) {
+function renderApp(entries: GalleryPreviewEntry[]): void {
   const root = document.getElementById("vitrine-root");
   if (!root) return;
 
@@ -77,8 +86,8 @@ function renderApp(entries) {
   }
 
   const reactRoot = createRoot(canvas);
-  let activeButton = null;
-  const buttonsById = new Map();
+  let activeButton: HTMLButtonElement | null = null;
+  const buttonsById = new Map<string, HTMLButtonElement>();
 
   for (const entry of entries) {
     const item = el("button", STYLE.sidebarItem.base);
@@ -98,7 +107,8 @@ function renderApp(entries) {
       item.style.cssText = STYLE.sidebarItem.base + STYLE.sidebarItem.active;
       // 수동 클릭과 커서 동기화로 인한 프로그램적 클릭 모두 여기로 모임, 부모(webview 래퍼)에
       // 알려서 익스텐션의 커서 추적 상태가 실제 표시 중인 프리뷰와 어긋나지 않게 함
-      window.parent.postMessage({ type: "previewSelected", id: entry.id }, "*");
+      const message: GalleryToWrapperMessage = { type: "previewSelected", id: entry.id };
+      window.parent.postMessage(message, "*");
 
       try {
         const mod = await entry.load();
@@ -106,10 +116,11 @@ function renderApp(entries) {
         if (typeof Comp !== "function") {
           throw new Error(`"${entry.exportName}" in ${entry.file} is not a component (got ${typeof Comp}).`);
         }
-        reactRoot.render(createElement(PreviewErrorBoundary, null, createElement(Comp)));
+        reactRoot.render(createElement(PreviewErrorBoundary, null, createElement(Comp as ComponentType)));
       } catch (error) {
+        const err = error as Error | undefined;
         reactRoot.render(
-          createElement("pre", { style: STYLE.errorText }, String(error?.stack ?? error?.message ?? error)),
+          createElement("pre", { style: STYLE.errorText }, String(err?.stack ?? err?.message ?? error)),
         );
       }
     });
@@ -126,8 +137,9 @@ function renderApp(entries) {
   // 부모(webview 래퍼)가 에디터 커서 위치에 맞는 프리뷰 id를 postMessage로 전달하면 클릭과 동일하게 처리
   window.addEventListener("message", (event) => {
     if (event.source !== window.parent) return;
-    if (event.data?.type !== "selectPreview") return;
-    buttonsById.get(event.data.id)?.click();
+    const data = event.data as WrapperToGalleryMessage;
+    if (data?.type !== "selectPreview") return;
+    buttonsById.get(data.id)?.click();
   });
 }
 

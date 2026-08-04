@@ -13,6 +13,14 @@ const GALLERY_ROUTE = "/__vitrine";
 const MANIFEST_ROUTE = "/__vitrine/manifest";
 const SELECTION_DEBOUNCE_MS = 200;
 
+/** 웹뷰 인라인 스크립트(renderShell)가 익스텐션으로 보내는 메시지 */
+type WebviewToExtensionMessage =
+  | { type: "switchProject" }
+  | { type: "previewSelected"; id: string };
+
+/** 익스텐션이 웹뷰로 보내는 메시지, renderShell의 인라인 스크립트가 받아 iframe까지 중계 */
+type ExtensionToWebviewMessage = { type: "selectPreview"; id: string };
+
 let currentPanel: vscode.WebviewPanel | undefined;
 /** 패널이 지금 보여주는 프로젝트, 커서 추적이 프로젝트를 넘나들지 않도록 범위를 제한하는 데 사용 */
 let currentMatch: PortFileMatch | null = null;
@@ -47,13 +55,11 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
       currentPanel = undefined;
     }, null, context.subscriptions);
 
-    currentPanel.webview.onDidReceiveMessage((message) => {
-      if (message?.type === "switchProject") void switchProject();
+    currentPanel.webview.onDidReceiveMessage((message: WebviewToExtensionMessage) => {
+      if (message.type === "switchProject") void switchProject();
       // 갤러리 안에서 수동 클릭으로 프리뷰가 바뀐 경우, 커서 추적 상태를 실제 표시 중인
       // 프리뷰와 맞춰서 커서가 그 자리로 돌아왔을 때 재동기화가 스킵되지 않도록 함
-      if (message?.type === "previewSelected" && typeof message.id === "string") {
-        lastSelectedPreviewId = message.id;
-      }
+      if (message.type === "previewSelected") lastSelectedPreviewId = message.id;
     }, null, context.subscriptions);
   }
 
@@ -144,7 +150,8 @@ async function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent):
   if (!entry || entry.id === lastSelectedPreviewId) return;
 
   lastSelectedPreviewId = entry.id;
-  currentPanel.webview.postMessage({ type: "selectPreview", id: entry.id });
+  const message: ExtensionToWebviewMessage = { type: "selectPreview", id: entry.id };
+  currentPanel.webview.postMessage(message);
 }
 
 async function fetchManifest(port: number): Promise<ManifestEntry[] | null> {
@@ -264,6 +271,8 @@ function renderShell(options: {
     </div>
     <div class="vitrine-content">${options.body}</div>
     <script nonce="${nonce}">
+      // 이 인라인 스크립트는 문자열 템플릿이라 TS 타입 체크 대상이 아님, 위 파일의
+      // WebviewToExtensionMessage/ExtensionToWebviewMessage가 여기서 다루는 메시지의 실제 계약
       const vscodeApi = acquireVsCodeApi();
       document.getElementById("vitrine-switch-project").addEventListener("click", () => {
         vscodeApi.postMessage({ type: "switchProject" });
