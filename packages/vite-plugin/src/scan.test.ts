@@ -72,6 +72,63 @@ describe("scan line ranges", () => {
   });
 });
 
+describe("named export comment fallback scope", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  function writeAndScan(code: string): ReturnType<typeof scanFile> {
+    const file = path.join(root, "Button.tsx");
+    fs.writeFileSync(file, code, "utf-8");
+    return scanFile(file, root);
+  }
+
+  it("does not skip an unrelated statement to reach export const", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "export const Exported = () => null;",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(0);
+  });
+
+  it("does not skip an unrelated statement to reach export function", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "export function Exported() { return null; }",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(0);
+  });
+
+  it("does not skip an unrelated statement to reach export default function", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "export default function Exported() { return null; }",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(0);
+  });
+});
+
 describe("scan export default", () => {
   let root: string;
 
@@ -130,6 +187,30 @@ describe("scan export default", () => {
 
   it("ignores a default export with no @preview comment", () => {
     const entries = writeAndScan(["export default () => null;"].join("\n"));
+
+    expect(entries).toHaveLength(0);
+  });
+
+  it("matches a comment above the const declared right before the export", () => {
+    const entries = writeAndScan(
+      ["/** @preview */", "const Chip = () => null;", "", "export default Chip;"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].name).toBe("Chip");
+  });
+
+  it("does not reach past an unrelated statement to grab an earlier comment", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "const Exported = () => null;",
+        "",
+        "export default Exported;",
+      ].join("\n"),
+    );
 
     expect(entries).toHaveLength(0);
   });
