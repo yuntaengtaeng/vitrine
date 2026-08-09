@@ -72,6 +72,63 @@ describe("scan line ranges", () => {
   });
 });
 
+describe("named export comment fallback scope", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  function writeAndScan(code: string): ReturnType<typeof scanFile> {
+    const file = path.join(root, "Button.tsx");
+    fs.writeFileSync(file, code, "utf-8");
+    return scanFile(file, root);
+  }
+
+  it("does not skip an unrelated statement to reach export const", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "export const Exported = () => null;",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(0);
+  });
+
+  it("does not skip an unrelated statement to reach export function", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "export function Exported() { return null; }",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(0);
+  });
+
+  it("does not skip an unrelated statement to reach export default function", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "export default function Exported() { return null; }",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(0);
+  });
+});
+
 describe("scan export default", () => {
   let root: string;
 
