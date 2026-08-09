@@ -65,6 +65,34 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         res.end(html);
       });
 
+      // virtual:vitrine-previews는 addWatchFile 연결이 없어 소스 변경으로 자동
+      // 무효화되지 않으므로, 렌더링 결과(@preview 목록)가 실제로 달라졌을 때만
+      // 직접 무효화하고 전체 리로드, 라인 범위 등 목록에 안 드러나는 변경까지
+      // 리로드하면 편집할 때마다 리로드가 일어나 오히려 방해되므로 렌더링
+      // 결과 문자열 비교로 게이팅. 베이스라인은 watcher 이벤트를 기다리지 않고
+      // 서버 시작 시점에 미리 잡아둠, 그렇지 않으면 사용자의 첫 실제 편집이
+      // "베이스라인 확립"으로 오인돼 무효화 없이 조용히 넘어감
+      let lastRenderedPreviews: string | null = null;
+      scanPreviews({ root, include: options.include }).then((entries) => {
+        lastRenderedPreviews = renderPreviewsModule(entries);
+      });
+
+      const checkPreviewsChanged = async (file: string) => {
+        if (path.extname(file) !== ".tsx" && path.extname(file) !== ".jsx") return;
+
+        const entries = await scanPreviews({ root, include: options.include });
+        const rendered = renderPreviewsModule(entries);
+        if (rendered === lastRenderedPreviews) return;
+        lastRenderedPreviews = rendered;
+
+        const mod = server.moduleGraph.getModuleById(RESOLVED_PREVIEWS_MODULE_ID);
+        if (mod) server.moduleGraph.invalidateModule(mod);
+        server.ws.send({ type: "full-reload" });
+      };
+      server.watcher.on("add", checkPreviewsChanged);
+      server.watcher.on("unlink", checkPreviewsChanged);
+      server.watcher.on("change", checkPreviewsChanged);
+
       // middleware 모드는 실제로 바인딩되는 포트가 없어 발행 대상이 아님
       const httpServer = server.httpServer;
       if (!httpServer) return;
