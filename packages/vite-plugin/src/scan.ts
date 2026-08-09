@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import fg from "fast-glob";
 import { parse } from "@babel/parser";
-import traverseModule from "@babel/traverse";
+import traverseModule, { type NodePath } from "@babel/traverse";
 
 // 번들러/모듈 해석 방식에 따라 @babel/traverse의 CJS/ESM interop이 달라짐,
 // default export가 default 프로퍼티에 한 번 더 감싸여 오는 경우 보정
@@ -70,23 +70,25 @@ export function scanFile(file: string, root: string): PreviewEntry[] {
       const declaration = nodePath.node.declaration;
       if (!declaration) return;
 
+      const fallbackLowerBound = getFallbackLowerBound(nodePath);
+
       if (declaration.type === "VariableDeclaration") {
         for (const decl of declaration.declarations) {
           if (decl.id.type !== "Identifier") continue;
-          const comment = findPreviewComment(nodePath.node, ast.comments ?? []);
+          const comment = findPreviewComment(nodePath.node, ast.comments ?? [], fallbackLowerBound);
           if (!comment) continue;
           entries.push(makeEntry(relFile, decl.id.name, comment, nodePath.node.loc));
         }
       }
 
       if (declaration.type === "FunctionDeclaration" && declaration.id) {
-        const comment = findPreviewComment(nodePath.node, ast.comments ?? []);
+        const comment = findPreviewComment(nodePath.node, ast.comments ?? [], fallbackLowerBound);
         if (comment) entries.push(makeEntry(relFile, declaration.id.name, comment, nodePath.node.loc));
       }
     },
 
     ExportDefaultDeclaration(nodePath) {
-      const comment = findPreviewComment(nodePath.node, ast.comments ?? []);
+      const comment = findPreviewComment(nodePath.node, ast.comments ?? [], getFallbackLowerBound(nodePath));
       if (!comment) return;
 
       const declaration = nodePath.node.declaration;
@@ -104,20 +106,38 @@ export function scanFile(file: string, root: string): PreviewEntry[] {
   return entries;
 }
 
+// export 문 기준 두 칸 앞(바로 앞 문장의, 그 앞 문장) 끝 위치, 없으면 -1
+// findPreviewComment의 폴백은 "export 문 바로 위"뿐 아니라 "export되는 걸
+// 바로 앞에서 선언하는 문장 위"(예 const Foo = ...; 다음 줄에 export default Foo;)
+// 까지는 허용해야 해서 한 칸은 건너뛸 수 있어야 함, 그보다 더 앞선 문장에 달린
+// 주석까지 주워오면 이 export와 무관한 주석을 잘못 매칭하게 되므로 그 지점을 하한선으로 씀
+function getFallbackLowerBound(nodePath: NodePath): number {
+  if (typeof nodePath.key !== "number") return -1;
+  const twoBack = nodePath.getSibling(nodePath.key - 2);
+  return twoBack.node?.end ?? -1;
+}
+
 function findPreviewComment(
   node: { leadingComments?: Array<{ value: string }> | null; start?: number | null },
   allComments: Array<{ value: string; end?: number }>,
+  fallbackLowerBound: number,
 ): string | null {
   const leading = node.leadingComments?.find((c) => c.value.includes(PREVIEW_TAG));
   if (leading) return leading.value;
 
   // leadingComments 첨부가 특이 위치(주석과 export 사이 빈 줄 등)를 놓치는 경우 대비,
-  // ast.comments에서 @preview를 포함한 가장 가까운 선행 주석으로 폴백
+  // ast.comments에서 @preview를 포함한 가장 가까운 선행 주석으로 폴백. 단
+  // fallbackLowerBound보다 앞선(즉 한 칸보다 더 먼 문장에 딸린) 주석은 후보에서
+  // 제외, 안 그러면 이 export와 무관한 더 앞선 문장 위의 @preview 주석을 잘못
+  // 주워옴 (scan.test.ts의 scan export default 스위트 마지막 두 케이스 참고)
   if (node.start == null) return null;
   const preceding = allComments
     .filter(
       (c): c is { value: string; end: number } =>
-        c.end != null && c.end <= node.start! && c.value.includes(PREVIEW_TAG),
+        c.end != null &&
+        c.end > fallbackLowerBound &&
+        c.end <= node.start! &&
+        c.value.includes(PREVIEW_TAG),
     )
     .sort((a, b) => b.end - a.end)[0];
   return preceding?.value ?? null;

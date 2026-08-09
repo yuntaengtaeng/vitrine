@@ -133,4 +133,28 @@ describe("scan export default", () => {
 
     expect(entries).toHaveLength(0);
   });
+
+  it("matches a comment above the const declared right before the export", () => {
+    const entries = writeAndScan(
+      ["/** @preview */", "const Chip = () => null;", "", "export default Chip;"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].name).toBe("Chip");
+  });
+
+  it("does not reach past an unrelated statement to grab an earlier comment", () => {
+    const entries = writeAndScan(
+      [
+        "/** @preview */",
+        "const Unrelated = () => null;",
+        "",
+        "const Exported = () => null;",
+        "",
+        "export default Exported;",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(0);
+  });
 });
