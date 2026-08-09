@@ -106,6 +106,16 @@ dev server의 포트는 자동으로 감지되므로 따로 설정할 값이 없
 다른 프로젝트 파일로 커서를 옮겨도 아무 일도 일어나지 않습니다(먼저
 **Switch Project**로 전환해야 함). 아래 알려진 이슈 참고.
 
+## 라이브로 반영되는 프리뷰 목록
+
+`@preview` export를 추가, 삭제, 이름 변경하면 dev server를 재시작하지 않아도
+자동으로 반영됩니다. 플러그인이 소스 파일을 감시하다가 프리뷰 목록 자체가
+실제로 달라졌을 때만 매니페스트를 무효화하고 브라우저 전체 리로드를
+트리거합니다. 기존 프리뷰 *내부*를 수정하는 건 이 대상이 아니며, 그건 평범한
+Vite/React Fast Refresh 영역입니다. 여전히 수동으로 `pnpm run build`를
+돌리고 dev server를 재시작해야 하는 유일한 부분은 갤러리 UI 자체의 소스인
+`gallery-client.tsx`입니다.
+
 ## 현재까지 검증된 내용
 
 Vite 플러그인 쪽은 실제 dev server를 대상으로 end-to-end 검증을 마쳤습니다:
@@ -133,6 +143,10 @@ Vitest 스위트로도 커버했습니다. 여러 dev server가 동시에 떠 �
 (`preview-lookup.ts`)은 Vitest로, `/__vitrine/manifest` 엔드포인트는 실제
 dev server를 대상으로 직접 확인했습니다.
 
+라이브로 반영되는 프리뷰 목록은 실제 dev server를 대상으로 검증했습니다:
+`@preview` export를 추가했다가 삭제하는 양방향 모두, 프로세스 재시작 없이
+서빙되는 `virtual:vitrine-previews` 모듈에 반영됨을 확인했습니다.
+
 ## 알려진 이슈
 
 - **커서 추적은 프로젝트를 넘나들지 않습니다.** 패널이 프로젝트 A를 보여주는
@@ -148,7 +162,6 @@ dev server를 대상으로 직접 확인했습니다.
 아래 항목들은 검토했지만 의도적으로 미룬 것들이며, 잊은 게 아닙니다:
 
 - 자동 컴포넌트 탐색 (`@preview` 주석 없이도 동작)
-- 매니페스트 HMR (전체 리로드 없이 `@preview` 추가/삭제 반영)
 - TypeScript prop 타입으로부터 자동 생성되는 props 컨트롤
 - 테마 / 반응형 / 줌 토글
 - Provider 자동 감지 (Router / QueryClient / ThemeProvider) 및 목(mock) 처리

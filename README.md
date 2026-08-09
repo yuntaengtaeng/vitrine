@@ -105,6 +105,17 @@ project the panel is currently showing; moving the cursor into a different
 project's file does nothing (use **Switch Project** first). See Known issues
 below.
 
+## Live preview list
+
+Adding, removing, or renaming a `@preview`-annotated export is picked up
+automatically — no dev-server restart needed. The plugin watches your source
+files and, only when the set of previews actually changes, invalidates the
+manifest and triggers a full browser reload. Editing what's *inside* an
+existing preview doesn't trigger this at all — that's regular Vite/React Fast
+Refresh territory. The one thing that still needs a manual `pnpm run build`
+plus a dev-server restart is `gallery-client.tsx` itself, the gallery UI's own
+source.
+
 ## Verified so far
 
 The Vite plugin side has been checked end-to-end against a live dev server:
@@ -135,6 +146,11 @@ cursor-to-entry matching (`preview-lookup.ts`) are also covered by Vitest,
 and the `/__vitrine/manifest` endpoint was checked directly against a live
 dev server.
 
+The live preview list has been verified against a running dev server: adding
+and then removing a `@preview` export was reflected in the served
+`virtual:vitrine-previews` module without restarting the process, in both
+directions.
+
 ## Known issues
 
 - **Cursor tracking doesn't cross projects.** If the panel is showing project
@@ -150,7 +166,6 @@ dev server.
 These were considered and deliberately deferred, not forgotten:
 
 - Automatic component discovery (no `@preview` annotation needed)
-- Manifest HMR (new/removed `@preview` reflected without a full reload)
 - Props controls generated from TypeScript prop types
 - Theme / responsive / zoom toggles
 - Provider auto-detection (Router / QueryClient / ThemeProvider) and mocks
