@@ -62,13 +62,18 @@ export const PrimaryButton = () => <Button variant="primary" />;
 
 /** @preview name=Danger button */
 export const DangerButton = () => <Button variant="danger" />;
+
+/** @preview */
+export default () => <Button variant="primary" />;
 ```
 
-- 주석은 `export const` 또는 `export function` 바로 위에 붙는 블록 주석이어야
-  합니다.
+- 주석은 `export const`, `export function`, 또는 `export default` 바로 위에
+  붙는 블록 주석이어야 합니다.
 - `name=...`은 선택 사항입니다. 생략하면 export 식별자가 라벨로 사용됩니다.
   값은 주석 끝까지 이어지므로 공백을 포함할 수 있습니다
-  (`name=Danger button` → 라벨 "Danger button").
+  (`name=Danger button` → 라벨 "Danger button"). default export는 그 자체로
+  식별자가 없어서(이름 있는 함수이거나 이미 선언된 변수를 참조하는 경우는
+  예외), 위 예시처럼 익명이면 파일 이름으로 폴백합니다 — 여기서는 "Button".
 
 ## 사용법
 

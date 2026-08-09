@@ -71,3 +71,66 @@ describe("scan line ranges", () => {
     expect(entries.find((e) => e.exportName === "Second")?.startLine).toBe(7);
   });
 });
+
+describe("scan export default", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  function writeAndScan(code: string): ReturnType<typeof scanFile> {
+    const file = path.join(root, "Button.tsx");
+    fs.writeFileSync(file, code, "utf-8");
+    return scanFile(file, root);
+  }
+
+  it("uses the named function's own name as the label", () => {
+    const entries = writeAndScan(
+      ["/** @preview */", "export default function PrimaryButton() { return null; }"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].exportName).toBe("default");
+    expect(entries[0].name).toBe("PrimaryButton");
+    expect(entries[0].id).toBe("Button.tsx#default");
+  });
+
+  it("falls back to the file name for an anonymous default export", () => {
+    const entries = writeAndScan(
+      ["/** @preview */", "export default () => null;"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].exportName).toBe("default");
+    expect(entries[0].name).toBe("Button");
+  });
+
+  it("uses the referenced identifier's name for export default of a variable", () => {
+    const entries = writeAndScan(
+      ["const Wrapped = () => null;", "", "/** @preview */", "export default Wrapped;"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].name).toBe("Wrapped");
+  });
+
+  it("still honors an explicit name= option over any fallback", () => {
+    const entries = writeAndScan(
+      ["/** @preview name=Main button */", "export default () => null;"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].name).toBe("Main button");
+  });
+
+  it("ignores a default export with no @preview comment", () => {
+    const entries = writeAndScan(["export default () => null;"].join("\n"));
+
+    expect(entries).toHaveLength(0);
+  });
+});

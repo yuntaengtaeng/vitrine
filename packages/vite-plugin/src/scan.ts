@@ -84,6 +84,21 @@ export function scanFile(file: string, root: string): PreviewEntry[] {
         if (comment) entries.push(makeEntry(relFile, declaration.id.name, comment, nodePath.node.loc));
       }
     },
+
+    ExportDefaultDeclaration(nodePath) {
+      const comment = findPreviewComment(nodePath.node, ast.comments ?? []);
+      if (!comment) return;
+
+      const declaration = nodePath.node.declaration;
+      // default export는 exportName이 항상 "default"라 라벨로 못 씀,
+      // 함수/클래스 선언 이름이나 참조하는 식별자가 있으면 그걸 쓰고
+      // 없으면(익명 화살표 함수 등) 파일 이름을 라벨 기본값으로 사용
+      const fallbackName =
+        ("id" in declaration && declaration.id?.type === "Identifier" && declaration.id.name) ||
+        (declaration.type === "Identifier" && declaration.name) ||
+        path.basename(relFile, path.extname(relFile));
+      entries.push(makeEntry(relFile, "default", comment, nodePath.node.loc, fallbackName));
+    },
   });
 
   return entries;
@@ -113,10 +128,11 @@ function makeEntry(
   exportName: string,
   comment: string,
   loc: { start: { line: number }; end: { line: number } } | null | undefined,
+  fallbackName: string = exportName,
 ): PreviewEntry {
   const nameMatch = comment.match(NAME_OPTION_RE);
   const rawName = nameMatch ? nameMatch[1] ?? nameMatch[2] ?? nameMatch[3] : undefined;
-  const name = rawName?.trim() || exportName;
+  const name = rawName?.trim() || fallbackName;
   return {
     id: `${file}#${exportName}`,
     name,

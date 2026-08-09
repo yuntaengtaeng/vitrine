@@ -59,13 +59,19 @@ export const PrimaryButton = () => <Button variant="primary" />;
 
 /** @preview name=Danger button */
 export const DangerButton = () => <Button variant="danger" />;
+
+/** @preview */
+export default () => <Button variant="primary" />;
 ```
 
 - The comment must be a leading block comment directly above an
-  `export const` or `export function`.
+  `export const`, `export function`, or `export default`.
 - `name=...` is optional; without it, the export's identifier is used as the
   label. The value runs to the end of the comment, so it may contain spaces
-  (`name=Danger button` → label "Danger button").
+  (`name=Danger button` → label "Danger button"). A default export has no
+  identifier of its own to fall back on (unless it's a named function or a
+  reference to an already-declared variable), so an anonymous one like the
+  example above falls back to the file's own name — "Button", here.
 
 ## Usage
 
