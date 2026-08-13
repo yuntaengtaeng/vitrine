@@ -73,6 +73,29 @@ export default () => <Button variant="primary" />;
   reference to an already-declared variable), so an anonymous one like the
   example above falls back to the file's own name — "Button", here.
 
+### Props controls
+
+For an annotated component, Vitrine generates controls for `string`, `number`,
+`boolean`, and string/number literal unions. Imported prop types are resolved
+through the project's `tsconfig.json`.
+
+No configuration is required. When a component needs meaningful sample values
+or a different control, register only those overrides:
+
+```tsx
+import { preview } from "@vitrine/vite-plugin/preview";
+
+/** @preview */
+export const Button = (props: ButtonProps) => <button>{props.children}</button>;
+
+preview(Button, {
+  args: { variant: "primary", children: "Save" },
+  controls: { variant: "radio" },
+});
+```
+
+`preview()` registers metadata without wrapping or changing the component.
+
 ## Usage
 
 ```bash
@@ -172,7 +195,6 @@ directions.
 These were considered and deliberately deferred, not forgotten:
 
 - Automatic component discovery (no `@preview` annotation needed)
-- Props controls generated from TypeScript prop types
 - Theme / responsive / zoom toggles
 - Provider auto-detection (Router / QueryClient / ThemeProvider) and mocks
 - Per-preview iframe isolation

@@ -1,3 +1,5 @@
+import { preview } from "@vitrine/vite-plugin/preview";
+
 /** @preview */
 export const Button = ({
   variant = "primary",
@@ -21,6 +23,11 @@ export const Button = ({
     </button>
   );
 };
+
+preview(Button, {
+  args: { variant: "primary" },
+  controls: { variant: "radio" },
+});
 
 /** @preview name=Danger button */
 export const DangerButton = () => <Button variant="danger" />;

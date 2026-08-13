@@ -2,7 +2,56 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { scanFile } from "./scan.js";
+import { scanFile, scanPreviews } from "./scan.js";
+
+describe("props controls", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-props-test-"));
+    fs.mkdirSync(path.join(root, "src"));
+    fs.writeFileSync(
+      path.join(root, "tsconfig.json"),
+      JSON.stringify({ compilerOptions: { jsx: "react-jsx", strict: true }, include: ["src"] }),
+    );
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("infers controls through an imported props type", async () => {
+    fs.writeFileSync(
+      path.join(root, "src", "Button.types.ts"),
+      [
+        "export interface ButtonProps {",
+        "  variant: 'primary' | 'danger';",
+        "  disabled?: boolean;",
+        "  label: string;",
+        "  count: number;",
+        "  data: { id: string };",
+        "}",
+      ].join("\n"),
+    );
+    fs.writeFileSync(
+      path.join(root, "src", "Button.tsx"),
+      [
+        "import type { ButtonProps } from './Button.types';",
+        "/** @preview */",
+        "export const Button = (props: ButtonProps) => <button>{props.label}</button>;",
+      ].join("\n"),
+    );
+
+    const [entry] = await scanPreviews({ root });
+
+    expect(entry.controls).toEqual({
+      variant: { type: "select", options: ["primary", "danger"], optional: false, defaultValue: "primary" },
+      disabled: { type: "boolean", optional: true },
+      label: { type: "text", optional: false, defaultValue: "" },
+      count: { type: "number", optional: false, defaultValue: 0 },
+    });
+  });
+});
 
 describe("scan line ranges", () => {
   let root: string;

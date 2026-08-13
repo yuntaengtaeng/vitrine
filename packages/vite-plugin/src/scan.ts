@@ -3,6 +3,7 @@ import path from "node:path";
 import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
+import { createTypeContext, getPropControls, type PropControls } from "./props.js";
 
 // 번들러/모듈 해석 방식에 따라 @babel/traverse의 CJS/ESM interop이 달라짐,
 // default export가 default 프로퍼티에 한 번 더 감싸여 오는 경우 보정
@@ -20,6 +21,7 @@ export interface PreviewEntry {
   /** export 선언문의 시작/끝 라인 (1-indexed), 커서 위치 매칭에 사용 */
   startLine: number;
   endLine: number;
+  controls: PropControls;
 }
 
 /** 프리뷰 스캔 옵션 */
@@ -41,8 +43,13 @@ export async function scanPreviews(options: ScanOptions): Promise<PreviewEntry[]
   });
 
   const entries: PreviewEntry[] = [];
+  const typeContext = createTypeContext(root);
   for (const file of files) {
-    entries.push(...scanFile(file, root));
+    const fileEntries = scanFile(file, root);
+    for (const entry of fileEntries) {
+      entry.controls = getPropControls(file, entry.exportName, typeContext);
+    }
+    entries.push(...fileEntries);
   }
   return entries;
 }
@@ -168,6 +175,7 @@ function makeEntry(
     exportName,
     startLine: loc?.start.line ?? 1,
     endLine: loc?.end.line ?? 1,
+    controls: {},
   };
 }
 
@@ -177,6 +185,7 @@ export function renderPreviewsModule(entries: PreviewEntry[]): string {
     (entry) =>
       `  { id: ${JSON.stringify(entry.id)}, name: ${JSON.stringify(entry.name)}, ` +
       `file: ${JSON.stringify(entry.file)}, exportName: ${JSON.stringify(entry.exportName)}, ` +
+      `controls: ${JSON.stringify(entry.controls)}, ` +
       `load: () => import(${JSON.stringify("/" + entry.file)}) }`,
   );
   return `export default [\n${items.join(",\n")}\n];\n`;

@@ -78,7 +78,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       });
 
       const checkPreviewsChanged = async (file: string) => {
-        if (path.extname(file) !== ".tsx" && path.extname(file) !== ".jsx") return;
+        if (![".ts", ".tsx", ".js", ".jsx"].includes(path.extname(file))) return;
 
         const entries = await scanPreviews({ root, include: options.include });
         const rendered = renderPreviewsModule(entries);
