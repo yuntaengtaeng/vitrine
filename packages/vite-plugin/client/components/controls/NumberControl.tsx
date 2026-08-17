@@ -1,15 +1,16 @@
 import type { CSSProperties } from "react";
 import { COLOR } from "../../tokens/color";
 import { FONT_SIZE } from "../../tokens/fontSize";
+import { FIELD_BORDER, FIELD_BORDER_RADIUS, FIELD_HEIGHT } from "./fieldStyle";
 
 const Styled = {
   Root: {
     display: "grid",
     gridTemplateColumns: "32px minmax(60px, 1fr) 32px",
-    height: 32,
+    height: FIELD_HEIGHT,
     overflow: "hidden",
-    border: `1px solid ${COLOR.border}`,
-    borderRadius: 6,
+    border: FIELD_BORDER,
+    borderRadius: FIELD_BORDER_RADIUS,
     background: "white",
   } satisfies CSSProperties,
   Button: {
@@ -23,8 +24,8 @@ const Styled = {
     minWidth: 0,
     padding: "0 0.4rem",
     border: 0,
-    borderLeft: `1px solid ${COLOR.border}`,
-    borderRight: `1px solid ${COLOR.border}`,
+    borderLeft: FIELD_BORDER,
+    borderRight: FIELD_BORDER,
     outline: 0,
     textAlign: "center",
     color: COLOR.body,

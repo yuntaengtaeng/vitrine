@@ -3,9 +3,10 @@ import type { PreviewControl, PreviewControlType } from "@vitrine/vite-plugin/pr
 import { COLOR } from "../tokens/color";
 import { FONT_SIZE } from "../tokens/fontSize";
 import { BooleanControl } from "./controls/BooleanControl";
-import { RadioControl, SelectControl } from "./controls/ChoiceControl";
 import { ControlField } from "./controls/ControlField";
 import { NumberControl } from "./controls/NumberControl";
+import { RadioControl } from "./controls/RadioControl";
+import { SelectControl } from "./controls/SelectControl";
 import { TextControl } from "./controls/TextControl";
 
 type ResolvedControl = Omit<GalleryPropControl, "type"> & { type: PreviewControlType };
@@ -48,6 +49,19 @@ export function mergeControls(
     result[name] = existing ? { ...existing, ...normalized } : { optional: true, ...normalized };
   }
   return result;
+}
+
+/** 추론된 control의 기본값에 preview() args를 덮어써 초기 args 계산 */
+export function resolveInitialArgs(
+  controls: Record<string, GalleryPropControl>,
+  registeredArgs: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+  const defaults = Object.fromEntries(
+    Object.entries(controls)
+      .filter(([, control]) => control.defaultValue !== undefined)
+      .map(([name, control]) => [name, control.defaultValue]),
+  );
+  return { ...defaults, ...registeredArgs };
 }
 
 export const Controls = (props: {

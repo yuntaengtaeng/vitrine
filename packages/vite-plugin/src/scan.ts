@@ -3,7 +3,7 @@ import path from "node:path";
 import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
-import { createTypeContext, getPropControls, type PropControls } from "./props.js";
+import { createTypeContext, getPropControls, type PropControls } from "./props-controls.js";
 
 // 번들러/모듈 해석 방식에 따라 @babel/traverse의 CJS/ESM interop이 달라짐,
 // default export가 default 프로퍼티에 한 번 더 감싸여 오는 경우 보정

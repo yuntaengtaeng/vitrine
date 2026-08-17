@@ -1,15 +1,16 @@
 import type { CSSProperties } from "react";
 import { COLOR } from "../../tokens/color";
 import { FONT_SIZE } from "../../tokens/fontSize";
+import { FIELD_BORDER, FIELD_BORDER_RADIUS, FIELD_FOCUS, FIELD_HEIGHT } from "./fieldStyle";
 
 const InputStyle = {
   width: "100%",
-  height: 32,
+  height: FIELD_HEIGHT,
   padding: "0 0.65rem",
   boxSizing: "border-box",
-  border: `1px solid ${COLOR.border}`,
-  borderRadius: 6,
-  outlineColor: COLOR.activeText,
+  border: FIELD_BORDER,
+  borderRadius: FIELD_BORDER_RADIUS,
+  ...FIELD_FOCUS,
   background: "white",
   color: COLOR.body,
   fontFamily: "inherit",
