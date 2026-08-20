@@ -33,16 +33,6 @@ const Styled = {
   CanvasWrapper: {
     flex: 1,
     overflow: "auto",
-    padding: "2.5rem",
-    boxSizing: "border-box",
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-  } satisfies CSSProperties,
-  CanvasBody: {
-    padding: "2rem",
-    minWidth: 200,
-    minHeight: 80,
     boxSizing: "border-box",
   } satisfies CSSProperties,
   EmptyState: {
@@ -71,9 +61,7 @@ export const App = (props: { entries: GalleryPreviewEntry[] }) => {
         ))}
       </div>
       <div style={Styled.CanvasWrapper}>
-        <div style={Styled.CanvasBody}>
-          <Canvas entry={activeEntry} />
-        </div>
+        <Canvas entry={activeEntry} />
       </div>
     </div>
   );

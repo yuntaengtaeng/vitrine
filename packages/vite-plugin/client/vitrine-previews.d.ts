@@ -4,7 +4,15 @@ interface GalleryPreviewEntry {
   name: string;
   file: string;
   exportName: string;
+  controls: Record<string, GalleryPropControl>;
   load: () => Promise<Record<string, unknown>>;
+}
+
+interface GalleryPropControl {
+  type: "text" | "number" | "boolean" | "select";
+  options?: Array<string | number>;
+  optional: boolean;
+  defaultValue?: string | number | boolean;
 }
 
 declare module "virtual:vitrine-previews" {
