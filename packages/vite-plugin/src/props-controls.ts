@@ -13,7 +13,12 @@ export interface PropControl {
 
 export type PropControls = Record<string, PropControl>;
 
-export function createTypeContext(root: string): { program: ts.Program; checker: ts.TypeChecker } {
+export interface TypeContext {
+  program: ts.Program;
+  checker: ts.TypeChecker;
+}
+
+function buildTypeContext(root: string): TypeContext {
   const configPath = ts.findConfigFile(root, fs.existsSync, "tsconfig.json");
   if (!configPath) {
     const program = ts.createProgram([], { jsx: ts.JsxEmit.ReactJSX, allowJs: true });
@@ -26,11 +31,26 @@ export function createTypeContext(root: string): { program: ts.Program; checker:
   return { program, checker: program.getTypeChecker() };
 }
 
-export function getPropControls(
-  file: string,
-  exportName: string,
-  context: { program: ts.Program; checker: ts.TypeChecker },
-): PropControls {
+// ts.createProgram()이 tsconfig 전체를 다시 읽어들이는 비용이 커서(예제 9개
+// 파일 기준 Babel 스캔의 17배), 루트별로 한 번 만든 프로그램을 재사용하고
+// invalidateTypeContext로 명시적으로 무효화될 때만 다시 만듦
+const typeContextCache = new Map<string, TypeContext>();
+
+/** 루트 기준 캐시된 ts.Program, 없으면 새로 만들어 캐시 */
+export function getTypeContext(root: string): TypeContext {
+  const cached = typeContextCache.get(root);
+  if (cached) return cached;
+  const context = buildTypeContext(root);
+  typeContextCache.set(root, context);
+  return context;
+}
+
+/** 루트의 캐시된 ts.Program 무효화, 다음 getTypeContext 호출에서 재생성 */
+export function invalidateTypeContext(root: string): void {
+  typeContextCache.delete(root);
+}
+
+export function getPropControls(file: string, exportName: string, context: TypeContext): PropControls {
   const source = context.program.getSourceFile(file);
   const moduleSymbol = source && context.checker.getSymbolAtLocation(source);
   if (!source || !moduleSymbol) return {};
