@@ -21,7 +21,8 @@ rendered live in a VS Code panel, right next to the file you're editing. No
 
 ### Non-goals
 
-- Not a Storybook replacement (no docs, controls, visual regression, addons).
+- Not a full Storybook replacement (no documentation platform, visual regression,
+  or addon ecosystem). Focused props controls and variants are supported.
 - No automatic dev-server startup — start your project's `vite dev` yourself.
 - No multi-framework support (Vue/Svelte previews are out of scope).
 - No automatic component discovery — previews are explicit, via `@preview`.

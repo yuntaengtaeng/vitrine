@@ -21,7 +21,8 @@ Vitrine은 컴포넌트 export 위에 `/** @preview */` 주석을 달아두면, 
 
 ### 하지 않는 것 (Non-goals)
 
-- Storybook 대체가 아닙니다 (문서화, 컨트롤, 시각적 회귀 테스트, 애드온 없음).
+- 완전한 Storybook 대체가 아닙니다 (문서화 플랫폼, 시각적 회귀 테스트,
+  애드온 생태계 없음). 프리뷰에 필요한 props 컨트롤과 variants는 지원합니다.
 - dev server를 자동으로 시작하지 않습니다 — 프로젝트의 `vite dev`는 직접
   실행해야 합니다.
 - 멀티 프레임워크를 지원하지 않습니다 (Vue/Svelte 프리뷰는 범위 밖).
@@ -80,6 +81,35 @@ export default () => <Button variant="primary" />;
   표기와 같은 규약입니다. `/`가 여러 개면 그룹이 중첩됩니다. 별도 `group=`
   옵션은 없고, 파일 기준 기본 그룹핑도 없습니다 — `name=`에 `/`가 있어야만
   그룹이 생깁니다.
+
+### Props 컨트롤
+
+Vitrine은 주석이 붙은 컴포넌트의 `string`, `number`, `boolean`, 문자열/숫자
+리터럴 union prop에 맞는 컨트롤을 생성합니다. 프로젝트의 `tsconfig.json`을
+통해 import된 prop 타입도 해석합니다.
+
+의미 있는 예시 값이나 다른 컨트롤이 필요할 때만 `preview()`로 덮어씁니다:
+
+```tsx
+import { preview } from "@vitrine/vite-plugin/preview";
+
+/** @preview */
+export const Button = (props: ButtonProps) => <button>{props.children}</button>;
+
+preview(Button, {
+  args: { variant: "primary", children: "Save" },
+  controls: { variant: "radio" },
+  variants: {
+    primary: { name: "Primary", args: { variant: "primary" } },
+    danger: { name: "Danger", args: { variant: "danger" } },
+  },
+  defaultVariant: "primary",
+});
+```
+
+`preview()`는 컴포넌트를 감싸거나 바꾸지 않고 metadata만 등록합니다.
+`variants`는 같은 프리뷰의 이름 있는 args preset 사이를 이동하는 picker를
+추가합니다. `group`과 달리 module을 load한 뒤에 알 수 있는 runtime 값입니다.
 
 ## 사용법
 
@@ -173,7 +203,6 @@ dev server를 대상으로 직접 확인했습니다.
 아래 항목들은 검토했지만 의도적으로 미룬 것들이며, 잊은 게 아닙니다:
 
 - 자동 컴포넌트 탐색 (`@preview` 주석 없이도 동작)
-- TypeScript prop 타입으로부터 자동 생성되는 props 컨트롤
 - 테마 / 반응형 / 줌 토글
 - Provider 자동 감지 (Router / QueryClient / ThemeProvider) 및 목(mock) 처리
 - 프리뷰별 iframe 격리
