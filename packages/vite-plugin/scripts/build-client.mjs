@@ -4,12 +4,10 @@ import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const entry = path.join(packageRoot, "client", "gallery-client.tsx");
-const outfile = path.join(packageRoot, "client", "gallery-client.js");
+const outfile = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
 
-// bundle: true라서 ./styles, ./colors 같은 상대 import는 산출물 하나로 인라인됨
-// (index.ts가 이 파일을 fs.readFileSync로 통째로 읽어 서빙하므로, 여러 파일로 쪼개도
-// 서빙되는 건 여전히 단일 문자열이어야 함) — react/virtual:vitrine-previews처럼 브라우저에서
-// Vite dev 서버가 서빙 시점에 해석해야 하는 것만 external로 남김
+// Gallery는 package files에 포함되는 dist 아래 단일 bundle로 생성
+// React와 virtual module은 사용자의 Vite runtime이 해석하므로 external로 유지
 const options = {
   entryPoints: [entry],
   outfile,

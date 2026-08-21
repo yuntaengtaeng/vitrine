@@ -19,7 +19,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p client/tsconfig.json && node scripts/build-client.mjs",
     "dev": "tsc -p tsconfig.json --watch",
-    "dev:client": "node scripts/build-client.mjs --watch"
+    "dev:client": "node scripts/build-client.mjs --watch",
+    "test:package": "node scripts/test-package.mjs"
   },
   "dependencies": {
     "@babel/parser": "^7.25.9",

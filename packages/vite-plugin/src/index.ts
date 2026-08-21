@@ -17,10 +17,9 @@ const GALLERY_MODULE_ID = "virtual:vitrine-preview-gallery";
 export const GALLERY_ROUTE = "/__vitrine";
 export const MANIFEST_ROUTE = "/__vitrine/manifest";
 
-// dev의 src/index.ts와 빌드된 dist/index.js 모두 패키지 루트 한 단계 아래 위치,
-// 별도 복사 스텝 없이 client 에셋 경로 동일 계산
+// Source와 build output에서 동일한 package root 계산
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const galleryClientPath = path.join(packageRoot, "client", "gallery-client.js");
+const galleryClientPath = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
 
 /** @preview export를 스캔해 갤러리 라우트로 제공하는 Vite 플러그인 */
 export default function vitrine(options: VitrinePluginOptions = {}): Plugin {

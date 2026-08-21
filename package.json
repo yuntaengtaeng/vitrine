@@ -6,6 +6,7 @@
   "scripts": {
     "build": "pnpm --filter @vitrine/vite-plugin build",
     "build:extension": "pnpm --filter vitrine build",
+    "test:package": "pnpm --filter @vitrine/vite-plugin test:package",
     "dev:example": "pnpm --filter example dev",
     "dev:example2": "pnpm --filter example2 dev",
     "dev:host": "node scripts/dev-host.mjs",
