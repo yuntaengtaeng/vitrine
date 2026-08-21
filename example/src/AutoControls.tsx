@@ -1,6 +1,6 @@
 import type { AutoControlsProps } from "./AutoControls.types";
 
-/** @preview name=Automatic controls */
+/** @preview name="Automatic controls" */
 export const AutoControls = ({
   label,
   count,

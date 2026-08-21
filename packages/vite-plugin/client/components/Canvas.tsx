@@ -3,6 +3,7 @@ import { usePreviewCanvas } from "../hooks/usePreviewCanvas";
 import { ErrorText } from "./ErrorText";
 import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
 import { Controls } from "./Controls";
+import { VariantPicker } from "./VariantPicker";
 
 const Styled = {
   Root: {
@@ -26,12 +27,13 @@ const Styled = {
 };
 
 export const Canvas = (props: { entry: GalleryPreviewEntry | undefined }) => {
-  const { Comp, error, controls, args, setArg } = usePreviewCanvas(props.entry);
+  const { Comp, error, controls, args, setArg, variants, variantKey, setVariant } = usePreviewCanvas(props.entry);
 
   if (error) return <ErrorText>{String(error.stack ?? error.message ?? error)}</ErrorText>;
   if (!Comp) return null;
   return (
     <div style={Styled.Root}>
+      <VariantPicker variants={variants} activeKey={variantKey} onSelect={setVariant} />
       <div style={Styled.Preview}>
         <div style={Styled.PreviewBody}>
           <PreviewErrorBoundary>

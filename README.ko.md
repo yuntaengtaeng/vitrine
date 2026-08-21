@@ -60,7 +60,7 @@ export function Button({ variant }: { variant: "primary" | "danger" }) {
 /** @preview */
 export const PrimaryButton = () => <Button variant="primary" />;
 
-/** @preview name=Danger button */
+/** @preview name="Inputs/Danger button" */
 export const DangerButton = () => <Button variant="danger" />;
 
 /** @preview */
@@ -69,11 +69,17 @@ export default () => <Button variant="primary" />;
 
 - 주석은 `export const`, `export function`, 또는 `export default` 바로 위에
   붙는 블록 주석이어야 합니다.
-- `name=...`은 선택 사항입니다. 생략하면 export 식별자가 라벨로 사용됩니다.
-  값은 주석 끝까지 이어지므로 공백을 포함할 수 있습니다
-  (`name=Danger button` → 라벨 "Danger button"). default export는 그 자체로
+- `name="..."`은 선택 사항입니다. 생략하면 export 식별자가 라벨로 사용됩니다.
+  값은 `"..."` 또는 `'...'`로 시작과 끝을 감싸야 공백을 포함할 수 있습니다
+  (`name="Danger button"` → 라벨 "Danger button"). default export는 그 자체로
   식별자가 없어서(이름 있는 함수이거나 이미 선언된 변수를 참조하는 경우는
   예외), 위 예시처럼 익명이면 파일 이름으로 폴백합니다 — 여기서는 "Button".
+- `name="..."` 값에 `/`가 있으면 사이드바에서 그룹으로 묶입니다, 마지막 `/`
+  앞부분이 그룹, 뒷부분이 라벨입니다 (`name="Inputs/Danger button"` → 그룹
+  "Inputs", 라벨 "Danger button"), Storybook의 `title: "Inputs/Button"` 계층
+  표기와 같은 규약입니다. `/`가 여러 개면 그룹이 중첩됩니다. 별도 `group=`
+  옵션은 없고, 파일 기준 기본 그룹핑도 없습니다 — `name=`에 `/`가 있어야만
+  그룹이 생깁니다.
 
 ## 사용법
 

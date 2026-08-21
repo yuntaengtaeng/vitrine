@@ -20,5 +20,5 @@ export const Avatar = ({ initials = "VT" }: { initials?: string }) => (
 /** @preview */
 export const DefaultAvatar = () => <Avatar />;
 
-/** @preview name=Custom initials */
+/** @preview name="Custom initials" */
 export const CustomAvatar = () => <Avatar initials="JS" />;

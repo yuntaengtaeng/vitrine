@@ -7,7 +7,7 @@ interface ConfiguredControlsProps {
   outlined: boolean;
 }
 
-/** @preview name=Configured controls */
+/** @preview name="Configured controls" */
 export const ConfiguredControls = ({
   title,
   tone,

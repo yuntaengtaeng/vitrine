@@ -1,4 +1,3 @@
-// 스캔됨, 라벨 "Chip"
 // 주석이 export default Chip; 이 아니라 그 앞 const Chip = ...; 위에 붙어있어서
 // Babel의 leadingComments는 이 주석을 const 문장 쪽으로 붙임, export default
 // 쪽에서는 findPreviewComment의 위치 기반 폴백이 한 칸 앞(바로 이 const 문장)

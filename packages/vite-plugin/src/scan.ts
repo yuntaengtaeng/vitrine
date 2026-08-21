@@ -16,6 +16,8 @@ const traverse = (
 export interface PreviewEntry {
   id: string;
   name: string;
+  /** name= 값의 마지막 / 앞부분, Storybook의 title 계층 표기와 동일한 규약 */
+  group?: string;
   file: string;
   exportName: string;
   /** export 선언문의 시작/끝 라인 (1-indexed), 커서 위치 매칭에 사용 */
@@ -31,7 +33,9 @@ export interface ScanOptions {
 }
 
 const PREVIEW_TAG = "@preview";
-const NAME_OPTION_RE = /name\s*=\s*(?:"([^"]*)"|'([^']*)'|(.+))/;
+// 인용부호로 시작과 끝을 명확히 구분, 끝까지 읽는 방식은 name 외 옵션을 한 줄에
+// 같이 못 쓰게 만들어서 폐기
+const NAME_OPTION_RE = /name\s*=\s*(?:"([^"]*)"|'([^']*)')/;
 
 /** include 글롭 패턴 기준 프로젝트 전체 @preview export 스캔 */
 export async function scanPreviews(options: ScanOptions): Promise<PreviewEntry[]> {
@@ -185,11 +189,12 @@ function makeEntry(
   fallbackName: string = exportName,
 ): PreviewEntry {
   const nameMatch = comment.match(NAME_OPTION_RE);
-  const rawName = nameMatch ? nameMatch[1] ?? nameMatch[2] ?? nameMatch[3] : undefined;
-  const name = rawName?.trim() || fallbackName;
+  const rawName = nameMatch ? nameMatch[1] ?? nameMatch[2] : undefined;
+  const { name, group } = splitNameAndGroup(rawName?.trim() || fallbackName);
   return {
     id: `${file}#${exportName}`,
     name,
+    ...(group ? { group } : {}),
     file,
     exportName,
     startLine: loc?.start.line ?? 1,
@@ -198,11 +203,21 @@ function makeEntry(
   };
 }
 
+// name= 값을 /로 나눠 마지막 세그먼트를 실제 표시 name, 그 앞을 group 경로로
+// 분리, Storybook의 title: "Inputs/Button" 계층 표기와 동일한 규약. export
+// 식별자나 파일 basename 폴백은 /가 있을 수 없어 항상 group 없이 그대로 통과
+function splitNameAndGroup(raw: string): { name: string; group?: string } {
+  const segments = raw.split("/").map((segment) => segment.trim()).filter((segment) => segment.length > 0);
+  if (segments.length <= 1) return { name: segments[0] ?? raw };
+  return { name: segments[segments.length - 1], group: segments.slice(0, -1).join("/") };
+}
+
 /** 스캔된 프리뷰 목록을 가상 모듈 JS 문자열로 직렬화 */
 export function renderPreviewsModule(entries: PreviewEntry[]): string {
   const items = entries.map(
     (entry) =>
       `  { id: ${JSON.stringify(entry.id)}, name: ${JSON.stringify(entry.name)}, ` +
+      `group: ${JSON.stringify(entry.group)}, ` +
       `file: ${JSON.stringify(entry.file)}, exportName: ${JSON.stringify(entry.exportName)}, ` +
       `controls: ${JSON.stringify(entry.controls)}, ` +
       `load: () => import(${JSON.stringify("/" + entry.file)}) }`,

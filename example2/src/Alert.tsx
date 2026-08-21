@@ -20,10 +20,10 @@ export const Alert = ({
   </div>
 );
 
-/** @preview name=Neutral alert */
+/** @preview name="Alerts/Neutral alert" */
 export const NeutralAlert = () => <Alert message="Deployment finished" />;
 
-/** @preview name=Critical alert */
+/** @preview name="Alerts/Critical alert" */
 export const CriticalAlert = () => (
   <Alert message="Build failed" tone="critical" />
 );

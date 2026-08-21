@@ -21,12 +21,12 @@ export const Card = ({
   </div>
 );
 
-/** @preview name=Short card */
+/** @preview name="Cards/Short card" */
 export const ShortCard = () => (
   <Card title="Vitrine" description="Inline previews for React." />
 );
 
-/** @preview name=Long card */
+/** @preview name="Cards/Long card" */
 export const LongCard = () => (
   <Card
     title="Long description card"

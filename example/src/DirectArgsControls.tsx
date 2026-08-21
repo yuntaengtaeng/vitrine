@@ -12,7 +12,7 @@ interface DirectArgsControlsProps {
   hint?: string;
 }
 
-/** @preview name=Direct args controls */
+/** @preview name="Direct args controls" */
 export const DirectArgsControls = ({
   children,
   user,

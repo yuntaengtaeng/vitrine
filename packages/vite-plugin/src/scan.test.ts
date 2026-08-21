@@ -227,11 +227,29 @@ describe("scan export default", () => {
 
   it("still honors an explicit name= option over any fallback", () => {
     const entries = writeAndScan(
-      ["/** @preview name=Main button */", "export default () => null;"].join("\n"),
+      ['/** @preview name="Main button" */', "export default () => null;"].join("\n"),
     );
 
     expect(entries).toHaveLength(1);
     expect(entries[0].name).toBe("Main button");
+  });
+
+  it("also accepts single-quoted name= values", () => {
+    const entries = writeAndScan(
+      ["/** @preview name='Main button' */", "export default () => null;"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].name).toBe("Main button");
+  });
+
+  it("ignores an unquoted name= value and falls back instead", () => {
+    const entries = writeAndScan(
+      ["/** @preview name=Main button */", "export default function MainButton() { return null; }"].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].name).toBe("MainButton");
   });
 
   it("ignores a default export with no @preview comment", () => {
@@ -262,5 +280,86 @@ describe("scan export default", () => {
     );
 
     expect(entries).toHaveLength(0);
+  });
+});
+
+describe("name= group extraction", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  function writeAndScan(code: string): ReturnType<typeof scanFile> {
+    const file = path.join(root, "Button.tsx");
+    fs.writeFileSync(file, code, "utf-8");
+    return scanFile(file, root);
+  }
+
+  it("splits a single / into group and name", () => {
+    const entries = writeAndScan(
+      ['/** @preview name="Inputs/Danger button" */', "export default () => null;"].join("\n"),
+    );
+
+    expect(entries[0].group).toBe("Inputs");
+    expect(entries[0].name).toBe("Danger button");
+  });
+
+  it("treats multiple / as a nested group path", () => {
+    const entries = writeAndScan(
+      ['/** @preview name="Inputs/Forms/Danger button" */', "export default () => null;"].join("\n"),
+    );
+
+    expect(entries[0].group).toBe("Inputs/Forms");
+    expect(entries[0].name).toBe("Danger button");
+  });
+
+  it("trims whitespace around each segment", () => {
+    const entries = writeAndScan(
+      ['/** @preview name=" Inputs / Danger button " */', "export default () => null;"].join("\n"),
+    );
+
+    expect(entries[0].group).toBe("Inputs");
+    expect(entries[0].name).toBe("Danger button");
+  });
+
+  it("drops empty segments from doubled or trailing /", () => {
+    const entries = writeAndScan(
+      ['/** @preview name="Inputs//Danger button" */', "export default () => null;"].join("\n"),
+    );
+
+    expect(entries[0].group).toBe("Inputs");
+    expect(entries[0].name).toBe("Danger button");
+  });
+
+  it("leaves group undefined when a trailing / has no name segment after it", () => {
+    const entries = writeAndScan(
+      ['/** @preview name="Inputs/" */', "export default () => null;"].join("\n"),
+    );
+
+    expect(entries[0].group).toBeUndefined();
+    expect(entries[0].name).toBe("Inputs");
+  });
+
+  it("leaves group undefined when name has no /", () => {
+    const entries = writeAndScan(
+      ['/** @preview name="Danger button" */', "export default () => null;"].join("\n"),
+    );
+
+    expect(entries[0].group).toBeUndefined();
+    expect(entries[0].name).toBe("Danger button");
+  });
+
+  it("leaves group undefined for a fallback name with no explicit name=", () => {
+    const entries = writeAndScan(
+      ["/** @preview */", "export default function PrimaryButton() { return null; }"].join("\n"),
+    );
+
+    expect(entries[0].group).toBeUndefined();
+    expect(entries[0].name).toBe("PrimaryButton");
   });
 });
