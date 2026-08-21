@@ -3,7 +3,7 @@ import path from "node:path";
 import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
-import { createTypeContext, getPropControls, type PropControls } from "./props-controls.js";
+import { getTypeContext, getPropControls, type PropControls } from "./props-controls.js";
 
 // 번들러/모듈 해석 방식에 따라 @babel/traverse의 CJS/ESM interop이 달라짐,
 // default export가 default 프로퍼티에 한 번 더 감싸여 오는 경우 보정
@@ -43,19 +43,38 @@ export async function scanPreviews(options: ScanOptions): Promise<PreviewEntry[]
   });
 
   const entries: PreviewEntry[] = [];
-  const typeContext = createTypeContext(root);
+  const typeContext = getTypeContext(root);
   for (const file of files) {
     const fileEntries = scanFile(file, root);
     for (const entry of fileEntries) {
-      entry.controls = getPropControls(file, entry.exportName, typeContext);
+      // scanFile이 캐시로 재사용하는 원본 entry 객체라 직접 mutate하지 않고
+      // controls를 얹은 새 객체로 push, 그래야 다음 scanFile 캐시 hit 때
+      // 이전 호출에서 계산한 controls가 새 객체에 새어 들어가지 않음
+      entries.push({ ...entry, controls: getPropControls(file, entry.exportName, typeContext) });
     }
-    entries.push(...fileEntries);
   }
   return entries;
 }
 
+// 파일 내용이 안 바뀌었으면 Babel 파싱/traverse를 다시 하지 않도록 파일 경로별로
+// 스캔 결과를 캐싱, content hash 대신 mtime+size로 변경 판단 (hash는 파일 전체를
+// 읽어야 해서 캐시로 아끼려는 readFileSync 자체를 다시 하게 됨)
+const fileCache = new Map<string, { mtimeMs: number; size: number; entries: PreviewEntry[] }>();
+
 /** 단일 파일에서 @preview export 스캔 */
 export function scanFile(file: string, root: string): PreviewEntry[] {
+  const stat = fs.statSync(file);
+  const cached = fileCache.get(file);
+  if (cached && cached.mtimeMs === stat.mtimeMs && cached.size === stat.size) {
+    return cached.entries;
+  }
+
+  const entries = scanFileUncached(file, root);
+  fileCache.set(file, { mtimeMs: stat.mtimeMs, size: stat.size, entries });
+  return entries;
+}
+
+function scanFileUncached(file: string, root: string): PreviewEntry[] {
   const code = fs.readFileSync(file, "utf-8");
 
   let ast;
