@@ -13,16 +13,25 @@
 | 파일 | 형태 | exportName | 라벨 |
 | --- | --- | --- | --- |
 | `01-named-const.tsx` | `export const Foo = ...` | `Foo` | `Foo` |
-| `02-named-const-with-name-option.tsx` | `export const` + `name=...` | `Foo` | `name=` 값 |
+| `02-named-const-with-name-option.tsx` | `export const` + `name="..."` | `Foo` | `name=` 값 |
 | `03-named-function.tsx` | `export function Foo() {}` | `Foo` | `Foo` |
 | `04-default-named-function.tsx` | `export default function Foo() {}` | `default` | 함수 자체 이름 `Foo` |
 | `05-default-anonymous.tsx` | `export default () => ...` | `default` | 식별자가 없어서 파일 basename으로 폴백 |
 | `06-default-referenced-identifier.tsx` | `const Foo = ...; export default Foo;`, 주석은 export 문 위 | `default` | 참조하는 식별자 `Foo` |
 | `07-comment-on-declaration-before-default-export.tsx` | 위와 같지만 주석이 export 문이 아니라 `const` 선언 위 | `default` | 참조하는 식별자 |
+| `10-name-with-group.tsx` | `export const` + `name="Group/Label"` | `Foo` | `Label`, group `Group` |
 
 `export default`는 `exportName`이 항상 문자열 `"default"`입니다 (동적
 `import()`가 모듈 네임스페이스 객체에 노출하는 키와 맞춘 것), 라벨과
 `exportName`이 같은 문자열인 건 named export일 때뿐입니다.
+
+`name=` 값은 `"..."` 또는 `'...'`로 시작과 끝을 감싸야 합니다 (인용부호 없이
+끝까지 읽던 예전 방식은 폐기, 이제 매칭되지 않고 폴백으로 넘어감). 값에 `/`가
+있으면 마지막 `/` 앞부분이 사이드바 그룹, 뒷부분이 실제 라벨이 됩니다
+(`10-name-with-group.tsx`), Storybook의 `title: "Inputs/Button"` 계층 표기와
+동일한 규약이라 여러 개면 중첩 그룹이 됩니다. `name=` 없이 폴백(식별자/파일
+basename)으로 정해진 라벨은 `/`가 들어갈 수 없어 항상 그룹 없이 그대로
+남습니다.
 
 `06`과 `07`은 최종 결과(라벨 "Tag"/참조 식별자 이름)는 같지만 매칭 경로가
 다릅니다:

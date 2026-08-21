@@ -57,7 +57,7 @@ export function Button({ variant }: { variant: "primary" | "danger" }) {
 /** @preview */
 export const PrimaryButton = () => <Button variant="primary" />;
 
-/** @preview name=Danger button */
+/** @preview name="Inputs/Danger button" */
 export const DangerButton = () => <Button variant="danger" />;
 
 /** @preview */
@@ -66,12 +66,19 @@ export default () => <Button variant="primary" />;
 
 - The comment must be a leading block comment directly above an
   `export const`, `export function`, or `export default`.
-- `name=...` is optional; without it, the export's identifier is used as the
-  label. The value runs to the end of the comment, so it may contain spaces
-  (`name=Danger button` → label "Danger button"). A default export has no
-  identifier of its own to fall back on (unless it's a named function or a
-  reference to an already-declared variable), so an anonymous one like the
-  example above falls back to the file's own name — "Button", here.
+- `name="..."` is optional; without it, the export's identifier is used as
+  the label. The value must be wrapped in `"..."` or `'...'` so it may
+  contain spaces (`name="Danger button"` → label "Danger button"). A
+  default export has no identifier of its own to fall back on (unless it's
+  a named function or a reference to an already-declared variable), so an
+  anonymous one like the example above falls back to the file's own name —
+  "Button", here.
+- A `/` inside `name="..."` groups the preview in the sidebar — everything
+  before the last `/` becomes the group, the last segment becomes the label
+  (`name="Inputs/Danger button"` → group "Inputs", label "Danger button"),
+  the same convention as Storybook's `title: "Inputs/Button"`. More than one
+  `/` nests groups. There's no separate `group=` option and no default
+  grouping by file — a preview is only grouped if its `name=` says so.
 
 ### Props controls
 
@@ -91,10 +98,18 @@ export const Button = (props: ButtonProps) => <button>{props.children}</button>;
 preview(Button, {
   args: { variant: "primary", children: "Save" },
   controls: { variant: "radio" },
+  variants: {
+    primary: { name: "Primary", args: { variant: "primary" } },
+    danger: { name: "Danger", args: { variant: "danger" } },
+  },
+  defaultVariant: "primary",
 });
 ```
 
 `preview()` registers metadata without wrapping or changing the component.
+`variants` adds a picker in the gallery that jumps between named
+arg presets for the same preview — unlike `group`, this is runtime-only and
+isn't known until the preview's module is loaded.
 
 ## Usage
 
@@ -179,6 +194,16 @@ The live preview list has been verified against a running dev server: adding
 and then removing a `@preview` export was reflected in the served
 `virtual:vitrine-previews` module without restarting the process, in both
 directions.
+
+Sidebar grouping (`name="Group/Label"`) and `preview()` `variants` have both
+been verified against a live dev server with a headless-browser click-test:
+the sidebar renders the nested group tree correctly, and selecting a
+`Danger` variant tab on the example app's `Button` preview correctly
+re-rendered the component (into the red "Delete" button) and updated the
+matching `variant` prop control below it. The variant picker's tabs are
+deliberately styled as underlined text rather than boxed buttons — a
+previewed component that's itself a button (as in this example) would
+otherwise be visually hard to tell apart from the picker's own chrome.
 
 ## Known issues
 

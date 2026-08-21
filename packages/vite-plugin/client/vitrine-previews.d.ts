@@ -2,6 +2,7 @@
 interface GalleryPreviewEntry {
   id: string;
   name: string;
+  group?: string;
   file: string;
   exportName: string;
   controls: Record<string, GalleryPropControl>;

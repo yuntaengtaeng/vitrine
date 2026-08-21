@@ -28,8 +28,8 @@ export const Tag = ({
   );
 };
 
-/** @preview name=Info tag */
+/** @preview name="Info tag" */
 export const InfoTag = () => <Tag label="beta" />;
 
-/** @preview name=Warning tag */
+/** @preview name="Warning tag" */
 export const WarningTag = () => <Tag label="deprecated" tone="warning" />;

@@ -51,17 +51,18 @@ export function mergeControls(
   return result;
 }
 
-/** 추론된 control의 기본값에 preview() args를 덮어써 초기 args 계산 */
+/** 추론된 control의 기본값 위에 preview() args, 그 위에 선택된 variant의 args를 순서대로 덮어써 초기 args 계산 */
 export function resolveInitialArgs(
   controls: Record<string, GalleryPropControl>,
   registeredArgs: Record<string, unknown> | undefined,
+  variantArgs?: Record<string, unknown>,
 ): Record<string, unknown> {
   const defaults = Object.fromEntries(
     Object.entries(controls)
       .filter(([, control]) => control.defaultValue !== undefined)
       .map(([name, control]) => [name, control.defaultValue]),
   );
-  return { ...defaults, ...registeredArgs };
+  return { ...defaults, ...registeredArgs, ...variantArgs };
 }
 
 export const Controls = (props: {

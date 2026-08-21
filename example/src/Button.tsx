@@ -27,7 +27,12 @@ export const Button = ({
 preview(Button, {
   args: { variant: "primary" },
   controls: { variant: "radio" },
+  variants: {
+    primary: { name: "Primary", args: { variant: "primary" } },
+    danger: { name: "Danger", args: { variant: "danger" } },
+  },
+  defaultVariant: "primary",
 });
 
-/** @preview name=Danger button */
+/** @preview name="Inputs/Danger button" */
 export const DangerButton = () => <Button variant="danger" />;

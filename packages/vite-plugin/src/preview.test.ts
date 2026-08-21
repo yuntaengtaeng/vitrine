@@ -22,4 +22,17 @@ describe("preview registry", () => {
     expect(getPreviewConfig(A)).toEqual({ args: { label: "A" } });
     expect(getPreviewConfig(B)).toEqual({ args: { label: "B" } });
   });
+
+  it("variants와 defaultVariant를 그대로 조회 가능", () => {
+    const Component = () => null;
+    const config = {
+      variants: {
+        primary: { name: "Primary", args: { tone: "primary" } },
+        disabled: { args: { disabled: true } },
+      },
+      defaultVariant: "primary",
+    };
+    preview(Component, config);
+    expect(getPreviewConfig(Component)).toBe(config);
+  });
 });

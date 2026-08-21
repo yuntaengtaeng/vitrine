@@ -45,4 +45,10 @@ describe("resolveInitialArgs", () => {
     const result = resolveInitialArgs(controls, { hint: undefined });
     expect(result).toHaveProperty("hint", undefined);
   });
+
+  it("variantArgs가 있으면 control 기본값과 registeredArgs를 모두 덮어씀", () => {
+    const controls = { tone: { type: "select", options: ["info", "danger"], optional: false, defaultValue: "info" } };
+    const result = resolveInitialArgs(controls, { tone: "danger", label: "base" }, { tone: "info", disabled: true });
+    expect(result).toEqual({ tone: "info", label: "base", disabled: true });
+  });
 });
