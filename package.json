@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "description": "Compose-style inline preview for React components, inside the editor.",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "build": "pnpm --filter @vitrine/vite-plugin build",
     "build:extension": "pnpm --filter vitrine build",
@@ -12,9 +15,12 @@
     "dev:fixture:a": "pnpm --filter @vitrine/fixture-multi-project-a dev",
     "dev:fixture:b": "pnpm --filter @vitrine/fixture-multi-project-b dev",
     "dev:host": "node scripts/dev-host.mjs",
-    "test": "pnpm --filter @vitrine/protocol build && vitest run"
+    "test": "pnpm --filter @vitrine/protocol build && vitest run",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "@vitrine/eslint-config": "workspace:*",
+    "eslint": "^10.9.0",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   },

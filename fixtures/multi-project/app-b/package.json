@@ -12,6 +12,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@vitrine/typescript-config": "workspace:*",
     "@vitrine/vite-plugin": "workspace:*",
     "@vitejs/plugin-react": "^4.3.3",
     "@types/react": "^18.3.12",
