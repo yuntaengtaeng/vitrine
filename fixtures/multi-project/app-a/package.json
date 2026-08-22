@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "tsc -p tsconfig.json && vite build"
   },
   "dependencies": {
     "react": "catalog:react",
@@ -17,6 +17,7 @@
     "@vitejs/plugin-react": "catalog:vite",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
+    "typescript": "catalog:typescript",
     "vite": "catalog:vite"
   }
 }

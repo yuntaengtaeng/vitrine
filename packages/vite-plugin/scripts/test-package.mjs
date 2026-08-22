@@ -26,6 +26,54 @@ function resolvePackPath(filename) {
   return path.isAbsolute(filename) ? filename : path.join(tempRoot, filename);
 }
 
+function readInstalledVersion(name) {
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(packageRoot, "node_modules", ...name.split("/"), "package.json"), "utf8"),
+  );
+  return packageJson.version;
+}
+
+function resolveDependencyRoot(packageDirectory, dependencyName) {
+  const dependencySegments = dependencyName.split("/");
+  let currentPath = packageDirectory;
+
+  while (currentPath !== path.dirname(currentPath)) {
+    const candidates = [path.join(currentPath, "node_modules", ...dependencySegments)];
+    if (path.basename(currentPath) === "node_modules") {
+      candidates.push(path.join(currentPath, ...dependencySegments));
+    }
+    for (const candidate of candidates) {
+      if (fs.existsSync(path.join(candidate, "package.json"))) return fs.realpathSync(candidate);
+    }
+    currentPath = path.dirname(currentPath);
+  }
+
+  throw new Error(`Could not resolve ${dependencyName} from ${packageDirectory}`);
+}
+
+function collectBabelOverrides(entryNames) {
+  const overrides = {};
+  const queue = entryNames.map((name) =>
+    fs.realpathSync(path.join(packageRoot, "node_modules", ...name.split("/"))),
+  );
+
+  while (queue.length > 0) {
+    const packageDirectory = queue.shift();
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(packageDirectory, "package.json"), "utf8"),
+    );
+    if (overrides[packageJson.name]) continue;
+    overrides[packageJson.name] = packageJson.version;
+
+    for (const dependencyName of Object.keys(packageJson.dependencies ?? {})) {
+      if (!dependencyName.startsWith("@babel/")) continue;
+      queue.push(resolveDependencyRoot(packageDirectory, dependencyName));
+    }
+  }
+
+  return overrides;
+}
+
 try {
   fs.rmSync(galleryAssetPath, { force: true });
   runPackageCommand(pnpmCommand, ["run", "build"], {
@@ -71,13 +119,9 @@ try {
   const tarballPath = resolvePackPath(packResult.filename);
   const protocolTarballPath = resolvePackPath(protocolPackResult.filename);
   const consumerVersions = Object.fromEntries(
-    ["vite", "react", "react-dom", "typescript"].map((name) => {
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(packageRoot, "node_modules", name, "package.json"), "utf8"),
-      );
-      return [name, packageJson.version];
-    }),
+    ["vite", "react", "react-dom", "typescript"].map((name) => [name, readInstalledVersion(name)]),
   );
+  const packageOverrides = collectBabelOverrides(["@babel/parser", "@babel/traverse"]);
   fs.mkdirSync(path.join(consumerRoot, "src"), { recursive: true });
   fs.writeFileSync(
     path.join(consumerRoot, "package.json"),
@@ -93,6 +137,7 @@ try {
       pnpm: {
         overrides: {
           "@vitrine/protocol": `file:${protocolTarballPath.split(path.sep).join("/")}`,
+          ...packageOverrides,
         },
       },
     }),

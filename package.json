@@ -11,6 +11,7 @@
     "build": "pnpm --filter @vitrine/vite-plugin build",
     "build:extension": "pnpm --filter vitrine build",
     "test:package": "pnpm --filter @vitrine/vite-plugin test:package",
+    "test:compat": "pnpm run build && node scripts/test-vite-compat.mjs",
     "test:extension-package": "pnpm --filter vitrine test:package",
     "dev:example": "pnpm --filter @vitrine/example-react-basic dev",
     "dev:fixture:a": "pnpm --filter @vitrine/fixture-multi-project-a dev",
