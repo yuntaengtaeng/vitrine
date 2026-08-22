@@ -27,9 +27,9 @@
   "devDependencies": {
     "@vitrine/protocol": "workspace:*",
     "@vitrine/typescript-config": "workspace:*",
-    "@types/vscode": "^1.85.0",
-    "@types/node": "^22.9.0",
-    "esbuild": "^0.21.5",
-    "typescript": "^5.6.3"
+    "@types/vscode": "catalog:vscode",
+    "@types/node": "catalog:node",
+    "esbuild": "catalog:build",
+    "typescript": "catalog:typescript"
   }
 }

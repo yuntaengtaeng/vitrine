@@ -9,10 +9,10 @@
     "./react": "./react.js"
   },
   "dependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint-plugin-react-hooks": "^7.0.0",
-    "globals": "^17.11.0",
-    "typescript-eslint": "^8.67.0"
+    "@eslint/js": "catalog:lint",
+    "eslint-plugin-react-hooks": "catalog:lint",
+    "globals": "catalog:lint",
+    "typescript-eslint": "catalog:lint"
   },
   "peerDependencies": {
     "eslint": "^10.0.0",

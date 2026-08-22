@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@vitrine/typescript-config": "workspace:*",
-    "esbuild": "^0.21.5",
-    "typescript": "^5.6.3"
+    "esbuild": "catalog:build",
+    "typescript": "catalog:typescript"
   }
 }
