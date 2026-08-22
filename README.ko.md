@@ -47,7 +47,7 @@ VS Code 커맨드  →  Webview 패널  →  <iframe src="…/​__vitrine">
   `@babel/parser`를 이용해 (문자열 검색이 아니라) 소스에서 `@preview` 주석이
   달린 export를 스캔하고, 개발 모드에서 `/__vitrine` 경로에 갤러리 페이지를
   서빙합니다.
-- **`packages/vscode-extension`** (`vitrine`) — 의도적으로 얇게 유지.
+- **`apps/vscode-extension`** (`vitrine`) — 의도적으로 얇게 유지.
   `Vitrine: Open Preview` 커맨드 하나로, dev server의 `/__vitrine` 경로를
   가리키는 `<iframe>`이 담긴 webview 패널을 엽니다.
 
@@ -111,6 +111,33 @@ preview(Button, {
 `variants`는 같은 프리뷰의 이름 있는 args preset 사이를 이동하는 picker를
 추가합니다. `group`과 달리 module을 load한 뒤에 알 수 있는 runtime 값입니다.
 
+## 호환성
+
+`@vitrine/vite-plugin`이 현재 선언하는 지원 범위는 다음과 같습니다.
+
+- React 18.x, 19.x
+- Vite 6.4 이상, 7.x, 8.x
+
+다음 대표 환경은 자동화된 호환성 테스트로 검증합니다.
+
+| React | Vite | TypeScript | 상태 |
+| --- | --- | --- | --- |
+| 18.3.1 | 6.4.3 | 5.6.3 | 검증됨 |
+| 18.3.1 | 7.3.6 | 5.9.3 | 검증됨 |
+| 19.2.8 | 8.2.2 | 5.9.3 | 검증됨 |
+
+위 표는 선언된 React와 Vite 범위 안의 모든 조합이 아니라 대표 호환성 lane을
+나타냅니다. TypeScript 열은 각 test fixture의 type-check에 사용한 compiler
+버전이며 TypeScript peer dependency 범위를 의미하지 않습니다.
+
+### 버전 관리 정책
+
+- 일반 workspace dependency는 역할별 pnpm named catalog로 관리합니다.
+- Example은 React 18과 Vite 7을 기본 개발 환경으로 사용합니다.
+- 호환성 lane은 의미가 재현될 수 있도록 정확한 버전을 고정합니다.
+- 새 major 지원 시 `latest`나 `minimum` lane을 변경하지 않고 새 버전 lane을
+  추가합니다. 기존 lane은 지원을 명시적으로 종료할 때까지 유지합니다.
+
 ## 사용법
 
 ```bash
@@ -121,16 +148,21 @@ pnpm run test                # Vitest 스위트 실행
 ```
 
 이후 브라우저에서 `http://localhost:5173/__vitrine`을 열어 갤러리를 바로
-확인하거나, VS Code 확장을 실행합니다:
+확인할 수 있습니다. 터미널에서 VS Code 확장을 테스트하려면 example dev
+server를 실행해 둔 상태로 두 번째 터미널에서 다음 명령을 실행합니다.
 
 ```bash
-pnpm run build:extension    # packages/vscode-extension 빌드
+pnpm run build:extension    # apps/vscode-extension 빌드
+pnpm run dev:host           # Extension Development Host 실행
 ```
 
-이 폴더를 VS Code로 열고 **F5**(`.vscode/launch.json` 사용)를 눌러 Extension
-Development Host를 실행한 뒤, 커맨드 팔레트에서 **Vitrine: Open Preview**를
-실행하세요. dev server가 이미 실행 중이어야 하며, 그렇지 않으면 빈 화면 대신
-안내 메시지가 표시됩니다.
+`dev:host`를 사용하려면 `code` 명령을 `PATH`에서 실행할 수 있어야 합니다. 이
+명령은 로컬 확장을 load한 별도의 Extension Development Host에서 현재 저장소를
+엽니다. 또는 Extension을 빌드한 뒤 이 폴더를 VS Code로 열고
+**F5**(`.vscode/launch.json` 사용)를 눌러 같은 테스트 환경을 실행할 수 있습니다.
+어느 방식이든 커맨드 팔레트에서 **Vitrine: Open Preview**를 실행하세요. dev
+server가 이미 실행 중이어야 하며, 그렇지 않으면 빈 화면 대신 안내 메시지가
+표시됩니다.
 
 dev server의 포트는 자동으로 감지되므로 따로 설정할 값이 없습니다. Vite
 플러그인이 서버 시작 시 실제 포트를 `<project-root>/.vitrine/port.json`에

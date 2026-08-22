@@ -3,19 +3,28 @@
   "private": true,
   "version": "0.1.0",
   "description": "Compose-style inline preview for React components, inside the editor.",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "packageManager": "pnpm@10.23.0",
   "scripts": {
     "build": "pnpm --filter @vitrine/vite-plugin build",
     "build:extension": "pnpm --filter vitrine build",
     "test:package": "pnpm --filter @vitrine/vite-plugin test:package",
+    "test:compat": "pnpm run build && node scripts/test-vite-compat.mjs",
     "test:extension-package": "pnpm --filter vitrine test:package",
-    "dev:example": "pnpm --filter example dev",
-    "dev:example2": "pnpm --filter example2 dev",
+    "dev:example": "pnpm --filter @vitrine/example-react-basic dev",
+    "dev:fixture:a": "pnpm --filter @vitrine/fixture-multi-project-a dev",
+    "dev:fixture:b": "pnpm --filter @vitrine/fixture-multi-project-b dev",
     "dev:host": "node scripts/dev-host.mjs",
-    "test": "pnpm --filter @vitrine/protocol build && vitest run"
+    "test": "pnpm --filter @vitrine/protocol build && vitest run",
+    "lint": "eslint ."
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "@vitrine/eslint-config": "workspace:*",
+    "eslint": "catalog:lint",
+    "typescript": "catalog:typescript",
+    "vitest": "catalog:test"
   },
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild"]

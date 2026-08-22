@@ -1,8 +1,6 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "@vitrine/typescript-config/node.json",
   "compilerOptions": {
-    "module": "Node16",
-    "moduleResolution": "Node16",
     "outDir": "dist",
     "rootDir": "src",
     "types": ["vscode", "node"]

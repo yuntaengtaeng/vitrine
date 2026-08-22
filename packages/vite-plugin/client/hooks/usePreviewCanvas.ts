@@ -42,11 +42,6 @@ export const usePreviewCanvas = (entry: GalleryPreviewEntry | undefined): Previe
   const [variantKey, setVariantKey] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    setComp(null);
-    setError(null);
-    setConfig({});
-    setArgs({});
-    setVariantKey(undefined);
     if (!entry) return;
 
     let cancelled = false;
@@ -62,6 +57,7 @@ export const usePreviewCanvas = (entry: GalleryPreviewEntry | undefined): Previe
         const component = found as ComponentType;
         const registered = getPreviewConfig(component) ?? {};
         const initialVariant = registered.defaultVariant ?? Object.keys(registered.variants ?? {})[0];
+        setError(null);
         setConfig(registered);
         setVariantKey(initialVariant);
         setArgs(computeArgs(entry.controls, registered, initialVariant));
@@ -75,7 +71,7 @@ export const usePreviewCanvas = (entry: GalleryPreviewEntry | undefined): Previe
     return () => {
       cancelled = true;
     };
-  }, [entry?.id]);
+  }, [entry]);
 
   const controls = mergeControls(
     entry?.controls ?? {},

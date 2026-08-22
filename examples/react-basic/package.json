@@ -1,0 +1,23 @@
+{
+  "name": "@vitrine/example-react-basic",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build"
+  },
+  "dependencies": {
+    "react": "catalog:react",
+    "react-dom": "catalog:react"
+  },
+  "devDependencies": {
+    "@vitrine/typescript-config": "workspace:*",
+    "@vitrine/vite-plugin": "workspace:*",
+    "@vitejs/plugin-react": "catalog:vite",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite"
+  }
+}

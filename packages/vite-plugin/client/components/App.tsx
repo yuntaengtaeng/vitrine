@@ -61,7 +61,7 @@ export const App = (props: { entries: GalleryPreviewEntry[] }) => {
         <SidebarTree nodes={tree} activeId={activeId} onSelect={setActiveId} />
       </div>
       <div style={Styled.CanvasWrapper}>
-        <Canvas entry={activeEntry} />
+        <Canvas key={activeEntry?.id ?? "empty"} entry={activeEntry} />
       </div>
     </div>
   );

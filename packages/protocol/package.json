@@ -23,7 +23,8 @@
     "build": "tsc -p tsconfig.json && node scripts/build-cjs.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.21.5",
-    "typescript": "^5.6.3"
+    "@vitrine/typescript-config": "workspace:*",
+    "esbuild": "catalog:build",
+    "typescript": "catalog:typescript"
   }
 }

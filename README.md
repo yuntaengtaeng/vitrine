@@ -44,7 +44,7 @@ Two packages, two responsibilities:
 - **`packages/vite-plugin`** (`@vitrine/vite-plugin`) — the actual engine.
   Scans your source for `@preview`-annotated exports (via `@babel/parser`,
   not string search), and serves a gallery page at `/__vitrine` in dev mode.
-- **`packages/vscode-extension`** (`vitrine`) — intentionally thin. One
+- **`apps/vscode-extension`** (`vitrine`) — intentionally thin. One
   command (`Vitrine: Open Preview`) that opens a webview panel with an
   `<iframe>` pointing at your dev server's `/__vitrine` route.
 
@@ -112,6 +112,33 @@ preview(Button, {
 arg presets for the same preview — unlike `group`, this is runtime-only and
 isn't known until the preview's module is loaded.
 
+## Compatibility
+
+`@vitrine/vite-plugin` currently declares support for:
+
+- React 18.x and 19.x
+- Vite 6.4+, 7.x, and 8.x
+
+The following representative environments are verified automatically:
+
+| React | Vite | TypeScript | Status |
+| --- | --- | --- | --- |
+| 18.3.1 | 6.4.3 | 5.6.3 | Verified |
+| 18.3.1 | 7.3.6 | 5.9.3 | Verified |
+| 19.2.8 | 8.2.2 | 5.9.3 | Verified |
+
+These are representative compatibility lanes, not every possible combination
+inside the declared React and Vite ranges. The TypeScript column is the compiler
+used to type-check each test fixture, not a TypeScript peer-dependency range.
+
+### Version policy
+
+- Routine workspace dependencies are grouped by role in named pnpm catalogs.
+- Examples use React 18 and Vite 7 as the baseline development environment.
+- Compatibility lanes pin exact versions so their meaning remains reproducible.
+- New major support adds a new versioned lane instead of changing a `latest` or
+  `minimum` lane. Existing lanes remain until support is intentionally dropped.
+
 ## Usage
 
 ```bash
@@ -122,16 +149,20 @@ pnpm run test                # runs the Vitest suite
 ```
 
 Then open `http://localhost:5173/__vitrine` in a browser to see the gallery
-directly, or run the VS Code extension:
+directly. To test the VS Code extension from a terminal, keep the example dev
+server running and use a second terminal:
 
 ```bash
-pnpm run build:extension    # builds packages/vscode-extension
+pnpm run build:extension    # builds apps/vscode-extension
+pnpm run dev:host           # opens an Extension Development Host
 ```
 
-Open this folder in VS Code, press **F5** (uses `.vscode/launch.json`) to
-launch an Extension Development Host, then run **Vitrine: Open Preview** from
-the command palette. The dev server must already be running — if it isn't,
-the panel shows a message instead of a blank screen.
+`dev:host` requires the `code` command to be available on `PATH`. It opens this
+repository in a separate Extension Development Host with the local extension
+loaded. As an alternative, open this folder in VS Code and press **F5** (uses
+`.vscode/launch.json`) after building the extension. In either host, run
+**Vitrine: Open Preview** from the command palette. The dev server must already
+be running — if it isn't, the panel shows a message instead of a blank screen.
 
 The dev server's port is detected automatically — no setting to configure.
 The Vite plugin writes the resolved port to `<project-root>/.vitrine/port.json`

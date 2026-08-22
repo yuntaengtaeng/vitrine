@@ -1,0 +1,17 @@
+{
+  "name": "@vitrine/compat-react19-vite8-ts59",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vitejs/plugin-react": "6.1.0",
+    "@vitrine/vite-plugin": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vite": "8.2.2"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "typescript": "5.9.3"
+  }
+}

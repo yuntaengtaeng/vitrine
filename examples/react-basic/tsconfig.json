@@ -1,0 +1,4 @@
+{
+  "extends": "@vitrine/typescript-config/react.json",
+  "include": ["src"]
+}

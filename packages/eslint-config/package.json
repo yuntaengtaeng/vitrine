@@ -1,0 +1,21 @@
+{
+  "name": "@vitrine/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.js",
+    "./node": "./node.js",
+    "./react": "./react.js"
+  },
+  "dependencies": {
+    "@eslint/js": "catalog:lint",
+    "eslint-plugin-react-hooks": "catalog:lint",
+    "globals": "catalog:lint",
+    "typescript-eslint": "catalog:lint"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.0",
+    "typescript": ">=5.0.0 <6.1.0"
+  }
+}
