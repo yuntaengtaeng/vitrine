@@ -47,7 +47,7 @@ VS Code 커맨드  →  Webview 패널  →  <iframe src="…/​__vitrine">
   `@babel/parser`를 이용해 (문자열 검색이 아니라) 소스에서 `@preview` 주석이
   달린 export를 스캔하고, 개발 모드에서 `/__vitrine` 경로에 갤러리 페이지를
   서빙합니다.
-- **`packages/vscode-extension`** (`vitrine`) — 의도적으로 얇게 유지.
+- **`apps/vscode-extension`** (`vitrine`) — 의도적으로 얇게 유지.
   `Vitrine: Open Preview` 커맨드 하나로, dev server의 `/__vitrine` 경로를
   가리키는 `<iframe>`이 담긴 webview 패널을 엽니다.
 
@@ -124,7 +124,7 @@ pnpm run test                # Vitest 스위트 실행
 확인하거나, VS Code 확장을 실행합니다:
 
 ```bash
-pnpm run build:extension    # packages/vscode-extension 빌드
+pnpm run build:extension    # apps/vscode-extension 빌드
 ```
 
 이 폴더를 VS Code로 열고 **F5**(`.vscode/launch.json` 사용)를 눌러 Extension

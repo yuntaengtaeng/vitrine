@@ -44,7 +44,7 @@ Two packages, two responsibilities:
 - **`packages/vite-plugin`** (`@vitrine/vite-plugin`) — the actual engine.
   Scans your source for `@preview`-annotated exports (via `@babel/parser`,
   not string search), and serves a gallery page at `/__vitrine` in dev mode.
-- **`packages/vscode-extension`** (`vitrine`) — intentionally thin. One
+- **`apps/vscode-extension`** (`vitrine`) — intentionally thin. One
   command (`Vitrine: Open Preview`) that opens a webview panel with an
   `<iframe>` pointing at your dev server's `/__vitrine` route.
 
@@ -125,7 +125,7 @@ Then open `http://localhost:5173/__vitrine` in a browser to see the gallery
 directly, or run the VS Code extension:
 
 ```bash
-pnpm run build:extension    # builds packages/vscode-extension
+pnpm run build:extension    # builds apps/vscode-extension
 ```
 
 Open this folder in VS Code, press **F5** (uses `.vscode/launch.json`) to

@@ -8,8 +8,9 @@
     "build:extension": "pnpm --filter vitrine build",
     "test:package": "pnpm --filter @vitrine/vite-plugin test:package",
     "test:extension-package": "pnpm --filter vitrine test:package",
-    "dev:example": "pnpm --filter example dev",
-    "dev:example2": "pnpm --filter example2 dev",
+    "dev:example": "pnpm --filter @vitrine/example-react-basic dev",
+    "dev:fixture:a": "pnpm --filter @vitrine/fixture-multi-project-a dev",
+    "dev:fixture:b": "pnpm --filter @vitrine/fixture-multi-project-b dev",
     "dev:host": "node scripts/dev-host.mjs",
     "test": "pnpm --filter @vitrine/protocol build && vitest run"
   },

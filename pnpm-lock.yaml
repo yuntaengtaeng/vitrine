@@ -15,7 +15,25 @@ importers:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@22.20.1)
 
-  example:
+  apps/vscode-extension:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.9.0
+        version: 22.20.1
+      '@types/vscode':
+        specifier: ^1.85.0
+        version: 1.125.0
+      '@vitrine/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
+      esbuild:
+        specifier: ^0.21.5
+        version: 0.21.5
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
+  examples/react-basic:
     dependencies:
       react:
         specifier: ^18.3.1
@@ -35,12 +53,12 @@ importers:
         version: 4.7.0(vite@5.4.21(@types/node@22.20.1))
       '@vitrine/vite-plugin':
         specifier: workspace:*
-        version: link:../packages/vite-plugin
+        version: link:../../packages/vite-plugin
       vite:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@22.20.1)
 
-  example2:
+  fixtures/multi-project/app-a:
     dependencies:
       react:
         specifier: ^18.3.1
@@ -60,7 +78,32 @@ importers:
         version: 4.7.0(vite@5.4.21(@types/node@22.20.1))
       '@vitrine/vite-plugin':
         specifier: workspace:*
-        version: link:../packages/vite-plugin
+        version: link:../../../packages/vite-plugin
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@22.20.1)
+
+  fixtures/multi-project/app-b:
+    dependencies:
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.1
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.3
+        version: 4.7.0(vite@5.4.21(@types/node@22.20.1))
+      '@vitrine/vite-plugin':
+        specifier: workspace:*
+        version: link:../../../packages/vite-plugin
       vite:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@22.20.1)
@@ -116,24 +159,6 @@ importers:
       esbuild:
         specifier: ^0.21.5
         version: 0.21.5
-
-  packages/vscode-extension:
-    devDependencies:
-      '@types/node':
-        specifier: ^22.9.0
-        version: 22.20.1
-      '@types/vscode':
-        specifier: ^1.85.0
-        version: 1.125.0
-      '@vitrine/protocol':
-        specifier: workspace:*
-        version: link:../protocol
-      esbuild:
-        specifier: ^0.21.5
-        version: 0.21.5
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
 
 packages:
 
