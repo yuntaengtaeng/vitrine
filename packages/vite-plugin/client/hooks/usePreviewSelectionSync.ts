@@ -1,9 +1,9 @@
+import {
+  PREVIEW_SELECTED_MESSAGE_TYPE,
+  isExtensionToGalleryMessage,
+  type GalleryToExtensionMessage,
+} from "@vitrine/protocol";
 import { useEffect, useState } from "react";
-
-/** 갤러리(iframe) -> 웹뷰 래퍼 방향 메시지, extension.ts의 WebviewToExtensionMessage와 계약 공유 */
-type GalleryToWrapperMessage = { type: "previewSelected"; id: string };
-/** 웹뷰 래퍼 -> 갤러리(iframe) 방향 메시지, extension.ts의 ExtensionToWebviewMessage와 계약 공유 */
-type WrapperToGalleryMessage = { type: "selectPreview"; id: string };
 
 /** 선택된 프리뷰 id를 웹뷰 래퍼와 postMessage로 양방향 동기화 */
 export const usePreviewSelectionSync = (entries: GalleryPreviewEntry[]): [string | null, (id: string) => void] => {
@@ -13,7 +13,10 @@ export const usePreviewSelectionSync = (entries: GalleryPreviewEntry[]): [string
   // 알려서 익스텐션의 커서 추적 상태가 실제 표시 중인 프리뷰와 어긋나지 않게 함
   useEffect(() => {
     if (!activeId) return;
-    const message: GalleryToWrapperMessage = { type: "previewSelected", id: activeId };
+    const message: GalleryToExtensionMessage = {
+      type: PREVIEW_SELECTED_MESSAGE_TYPE,
+      id: activeId,
+    };
     window.parent.postMessage(message, "*");
   }, [activeId]);
 
@@ -21,8 +24,8 @@ export const usePreviewSelectionSync = (entries: GalleryPreviewEntry[]): [string
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.source !== window.parent) return;
-      const data = event.data as WrapperToGalleryMessage;
-      if (data?.type !== "selectPreview") return;
+      const data: unknown = event.data;
+      if (!isExtensionToGalleryMessage(data)) return;
       if (entries.some((entry) => entry.id === data.id)) setActiveId(data.id);
     };
     window.addEventListener("message", handleMessage);

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { PORT_FILE_DIRECTORY, isPortFileData } from "@vitrine/protocol";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getPortFilePath, removePortFile, writePortFile } from "./port-file.js";
 
@@ -19,11 +20,15 @@ describe("port-file", () => {
     writePortFile(root, { port: 5173, pid: 1234 });
     const data = JSON.parse(fs.readFileSync(getPortFilePath(root), "utf-8"));
     expect(data).toEqual({ port: 5173, pid: 1234 });
+    expect(isPortFileData(data)).toBe(true);
   });
 
   it("writes a gitignore that excludes the whole directory", () => {
     writePortFile(root, { port: 5173, pid: 1234 });
-    const gitignore = fs.readFileSync(path.join(root, ".vitrine", ".gitignore"), "utf-8");
+    const gitignore = fs.readFileSync(
+      path.join(root, PORT_FILE_DIRECTORY, ".gitignore"),
+      "utf-8",
+    );
     expect(gitignore.trim()).toBe("*");
   });
 

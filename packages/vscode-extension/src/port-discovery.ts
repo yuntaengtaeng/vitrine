@@ -1,14 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  PORT_FILE_DIRECTORY,
+  PORT_FILE_NAME,
+  isPortFileData,
+  type PortFileData,
+} from "@vitrine/protocol";
 
-export interface PortFileMatch {
+export interface PortFileMatch extends PortFileData {
   root: string;
-  port: number;
-  pid: number;
 }
 
-const PORT_FILE_REL = path.join(".vitrine", "port.json");
-const SKIP_DIR_NAMES = new Set(["node_modules", ".git", "dist", ".vitrine"]);
+const PORT_FILE_REL = path.join(PORT_FILE_DIRECTORY, PORT_FILE_NAME);
+const SKIP_DIR_NAMES = new Set(["node_modules", ".git", "dist", PORT_FILE_DIRECTORY]);
 
 /** 시작 경로에서 위로 올라가며 가장 가까운 포트 파일 탐색 */
 export function findPortFileUpward(startPath: string): PortFileMatch | null {
@@ -65,16 +69,7 @@ function readPortFile(dir: string): PortFileMatch | null {
 
   try {
     const data: unknown = JSON.parse(fs.readFileSync(file, "utf-8"));
-    if (
-      data &&
-      typeof data === "object" &&
-      typeof (data as { port?: unknown }).port === "number" &&
-      typeof (data as { pid?: unknown }).pid === "number"
-    ) {
-      const { port, pid } = data as { port: number; pid: number };
-      return { root: dir, port, pid };
-    }
-    return null;
+    return isPortFileData(data) ? { root: dir, ...data } : null;
   } catch {
     return null;
   }

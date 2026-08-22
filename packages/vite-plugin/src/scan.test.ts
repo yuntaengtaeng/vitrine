@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isManifest } from "@vitrine/protocol";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { scanFile, scanPreviews } from "./scan.js";
 
@@ -50,6 +51,7 @@ describe("props controls", () => {
       label: { type: "text", optional: false, defaultValue: "" },
       count: { type: "number", optional: false, defaultValue: 0 },
     });
+    expect(isManifest([entry])).toBe(true);
   });
 });
 

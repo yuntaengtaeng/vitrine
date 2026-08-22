@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { ManifestEntry } from "@vitrine/protocol";
 import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
-import { getTypeContext, getPropControls, type PropControls } from "./props-controls.js";
+import { getTypeContext, getPropControls } from "./props-controls.js";
 
 // 번들러/모듈 해석 방식에 따라 @babel/traverse의 CJS/ESM interop이 달라짐,
 // default export가 default 프로퍼티에 한 번 더 감싸여 오는 경우 보정
@@ -13,18 +14,7 @@ const traverse = (
 );
 
 /** 스캔된 프리뷰 export 하나의 정보 */
-export interface PreviewEntry {
-  id: string;
-  name: string;
-  /** name= 값의 마지막 / 앞부분, Storybook의 title 계층 표기와 동일한 규약 */
-  group?: string;
-  file: string;
-  exportName: string;
-  /** export 선언문의 시작/끝 라인 (1-indexed), 커서 위치 매칭에 사용 */
-  startLine: number;
-  endLine: number;
-  controls: PropControls;
-}
+export type PreviewEntry = ManifestEntry;
 
 /** 프리뷰 스캔 옵션 */
 export interface ScanOptions {

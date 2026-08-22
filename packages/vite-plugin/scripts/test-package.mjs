@@ -6,18 +6,24 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const protocolRoot = path.resolve(packageRoot, "..", "protocol");
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-package-smoke-"));
 const consumerRoot = path.join(tempRoot, "consumer");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const galleryAssetPath = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
-const npmEnv = Object.fromEntries(
-  Object.entries(process.env).filter(([key]) => !key.toLowerCase().startsWith("npm_config_")),
-);
 
 function runPackageCommand(command, args, options) {
   if (process.platform !== "win32") return execFileSync(command, args, options);
   return execFileSync(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", command, ...args], options);
+}
+
+function parsePackResult(output) {
+  const parsed = JSON.parse(output);
+  return Array.isArray(parsed) ? parsed[0] : parsed;
+}
+
+function resolvePackPath(filename) {
+  return path.isAbsolute(filename) ? filename : path.join(tempRoot, filename);
 }
 
 try {
@@ -28,17 +34,27 @@ try {
   });
   assert.ok(fs.existsSync(galleryAssetPath), "build did not create the gallery asset");
 
-  const packOutput = runPackageCommand(
-    npmCommand,
+  const protocolPackOutput = runPackageCommand(
+    pnpmCommand,
     ["pack", "--json", "--pack-destination", tempRoot],
-    {
-      cwd: packageRoot,
-      encoding: "utf8",
-      env: { ...npmEnv, npm_config_cache: path.join(tempRoot, "npm-cache") },
-    },
+    { cwd: protocolRoot, encoding: "utf8" },
   );
-  const [packResult] = JSON.parse(packOutput);
-  assert.ok(packResult, "npm pack did not return package metadata");
+  const protocolPackResult = parsePackResult(protocolPackOutput);
+  assert.ok(protocolPackResult, "pnpm pack did not return protocol package metadata");
+  for (const filePath of ["dist/index.js", "dist/index.cjs", "dist/index.d.ts", "dist/index.d.cts"]) {
+    assert.ok(
+      protocolPackResult.files.some((file) => file.path === filePath),
+      `packed protocol is missing ${filePath}`,
+    );
+  }
+
+  const packOutput = runPackageCommand(
+    pnpmCommand,
+    ["pack", "--json", "--pack-destination", tempRoot],
+    { cwd: packageRoot, encoding: "utf8" },
+  );
+  const packResult = parsePackResult(packOutput);
+  assert.ok(packResult, "pnpm pack did not return package metadata");
   assert.ok(
     packResult.files.some((file) => file.path === "dist/gallery/gallery-client.js"),
     "packed package is missing dist/gallery/gallery-client.js",
@@ -52,9 +68,10 @@ try {
     "packed package contains the obsolete client gallery asset",
   );
 
-  const tarballPath = path.join(tempRoot, packResult.filename);
-  const peerVersions = Object.fromEntries(
-    ["vite", "react", "react-dom"].map((name) => {
+  const tarballPath = resolvePackPath(packResult.filename);
+  const protocolTarballPath = resolvePackPath(protocolPackResult.filename);
+  const consumerVersions = Object.fromEntries(
+    ["vite", "react", "react-dom", "typescript"].map((name) => {
       const packageJson = JSON.parse(
         fs.readFileSync(path.join(packageRoot, "node_modules", name, "package.json"), "utf8"),
       );
@@ -69,8 +86,14 @@ try {
       private: true,
       type: "module",
       dependencies: {
+        "@vitrine/protocol": `file:${protocolTarballPath.split(path.sep).join("/")}`,
         "@vitrine/vite-plugin": `file:${tarballPath.split(path.sep).join("/")}`,
-        ...peerVersions,
+        ...consumerVersions,
+      },
+      pnpm: {
+        overrides: {
+          "@vitrine/protocol": `file:${protocolTarballPath.split(path.sep).join("/")}`,
+        },
       },
     }),
   );
@@ -78,13 +101,20 @@ try {
     path.join(consumerRoot, "tsconfig.json"),
     JSON.stringify({
       compilerOptions: {
-        jsx: "react-jsx",
-        module: "ESNext",
-        moduleResolution: "Bundler",
+        module: "Node16",
+        moduleResolution: "Node16",
         target: "ES2022",
       },
-      include: ["src"],
+      include: ["typecheck.cts", "typecheck.mts"],
     }),
+  );
+  fs.writeFileSync(
+    path.join(consumerRoot, "typecheck.cts"),
+    'import protocol = require("@vitrine/protocol");\nconst route: string = protocol.GALLERY_ROUTE;\n',
+  );
+  fs.writeFileSync(
+    path.join(consumerRoot, "typecheck.mts"),
+    'import { GALLERY_ROUTE } from "@vitrine/protocol";\nconst route: string = GALLERY_ROUTE;\n',
   );
   fs.writeFileSync(
     path.join(consumerRoot, "src", "Smoke.tsx"),
@@ -96,6 +126,10 @@ try {
   );
 
   runPackageCommand(pnpmCommand, ["install", "--offline"], {
+    cwd: consumerRoot,
+    stdio: "inherit",
+  });
+  runPackageCommand(pnpmCommand, ["exec", "tsc", "--noEmit"], {
     cwd: consumerRoot,
     stdio: "inherit",
   });

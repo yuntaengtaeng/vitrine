@@ -22,9 +22,9 @@ describe("toProjectRelativeFile", () => {
 
 describe("findEntryAtLine", () => {
   const manifest: ManifestEntry[] = [
-    { id: "a", name: "A", file: "src/Button.tsx", exportName: "A", startLine: 4, endLine: 4 },
-    { id: "b", name: "B", file: "src/Button.tsx", exportName: "B", startLine: 7, endLine: 9 },
-    { id: "c", name: "C", file: "src/Badge.tsx", exportName: "C", startLine: 4, endLine: 4 },
+    { id: "a", name: "A", file: "src/Button.tsx", exportName: "A", startLine: 4, endLine: 4, controls: {} },
+    { id: "b", name: "B", file: "src/Button.tsx", exportName: "B", startLine: 7, endLine: 9, controls: {} },
+    { id: "c", name: "C", file: "src/Badge.tsx", exportName: "C", startLine: 4, endLine: 4, controls: {} },
   ];
 
   it("matches a single-line entry exactly", () => {

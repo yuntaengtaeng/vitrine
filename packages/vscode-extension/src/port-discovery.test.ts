@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { PORT_FILE_DIRECTORY, PORT_FILE_NAME } from "@vitrine/protocol";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   findPortFileUpward,
@@ -9,9 +10,9 @@ import {
 } from "./port-discovery.js";
 
 function writePortFile(root: string, port: number, pid: number): void {
-  const dir = path.join(root, ".vitrine");
+  const dir = path.join(root, PORT_FILE_DIRECTORY);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, "port.json"), JSON.stringify({ port, pid }), "utf-8");
+  fs.writeFileSync(path.join(dir, PORT_FILE_NAME), JSON.stringify({ port, pid }), "utf-8");
 }
 
 describe("port-discovery", () => {
@@ -74,5 +75,21 @@ describe("port-discovery", () => {
 
   it("reports an unlikely pid as not alive", () => {
     expect(isProcessAlive(999999)).toBe(false);
+  });
+
+  it.each([
+    { port: 0, pid: process.pid },
+    { port: 65_536, pid: process.pid },
+    { port: 5173.5, pid: process.pid },
+    { port: 5173, pid: 0 },
+  ])("ignores an invalid port file %#", (data) => {
+    fs.mkdirSync(path.join(workspace, PORT_FILE_DIRECTORY), { recursive: true });
+    fs.writeFileSync(
+      path.join(workspace, PORT_FILE_DIRECTORY, PORT_FILE_NAME),
+      JSON.stringify(data),
+      "utf-8",
+    );
+
+    expect(findPortFileUpward(workspace)).toBeNull();
   });
 });

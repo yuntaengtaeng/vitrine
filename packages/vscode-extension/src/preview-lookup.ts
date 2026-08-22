@@ -1,13 +1,7 @@
 import path from "node:path";
+import type { ManifestEntry } from "@vitrine/protocol";
 
-export interface ManifestEntry {
-  id: string;
-  name: string;
-  file: string;
-  exportName: string;
-  startLine: number;
-  endLine: number;
-}
+export type { ManifestEntry } from "@vitrine/protocol";
 
 /** 프로젝트 루트 기준 POSIX 상대 경로, 루트 밖 파일이면 null */
 export function toProjectRelativeFile(root: string, absoluteFile: string): string | null {

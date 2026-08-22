@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  GALLERY_MODULE_ID,
+  GALLERY_ROUTE,
+  MANIFEST_ROUTE,
+  PREVIEWS_MODULE_ID,
+} from "@vitrine/protocol";
 import type { Plugin } from "vite";
 import { scanPreviews, renderPreviewsModule, type PreviewEntry } from "./scan.js";
 import { removePortFile, writePortFile } from "./port-file.js";
@@ -11,11 +17,8 @@ export interface VitrinePluginOptions {
   include?: string[];
 }
 
-const PREVIEWS_MODULE_ID = "virtual:vitrine-previews";
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
-const GALLERY_MODULE_ID = "virtual:vitrine-preview-gallery";
-export const GALLERY_ROUTE = "/__vitrine";
-export const MANIFEST_ROUTE = "/__vitrine/manifest";
+export { GALLERY_ROUTE, MANIFEST_ROUTE } from "@vitrine/protocol";
 
 // Source와 build output에서 동일한 package root 계산
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");

@@ -1,22 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  PORT_FILE_DIRECTORY,
+  PORT_FILE_NAME,
+  type PortFileData,
+} from "@vitrine/protocol";
 
-const PORT_FILE_DIR = ".vitrine";
-const PORT_FILE_NAME = "port.json";
-
-export interface PortFileData {
-  port: number;
-  pid: number;
-}
+export type { PortFileData } from "@vitrine/protocol";
 
 /** 프로젝트 루트 기준 포트 파일 절대 경로 */
 export function getPortFilePath(root: string): string {
-  return path.join(root, PORT_FILE_DIR, PORT_FILE_NAME);
+  return path.join(root, PORT_FILE_DIRECTORY, PORT_FILE_NAME);
 }
 
 /** dev 서버 포트/PID 기록, 포트 파일 디렉토리 자체는 gitignore 처리 */
 export function writePortFile(root: string, data: PortFileData): void {
-  const dir = path.join(root, PORT_FILE_DIR);
+  const dir = path.join(root, PORT_FILE_DIRECTORY);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, ".gitignore"), "*\n", "utf-8");
   fs.writeFileSync(getPortFilePath(root), JSON.stringify(data), "utf-8");

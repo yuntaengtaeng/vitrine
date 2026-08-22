@@ -65,6 +65,15 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@22.20.1)
 
+  packages/protocol:
+    devDependencies:
+      esbuild:
+        specifier: ^0.21.5
+        version: 0.21.5
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
   packages/vite-plugin:
     dependencies:
       '@babel/parser':
@@ -73,6 +82,9 @@ importers:
       '@babel/traverse':
         specifier: ^7.25.9
         version: 7.29.7
+      '@vitrine/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.3
@@ -113,6 +125,12 @@ importers:
       '@types/vscode':
         specifier: ^1.85.0
         version: 1.125.0
+      '@vitrine/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      esbuild:
+        specifier: ^0.21.5
+        version: 0.21.5
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
