@@ -1,17 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { ControlOption, PropControl, PropControls } from "@vitrine/protocol";
 import ts from "typescript";
 
-export type ControlOption = string | number;
-
-export interface PropControl {
-  type: "text" | "number" | "boolean" | "select";
-  options?: ControlOption[];
-  optional: boolean;
-  defaultValue?: string | number | boolean;
-}
-
-export type PropControls = Record<string, PropControl>;
+export type { ControlOption, PropControl, PropControls } from "@vitrine/protocol";
 
 export interface TypeContext {
   program: ts.Program;

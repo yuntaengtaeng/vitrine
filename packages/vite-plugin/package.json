@@ -17,12 +17,13 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p client/tsconfig.json && node scripts/build-client.mjs",
-    "dev": "tsc -p tsconfig.json --watch",
-    "dev:client": "node scripts/build-client.mjs --watch",
+    "build": "pnpm --filter @vitrine/protocol build && tsc -p tsconfig.json && tsc -p client/tsconfig.json && node scripts/build-client.mjs",
+    "dev": "pnpm --filter @vitrine/protocol build && tsc -p tsconfig.json --watch",
+    "dev:client": "pnpm --filter @vitrine/protocol build && node scripts/build-client.mjs --watch",
     "test:package": "node scripts/test-package.mjs"
   },
   "dependencies": {
+    "@vitrine/protocol": "workspace:*",
     "@babel/parser": "^7.25.9",
     "@babel/traverse": "^7.25.9",
     "fast-glob": "^3.3.2",

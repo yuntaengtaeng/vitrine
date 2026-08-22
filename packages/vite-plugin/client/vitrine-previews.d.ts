@@ -1,20 +1,13 @@
-/** virtual:vitrine-previews가 넘기는 프리뷰 엔트리 하나, scan.ts의 PreviewEntry에 load만 추가된 형태 */
-interface GalleryPreviewEntry {
-  id: string;
-  name: string;
-  group?: string;
-  file: string;
-  exportName: string;
-  controls: Record<string, GalleryPropControl>;
+/** virtual:vitrine-previews가 넘기는 Gallery 프리뷰 entry */
+type GalleryPreviewEntry = Pick<
+  import("@vitrine/protocol").ManifestEntry,
+  "id" | "name" | "group" | "file" | "exportName" | "controls"
+> & {
   load: () => Promise<Record<string, unknown>>;
-}
+};
 
-interface GalleryPropControl {
-  type: "text" | "number" | "boolean" | "select";
-  options?: Array<string | number>;
-  optional: boolean;
-  defaultValue?: string | number | boolean;
-}
+/** Gallery control component가 소비하는 prop control */
+type GalleryPropControl = import("@vitrine/protocol").PropControl;
 
 declare module "virtual:vitrine-previews" {
   const entries: GalleryPreviewEntry[];

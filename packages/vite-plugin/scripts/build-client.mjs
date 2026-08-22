@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PREVIEWS_MODULE_ID } from "@vitrine/protocol";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const entry = path.join(packageRoot, "client", "gallery-client.tsx");
@@ -17,7 +18,7 @@ const options = {
     "react-dom",
     "react-dom/client",
     "react/jsx-runtime",
-    "virtual:vitrine-previews",
+    PREVIEWS_MODULE_ID,
     "@vitrine/vite-plugin/preview",
   ],
   jsx: "automatic",
