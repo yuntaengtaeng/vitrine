@@ -1,91 +1,82 @@
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType, type ElementType } from "react";
 import { getPreviewConfig, type PreviewConfig } from "@vitrine/vite-plugin/preview";
-import { mergeControls, resolveInitialArgs } from "../components/Controls";
+import {
+  getInitialVariantKey,
+  isPreviewComponent,
+  mergeControls,
+  resolveVariantArgs,
+  toVariantOptions,
+  type Args,
+  type ControlsMap,
+  type PreviewVariantOption,
+} from "../components/previewConfig";
 
-export interface PreviewVariantOption {
-  key: string;
-  name: string;
+interface LoadedPreview {
+  Comp: ComponentType;
+  config: PreviewConfig<ElementType>;
 }
 
 interface PreviewCanvasState {
   Comp: ComponentType | null;
   error: Error | null;
-  controls: ReturnType<typeof mergeControls>;
-  args: Record<string, unknown>;
+  controls: ControlsMap;
+  args: Args;
   setArg: (name: string, value: unknown) => void;
   variants: PreviewVariantOption[];
   variantKey: string | undefined;
   setVariant: (key: string) => void;
 }
 
-// registered.args 위에 선택된 variant의 args를 얹어 args를 (재)계산, variant
-// 전환은 사용자가 직접 고친 값까지 포함해 그 variant의 프리셋으로 되돌림
-function computeArgs(
-  controls: Record<string, GalleryPropControl>,
-  config: PreviewConfig<ComponentType>,
-  variantKey: string | undefined,
-): Record<string, unknown> {
-  const variantArgs = variantKey ? config.variants?.[variantKey]?.args : undefined;
-  return resolveInitialArgs(
-    controls,
-    config.args as Record<string, unknown> | undefined,
-    variantArgs as Record<string, unknown> | undefined,
-  );
-}
-
-/** entry 변경마다 모듈 로딩, registry 조회, 초기 args 계산을 다시 수행 */
+/** entry의 모듈을 로드해 컴포넌트, preview() 설정, variant별 args 상태 제공 */
 export const usePreviewCanvas = (entry: GalleryPreviewEntry | undefined): PreviewCanvasState => {
-  const [Comp, setComp] = useState<ComponentType | null>(null);
+  const [loaded, setLoaded] = useState<LoadedPreview | null>(null);
   const [error, setError] = useState<Error | null>(null);
-  const [config, setConfig] = useState<PreviewConfig<ComponentType>>({});
-  const [args, setArgs] = useState<Record<string, unknown>>({});
   const [variantKey, setVariantKey] = useState<string | undefined>(undefined);
+  const [args, setArgs] = useState<Args>({});
 
   useEffect(() => {
     if (!entry) return;
 
     let cancelled = false;
-    const load = async () => {
-      try {
-        const mod = await entry.load();
+    entry
+      .load()
+      .then((mod) => {
         if (cancelled) return;
-        const found = mod[entry.exportName];
-        if (typeof found !== "function") {
-          setError(new Error(`"${entry.exportName}" in ${entry.file} is not a component (got ${typeof found}).`));
+        const component = mod[entry.exportName];
+        if (!isPreviewComponent(component)) {
+          setError(new Error(`"${entry.exportName}" in ${entry.file} is not a component (got ${typeof component}).`));
           return;
         }
-        const component = found as ComponentType;
-        const registered = getPreviewConfig(component) ?? {};
-        const initialVariant = registered.defaultVariant ?? Object.keys(registered.variants ?? {})[0];
+        const config = getPreviewConfig(component) ?? {};
+        const initialVariant = getInitialVariantKey(config);
         setError(null);
-        setConfig(registered);
+        setLoaded({ Comp: component, config });
         setVariantKey(initialVariant);
-        setArgs(computeArgs(entry.controls, registered, initialVariant));
-        setComp(() => component);
-      } catch (err) {
-        if (!cancelled) setError(err as Error);
-      }
-    };
-    load();
+        setArgs(resolveVariantArgs(entry.controls, config, initialVariant));
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
+      });
 
     return () => {
       cancelled = true;
     };
   }, [entry]);
 
-  const controls = mergeControls(
-    entry?.controls ?? {},
-    config.controls as Parameters<typeof mergeControls>[1],
-  );
-  const setArg = (name: string, value: unknown) => setArgs((current) => ({ ...current, [name]: value }));
-  const setVariant = (key: string) => {
-    setVariantKey(key);
-    setArgs(computeArgs(entry?.controls ?? {}, config, key));
-  };
-  const variants = Object.entries(config.variants ?? {}).map(([key, variant]) => ({
-    key,
-    name: variant.name ?? key,
-  }));
+  const config = loaded?.config ?? {};
+  const inferredControls = entry?.controls ?? {};
 
-  return { Comp, error, controls, args, setArg, variants, variantKey, setVariant };
+  return {
+    Comp: loaded?.Comp ?? null,
+    error,
+    controls: mergeControls(inferredControls, config.controls),
+    args,
+    setArg: (name, value) => setArgs((current) => ({ ...current, [name]: value })),
+    variants: toVariantOptions(config),
+    variantKey,
+    setVariant: (key) => {
+      setVariantKey(key);
+      setArgs(resolveVariantArgs(inferredControls, config, key));
+    },
+  };
 };

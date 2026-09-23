@@ -8,7 +8,8 @@ import {
   PREVIEWS_MODULE_ID,
 } from "@vitrine/protocol";
 import type { Plugin } from "vite";
-import { scanPreviews, renderPreviewsModule, type PreviewEntry } from "./scan.js";
+import { scanPreviews, renderPreviewsModule } from "./scan.js";
+import { createPreviewTracker } from "./preview-tracker.js";
 import { removePortFile, writePortFile } from "./port-file.js";
 import { invalidateTypeContext } from "./props-controls.js";
 
@@ -18,6 +19,7 @@ export interface VitrinePluginOptions {
 }
 
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
+const SCRIPT_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 export { GALLERY_ROUTE, MANIFEST_ROUTE } from "@vitrine/protocol";
 
 // Source와 build output에서 동일한 package root 계산
@@ -54,30 +56,17 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
     },
 
     configureServer(server) {
-      // virtual:vitrine-previews는 addWatchFile 연결이 없어 소스 변경으로 자동
-      // 무효화되지 않으므로, 렌더링 결과(@preview 목록)가 실제로 달라졌을 때만
-      // 직접 무효화하고 전체 리로드, 라인 범위 등 목록에 안 드러나는 변경까지
-      // 리로드하면 편집할 때마다 리로드가 일어나 오히려 방해되므로 렌더링
-      // 결과 문자열 비교로 게이팅. 베이스라인은 watcher 이벤트를 기다리지 않고
-      // 서버 시작 시점에 미리 잡아둠, 그렇지 않으면 사용자의 첫 실제 편집이
-      // "베이스라인 확립"으로 오인돼 무효화 없이 조용히 넘어감
-      let lastEntries: PreviewEntry[] = [];
-      let lastRenderedPreviews: string | null = null;
-      scanPreviews({ root, include: options.include }).then((entries) => {
-        lastEntries = entries;
-        lastRenderedPreviews = renderPreviewsModule(entries);
-      });
+      const tracker = createPreviewTracker(() => scanPreviews({ root, include: options.include }));
+      const logScanError = (error: unknown) => {
+        server.config.logger.error(`[vitrine] preview scan failed: ${String(error)}`);
+      };
+      tracker.refresh().catch(logScanError);
 
-      // connect는 prefix 매칭이라 "/__vitrine" 라우트가 이 경로까지 삼키므로,
-      // 더 구체적인 경로를 먼저 등록해야 함
-      //
-      // manifest는 커서 이동마다(200ms 디바운스) 호출되므로 매 요청마다
-      // scanPreviews를 다시 돌리지 않고, watcher가 마지막으로 계산해 둔
-      // lastEntries를 그대로 서빙, 파일 변경과 무관한 커서 이동에 스캔
-      // 비용을 지불할 이유가 없음
+      // connect는 prefix 매칭이라 더 구체적인 manifest 경로를 gallery보다 먼저 등록
       server.middlewares.use(MANIFEST_ROUTE, (_req, res) => {
+        // 커서 이동마다 호출되므로 재스캔 없이 마지막 결과 제공
         res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(lastEntries));
+        res.end(JSON.stringify(tracker.getEntries()));
       });
 
       server.middlewares.use(GALLERY_ROUTE, async (_req, res) => {
@@ -86,28 +75,25 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         res.end(html);
       });
 
-      const checkPreviewsChanged = async (file: string) => {
-        if (![".ts", ".tsx", ".js", ".jsx"].includes(path.extname(file))) return;
+      const onSourceChange = (file: string) => {
+        if (!SCRIPT_EXTENSIONS.has(path.extname(file))) return;
 
-        // 타입 체크 대상 파일이 바뀌면 캐시된 ts.Program도 낡은 상태이므로,
-        // 다음 scanPreviews 호출 전에 무효화, 아직은 어떤 파일이 바뀌든
-        // 프로젝트 전체를 다시 빌드(범위를 import 그래프로 좁히는 최적화는
-        // 나중에 실측 후 결정)
+        // 캐시된 ts.Program이 바뀐 파일을 반영하지 못하므로 재스캔 전에 무효화
         invalidateTypeContext(root);
-
-        const entries = await scanPreviews({ root, include: options.include });
-        lastEntries = entries;
-        const rendered = renderPreviewsModule(entries);
-        if (rendered === lastRenderedPreviews) return;
-        lastRenderedPreviews = rendered;
-
-        const mod = server.moduleGraph.getModuleById(RESOLVED_PREVIEWS_MODULE_ID);
-        if (mod) server.moduleGraph.invalidateModule(mod);
-        server.ws.send({ type: "full-reload" });
+        tracker
+          .refresh()
+          .then((changed) => {
+            // 가상 모듈은 watch 대상이 아니라서 목록이 바뀔 때만 직접 무효화
+            if (!changed) return;
+            const mod = server.moduleGraph.getModuleById(RESOLVED_PREVIEWS_MODULE_ID);
+            if (mod) server.moduleGraph.invalidateModule(mod);
+            server.ws.send({ type: "full-reload" });
+          })
+          .catch(logScanError);
       };
-      server.watcher.on("add", checkPreviewsChanged);
-      server.watcher.on("unlink", checkPreviewsChanged);
-      server.watcher.on("change", checkPreviewsChanged);
+      server.watcher.on("add", onSourceChange);
+      server.watcher.on("unlink", onSourceChange);
+      server.watcher.on("change", onSourceChange);
 
       // middleware 모드는 실제로 바인딩되는 포트가 없어 발행 대상이 아님
       const httpServer = server.httpServer;

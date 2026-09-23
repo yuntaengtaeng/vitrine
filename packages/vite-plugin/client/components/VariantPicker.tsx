@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { FONT_SIZE } from "../tokens/fontSize";
-import type { PreviewVariantOption } from "../hooks/usePreviewCanvas";
+import type { PreviewVariantOption } from "./previewConfig";
 
 const Styled = {
   Root: { display: "flex", gap: "0.4rem", padding: "0.7rem 2.5rem 0", flexWrap: "wrap" } satisfies CSSProperties,

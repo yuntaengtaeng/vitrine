@@ -1,6 +1,11 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { findEntryAtLine, toProjectRelativeFile, type ManifestEntry } from "./preview-lookup.js";
+import {
+  findEntryAtLine,
+  resolveCursorPreviewId,
+  toProjectRelativeFile,
+  type ManifestEntry,
+} from "./preview-lookup.js";
 
 describe("toProjectRelativeFile", () => {
   const root = path.join("C:", "proj");
@@ -44,5 +49,21 @@ describe("findEntryAtLine", () => {
 
   it("does not match an entry from a different file on the same line", () => {
     expect(findEntryAtLine(manifest, "src/Other.tsx", 4)).toBeNull();
+  });
+});
+
+describe("resolveCursorPreviewId", () => {
+  const manifest: ManifestEntry[] = [
+    { id: "a", name: "A", file: "src/Button.tsx", exportName: "A", startLine: 4, endLine: 4, controls: {} },
+  ];
+  const base = { manifest, relFile: "src/Button.tsx", lastSelectedId: null };
+
+  it("converts the 0-indexed cursor line to the manifest's 1-indexed range", () => {
+    expect(resolveCursorPreviewId({ ...base, cursorLine: 3 })).toBe("a");
+    expect(resolveCursorPreviewId({ ...base, cursorLine: 4 })).toBeNull();
+  });
+
+  it("returns null when the preview is already selected", () => {
+    expect(resolveCursorPreviewId({ ...base, cursorLine: 3, lastSelectedId: "a" })).toBeNull();
   });
 });
