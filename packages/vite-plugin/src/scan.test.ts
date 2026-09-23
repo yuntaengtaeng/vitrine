@@ -3,7 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import { isManifest } from "@vitrine/protocol";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { scanFile, scanPreviews } from "./scan.js";
+import { scanPreviews, scanSource } from "./scan.js";
+
+const scan = (code: string) => scanSource(code, "Button.tsx");
 
 describe("props controls", () => {
   let root: string;
@@ -56,24 +58,8 @@ describe("props controls", () => {
 });
 
 describe("scan line ranges", () => {
-  let root: string;
-
-  beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
-  });
-
-  afterEach(() => {
-    fs.rmSync(root, { recursive: true, force: true });
-  });
-
-  function writeAndScan(code: string): ReturnType<typeof scanFile> {
-    const file = path.join(root, "Button.tsx");
-    fs.writeFileSync(file, code, "utf-8");
-    return scanFile(file, root);
-  }
-
   it("gives a single-line export a startLine equal to endLine", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       [
         "export function Button() { return null; }",
         "",
@@ -88,7 +74,7 @@ describe("scan line ranges", () => {
   });
 
   it("spans the full declaration for a multi-line export", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       [
         "export function Button() { return null; }",
         "",
@@ -105,7 +91,7 @@ describe("scan line ranges", () => {
   });
 
   it("gives independent ranges to multiple previews in one file", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       [
         "export function Button() { return null; }",
         "",
@@ -124,24 +110,8 @@ describe("scan line ranges", () => {
 });
 
 describe("named export comment fallback scope", () => {
-  let root: string;
-
-  beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
-  });
-
-  afterEach(() => {
-    fs.rmSync(root, { recursive: true, force: true });
-  });
-
-  function writeAndScan(code: string): ReturnType<typeof scanFile> {
-    const file = path.join(root, "Button.tsx");
-    fs.writeFileSync(file, code, "utf-8");
-    return scanFile(file, root);
-  }
-
   it("does not skip an unrelated statement to reach export const", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       [
         "/** @preview */",
         "const Unrelated = () => null;",
@@ -154,7 +124,7 @@ describe("named export comment fallback scope", () => {
   });
 
   it("does not skip an unrelated statement to reach export function", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       [
         "/** @preview */",
         "const Unrelated = () => null;",
@@ -167,7 +137,7 @@ describe("named export comment fallback scope", () => {
   });
 
   it("does not skip an unrelated statement to reach export default function", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       [
         "/** @preview */",
         "const Unrelated = () => null;",
@@ -181,24 +151,8 @@ describe("named export comment fallback scope", () => {
 });
 
 describe("scan export default", () => {
-  let root: string;
-
-  beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
-  });
-
-  afterEach(() => {
-    fs.rmSync(root, { recursive: true, force: true });
-  });
-
-  function writeAndScan(code: string): ReturnType<typeof scanFile> {
-    const file = path.join(root, "Button.tsx");
-    fs.writeFileSync(file, code, "utf-8");
-    return scanFile(file, root);
-  }
-
   it("uses the named function's own name as the label", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ["/** @preview */", "export default function PrimaryButton() { return null; }"].join("\n"),
     );
 
@@ -209,7 +163,7 @@ describe("scan export default", () => {
   });
 
   it("falls back to the file name for an anonymous default export", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ["/** @preview */", "export default () => null;"].join("\n"),
     );
 
@@ -219,7 +173,7 @@ describe("scan export default", () => {
   });
 
   it("uses the referenced identifier's name for export default of a variable", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ["const Wrapped = () => null;", "", "/** @preview */", "export default Wrapped;"].join("\n"),
     );
 
@@ -228,7 +182,7 @@ describe("scan export default", () => {
   });
 
   it("still honors an explicit name= option over any fallback", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ['/** @preview name="Main button" */', "export default () => null;"].join("\n"),
     );
 
@@ -237,7 +191,7 @@ describe("scan export default", () => {
   });
 
   it("also accepts single-quoted name= values", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ["/** @preview name='Main button' */", "export default () => null;"].join("\n"),
     );
 
@@ -246,7 +200,7 @@ describe("scan export default", () => {
   });
 
   it("ignores an unquoted name= value and falls back instead", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ["/** @preview name=Main button */", "export default function MainButton() { return null; }"].join("\n"),
     );
 
@@ -255,13 +209,13 @@ describe("scan export default", () => {
   });
 
   it("ignores a default export with no @preview comment", () => {
-    const entries = writeAndScan(["export default () => null;"].join("\n"));
+    const entries = scan(["export default () => null;"].join("\n"));
 
     expect(entries).toHaveLength(0);
   });
 
   it("matches a comment above the const declared right before the export", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ["/** @preview */", "const Chip = () => null;", "", "export default Chip;"].join("\n"),
     );
 
@@ -270,7 +224,7 @@ describe("scan export default", () => {
   });
 
   it("does not reach past an unrelated statement to grab an earlier comment", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       [
         "/** @preview */",
         "const Unrelated = () => null;",
@@ -286,24 +240,8 @@ describe("scan export default", () => {
 });
 
 describe("name= group extraction", () => {
-  let root: string;
-
-  beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scan-test-"));
-  });
-
-  afterEach(() => {
-    fs.rmSync(root, { recursive: true, force: true });
-  });
-
-  function writeAndScan(code: string): ReturnType<typeof scanFile> {
-    const file = path.join(root, "Button.tsx");
-    fs.writeFileSync(file, code, "utf-8");
-    return scanFile(file, root);
-  }
-
   it("splits a single / into group and name", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ['/** @preview name="Inputs/Danger button" */', "export default () => null;"].join("\n"),
     );
 
@@ -312,7 +250,7 @@ describe("name= group extraction", () => {
   });
 
   it("treats multiple / as a nested group path", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ['/** @preview name="Inputs/Forms/Danger button" */', "export default () => null;"].join("\n"),
     );
 
@@ -321,7 +259,7 @@ describe("name= group extraction", () => {
   });
 
   it("trims whitespace around each segment", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ['/** @preview name=" Inputs / Danger button " */', "export default () => null;"].join("\n"),
     );
 
@@ -330,7 +268,7 @@ describe("name= group extraction", () => {
   });
 
   it("drops empty segments from doubled or trailing /", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ['/** @preview name="Inputs//Danger button" */', "export default () => null;"].join("\n"),
     );
 
@@ -339,7 +277,7 @@ describe("name= group extraction", () => {
   });
 
   it("leaves group undefined when a trailing / has no name segment after it", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ['/** @preview name="Inputs/" */', "export default () => null;"].join("\n"),
     );
 
@@ -348,7 +286,7 @@ describe("name= group extraction", () => {
   });
 
   it("leaves group undefined when name has no /", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ['/** @preview name="Danger button" */', "export default () => null;"].join("\n"),
     );
 
@@ -357,7 +295,7 @@ describe("name= group extraction", () => {
   });
 
   it("leaves group undefined for a fallback name with no explicit name=", () => {
-    const entries = writeAndScan(
+    const entries = scan(
       ["/** @preview */", "export default function PrimaryButton() { return null; }"].join("\n"),
     );
 

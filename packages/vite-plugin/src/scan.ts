@@ -6,8 +6,7 @@ import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
 import { getTypeContext, getPropControls } from "./props-controls.js";
 
-// 번들러/모듈 해석 방식에 따라 @babel/traverse의 CJS/ESM interop이 달라짐,
-// default export가 default 프로퍼티에 한 번 더 감싸여 오는 경우 보정
+// CJS/ESM interop에 따라 default export가 한 번 더 감싸여 오는 경우 보정
 const traverse = (
   (traverseModule as unknown as { default?: typeof traverseModule }).default ??
   traverseModule
@@ -23,8 +22,7 @@ export interface ScanOptions {
 }
 
 const PREVIEW_TAG = "@preview";
-// 인용부호로 시작과 끝을 명확히 구분, 끝까지 읽는 방식은 name 외 옵션을 한 줄에
-// 같이 못 쓰게 만들어서 폐기
+// 같은 줄에 다른 옵션이 올 수 있어 인용부호로 값의 끝을 구분
 const NAME_OPTION_RE = /name\s*=\s*(?:"([^"]*)"|'([^']*)')/;
 
 /** include 글롭 패턴 기준 프로젝트 전체 @preview export 스캔 */
@@ -39,38 +37,32 @@ export async function scanPreviews(options: ScanOptions): Promise<PreviewEntry[]
   const entries: PreviewEntry[] = [];
   const typeContext = getTypeContext(root);
   for (const file of files) {
-    const fileEntries = scanFile(file, root);
-    for (const entry of fileEntries) {
-      // scanFile이 캐시로 재사용하는 원본 entry 객체라 직접 mutate하지 않고
-      // controls를 얹은 새 객체로 push, 그래야 다음 scanFile 캐시 hit 때
-      // 이전 호출에서 계산한 controls가 새 객체에 새어 들어가지 않음
+    for (const entry of scanFile(file, root)) {
+      // scanFile 캐시 entry를 공유하므로 복사해서 확장
       entries.push({ ...entry, controls: getPropControls(file, entry.exportName, typeContext) });
     }
   }
   return entries;
 }
 
-// 파일 내용이 안 바뀌었으면 Babel 파싱/traverse를 다시 하지 않도록 파일 경로별로
-// 스캔 결과를 캐싱, content hash 대신 mtime+size로 변경 판단 (hash는 파일 전체를
-// 읽어야 해서 캐시로 아끼려는 readFileSync 자체를 다시 하게 됨)
+// 변경 판단은 mtime+size, content hash는 캐시로 피하려는 파일 읽기가 다시 필요
 const fileCache = new Map<string, { mtimeMs: number; size: number; entries: PreviewEntry[] }>();
 
-/** 단일 파일에서 @preview export 스캔 */
-export function scanFile(file: string, root: string): PreviewEntry[] {
+function scanFile(file: string, root: string): PreviewEntry[] {
   const stat = fs.statSync(file);
   const cached = fileCache.get(file);
   if (cached && cached.mtimeMs === stat.mtimeMs && cached.size === stat.size) {
     return cached.entries;
   }
 
-  const entries = scanFileUncached(file, root);
+  const relFile = path.relative(root, file).split(path.sep).join("/");
+  const entries = scanSource(fs.readFileSync(file, "utf-8"), relFile);
   fileCache.set(file, { mtimeMs: stat.mtimeMs, size: stat.size, entries });
   return entries;
 }
 
-function scanFileUncached(file: string, root: string): PreviewEntry[] {
-  const code = fs.readFileSync(file, "utf-8");
-
+/** 소스 문자열에서 @preview export 스캔 (relFile은 프로젝트 루트 기준 POSIX 경로) */
+export function scanSource(code: string, relFile: string): PreviewEntry[] {
   let ast;
   try {
     ast = parse(code, {
@@ -82,7 +74,7 @@ function scanFileUncached(file: string, root: string): PreviewEntry[] {
     return [];
   }
 
-  const relFile = path.relative(root, file).split(path.sep).join("/");
+  const comments = ast.comments ?? [];
   const entries: PreviewEntry[] = [];
 
   traverse(ast, {
@@ -90,55 +82,40 @@ function scanFileUncached(file: string, root: string): PreviewEntry[] {
       const declaration = nodePath.node.declaration;
       if (!declaration) return;
 
-      // export const/export function은 export 문 자체가 선언까지 포함하는
-      // 하나의 완결된 문장이라, 주석은 그 바로 앞(한 칸도 건너뛸 필요 없음)
-      // 까지만 허용, 그보다 앞선 문장까지 허용하면 무관한 주석을 잘못 주워옴
-      const fallbackLowerBound = getPrecedingStatementEnd(nodePath, 1);
+      const comment = findPreviewComment(nodePath.node, comments, getPrecedingStatementEnd(nodePath, 1));
+      if (!comment) return;
 
       if (declaration.type === "VariableDeclaration") {
         for (const decl of declaration.declarations) {
           if (decl.id.type !== "Identifier") continue;
-          const comment = findPreviewComment(nodePath.node, ast.comments ?? [], fallbackLowerBound);
-          if (!comment) continue;
           entries.push(makeEntry(relFile, decl.id.name, comment, nodePath.node.loc));
         }
       }
 
       if (declaration.type === "FunctionDeclaration" && declaration.id) {
-        const comment = findPreviewComment(nodePath.node, ast.comments ?? [], fallbackLowerBound);
-        if (comment) entries.push(makeEntry(relFile, declaration.id.name, comment, nodePath.node.loc));
+        entries.push(makeEntry(relFile, declaration.id.name, comment, nodePath.node.loc));
       }
     },
 
     ExportDefaultDeclaration(nodePath) {
       const declaration = nodePath.node.declaration;
-      // export default Foo;(로컬 식별자 참조)만 선언과 export가 서로 다른
-      // 문장이라, 그 경우에 한해서만 한 칸 더 앞(선언 문장 위)까지 허용,
-      // export default function/class/화살표 함수는 export 문 자체가
-      // 선언을 포함하는 하나의 문장이라 한 칸도 건너뛸 필요가 없음
+      // export default Foo; 는 선언이 별도 문장이라 그 선언 위의 주석까지 허용
       const stepsBack = declaration.type === "Identifier" ? 2 : 1;
-      const comment = findPreviewComment(nodePath.node, ast.comments ?? [], getPrecedingStatementEnd(nodePath, stepsBack));
+      const comment = findPreviewComment(nodePath.node, comments, getPrecedingStatementEnd(nodePath, stepsBack));
       if (!comment) return;
 
-      // default export는 exportName이 항상 "default"라 라벨로 못 씀,
-      // 함수/클래스 선언 이름이나 참조하는 식별자가 있으면 그걸 쓰고
-      // 없으면(익명 화살표 함수 등) 파일 이름을 라벨 기본값으로 사용
-      const fallbackName =
+      const label =
         ("id" in declaration && declaration.id?.type === "Identifier" && declaration.id.name) ||
         (declaration.type === "Identifier" && declaration.name) ||
         path.basename(relFile, path.extname(relFile));
-      entries.push(makeEntry(relFile, "default", comment, nodePath.node.loc, fallbackName));
+      entries.push(makeEntry(relFile, "default", comment, nodePath.node.loc, label));
     },
   });
 
   return entries;
 }
 
-// export 문 기준 stepsBack칸 앞 문장의 끝 위치, 없으면 -1
-// findPreviewComment의 폴백이 이 위치보다 앞선 문장에 딸린 주석까지 주워오지
-// 못하게 막는 하한선으로 씀. stepsBack은 대부분 1(export 문 바로 앞까지만
-// 허용)이고, export default Foo; 처럼 선언과 export가 서로 다른 문장인
-// 경우에만 2(선언 문장 위까지 허용)를 씀
+// stepsBack칸 앞 문장의 끝 위치, 폴백 주석 탐색의 하한선 (없으면 -1)
 function getPrecedingStatementEnd(nodePath: NodePath, stepsBack: number): number {
   if (typeof nodePath.key !== "number") return -1;
   const sibling = nodePath.getSibling(nodePath.key - stepsBack);
@@ -148,27 +125,21 @@ function getPrecedingStatementEnd(nodePath: NodePath, stepsBack: number): number
 function findPreviewComment(
   node: { leadingComments?: Array<{ value: string }> | null; start?: number | null },
   allComments: Array<{ value: string; end?: number }>,
-  fallbackLowerBound: number,
+  lowerBound: number,
 ): string | null {
   const leading = node.leadingComments?.find((c) => c.value.includes(PREVIEW_TAG));
   if (leading) return leading.value;
 
-  // leadingComments 첨부가 특이 위치(주석과 export 사이 빈 줄 등)를 놓치는 경우 대비,
-  // ast.comments에서 @preview를 포함한 가장 가까운 선행 주석으로 폴백. 단
-  // fallbackLowerBound보다 앞선 문장에 딸린 주석은 후보에서 제외, 안 그러면
-  // 이 export와 무관한 더 앞선 문장 위의 @preview 주석을 잘못 주워옴
-  // (호출부의 getPrecedingStatementEnd 주석, scan.test.ts의 관련 케이스 참고)
+  // 빈 줄 등으로 leadingComments에 붙지 않은 주석 대비, 하한선 이후 가장 가까운 주석으로 폴백
   if (node.start == null) return null;
-  const preceding = allComments
+  const nodeStart = node.start;
+  const nearest = allComments
     .filter(
       (c): c is { value: string; end: number } =>
-        c.end != null &&
-        c.end > fallbackLowerBound &&
-        c.end <= node.start! &&
-        c.value.includes(PREVIEW_TAG),
+        c.end != null && c.end > lowerBound && c.end <= nodeStart && c.value.includes(PREVIEW_TAG),
     )
     .sort((a, b) => b.end - a.end)[0];
-  return preceding?.value ?? null;
+  return nearest?.value ?? null;
 }
 
 function makeEntry(
@@ -193,9 +164,7 @@ function makeEntry(
   };
 }
 
-// name= 값을 /로 나눠 마지막 세그먼트를 실제 표시 name, 그 앞을 group 경로로
-// 분리, Storybook의 title: "Inputs/Button" 계층 표기와 동일한 규약. export
-// 식별자나 파일 basename 폴백은 /가 있을 수 없어 항상 group 없이 그대로 통과
+// "Inputs/Button" 형식의 마지막 세그먼트를 name, 나머지를 group 경로로 분리
 function splitNameAndGroup(raw: string): { name: string; group?: string } {
   const segments = raw.split("/").map((segment) => segment.trim()).filter((segment) => segment.length > 0);
   if (segments.length <= 1) return { name: segments[0] ?? raw };
