@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import type { PreviewControl, PreviewControlType } from "@vitrine/vite-plugin/preview";
 import { COLOR } from "../tokens/color";
 import { FONT_SIZE } from "../tokens/fontSize";
 import { BooleanControl } from "./controls/BooleanControl";
@@ -8,9 +7,7 @@ import { NumberControl } from "./controls/NumberControl";
 import { RadioControl } from "./controls/RadioControl";
 import { SelectControl } from "./controls/SelectControl";
 import { TextControl } from "./controls/TextControl";
-
-type ResolvedControl = Omit<GalleryPropControl, "type"> & { type: PreviewControlType };
-type ControlsMap = Record<string, ResolvedControl>;
+import type { ControlsMap } from "./previewConfig";
 
 const Styled = {
   Root: {
@@ -37,33 +34,6 @@ const Styled = {
     gap: "0.5rem 1.5rem",
   } satisfies CSSProperties,
 };
-
-export function mergeControls(
-  inferred: Record<string, GalleryPropControl>,
-  overrides: Record<string, PreviewControlType | PreviewControl> = {},
-): ControlsMap {
-  const result: ControlsMap = { ...inferred };
-  for (const [name, override] of Object.entries(overrides)) {
-    const normalized = typeof override === "string" ? { type: override } : override;
-    const existing = result[name];
-    result[name] = existing ? { ...existing, ...normalized } : { optional: true, ...normalized };
-  }
-  return result;
-}
-
-/** 추론된 control의 기본값 위에 preview() args, 그 위에 선택된 variant의 args를 순서대로 덮어써 초기 args 계산 */
-export function resolveInitialArgs(
-  controls: Record<string, GalleryPropControl>,
-  registeredArgs: Record<string, unknown> | undefined,
-  variantArgs?: Record<string, unknown>,
-): Record<string, unknown> {
-  const defaults = Object.fromEntries(
-    Object.entries(controls)
-      .filter(([, control]) => control.defaultValue !== undefined)
-      .map(([name, control]) => [name, control.defaultValue]),
-  );
-  return { ...defaults, ...registeredArgs, ...variantArgs };
-}
 
 export const Controls = (props: {
   controls: ControlsMap;
