@@ -1,6 +1,7 @@
 {
   "name": "@vitrine/protocol",
   "version": "0.1.0",
+  "private": true,
   "description": "Runtime-neutral contracts shared by Vitrine packages.",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -246,9 +246,6 @@ importers:
       '@babel/traverse':
         specifier: catalog:babel
         version: 7.29.7
-      '@vitrine/protocol':
-        specifier: workspace:*
-        version: link:../protocol
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.3
@@ -274,6 +271,9 @@ importers:
       '@types/react-dom':
         specifier: catalog:react
         version: 18.3.7(@types/react@18.3.31)
+      '@vitrine/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       '@vitrine/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

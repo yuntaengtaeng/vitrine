@@ -17,19 +17,19 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "pnpm --filter @vitrine/protocol build && tsc -p tsconfig.json && tsc -p client/tsconfig.json && node scripts/build-client.mjs",
+    "build": "pnpm --filter @vitrine/protocol build && node scripts/build-package.mjs && tsc -p client/tsconfig.json && node scripts/build-client.mjs",
     "dev": "pnpm --filter @vitrine/protocol build && tsc -p tsconfig.json --watch",
     "dev:client": "pnpm --filter @vitrine/protocol build && node scripts/build-client.mjs --watch",
     "test:package": "node scripts/test-package.mjs"
   },
   "dependencies": {
-    "@vitrine/protocol": "workspace:*",
     "@babel/parser": "catalog:babel",
     "@babel/traverse": "catalog:babel",
     "fast-glob": "^3.3.2",
     "typescript": "catalog:typescript"
   },
   "devDependencies": {
+    "@vitrine/protocol": "workspace:*",
     "@vitrine/typescript-config": "workspace:*",
     "@types/babel__traverse": "catalog:babel",
     "@types/node": "catalog:node",
