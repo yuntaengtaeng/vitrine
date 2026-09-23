@@ -1,5 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { mergeControls, resolveInitialArgs } from "./Controls";
+import {
+  getInitialVariantKey,
+  isPreviewComponent,
+  mergeControls,
+  resolveInitialArgs,
+  resolveVariantArgs,
+  toVariantOptions,
+} from "./previewConfig";
+
+describe("isPreviewComponent", () => {
+  it("함수 컴포넌트를 허용", () => {
+    expect(isPreviewComponent(() => null)).toBe(true);
+  });
+
+  it("컴포넌트가 아닌 값은 거부", () => {
+    expect(isPreviewComponent(undefined)).toBe(false);
+    expect(isPreviewComponent("Button")).toBe(false);
+    expect(isPreviewComponent({ label: "not a component" })).toBe(false);
+  });
+});
 
 describe("mergeControls", () => {
   it("추론된 control을 override로 부분 재정의", () => {
@@ -50,5 +69,33 @@ describe("resolveInitialArgs", () => {
     const controls = { tone: { type: "select", options: ["info", "danger"], optional: false, defaultValue: "info" } };
     const result = resolveInitialArgs(controls, { tone: "danger", label: "base" }, { tone: "info", disabled: true });
     expect(result).toEqual({ tone: "info", label: "base", disabled: true });
+  });
+});
+
+describe("variant 선택", () => {
+  const config = {
+    args: { label: "base" },
+    variants: {
+      primary: { args: { tone: "info" } },
+      danger: { name: "Danger state", args: { tone: "danger" } },
+    },
+  };
+
+  it("defaultVariant가 없으면 첫 variant 키를 기본으로 사용", () => {
+    expect(getInitialVariantKey(config)).toBe("primary");
+    expect(getInitialVariantKey({ ...config, defaultVariant: "danger" })).toBe("danger");
+    expect(getInitialVariantKey({})).toBeUndefined();
+  });
+
+  it("variant 이름이 없으면 키를 표시 이름으로 사용", () => {
+    expect(toVariantOptions(config)).toEqual([
+      { key: "primary", name: "primary" },
+      { key: "danger", name: "Danger state" },
+    ]);
+  });
+
+  it("선택한 variant args를 preview() args 위에 덮어씀", () => {
+    expect(resolveVariantArgs({}, config, "danger")).toEqual({ label: "base", tone: "danger" });
+    expect(resolveVariantArgs({}, config, undefined)).toEqual({ label: "base" });
   });
 });
