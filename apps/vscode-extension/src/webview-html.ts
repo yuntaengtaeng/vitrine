@@ -5,6 +5,16 @@ import {
   SWITCH_PROJECT_MESSAGE_TYPE,
 } from "@vitrine/protocol";
 
+/** HTML 텍스트와 속성 값에 넣을 문자열 escape */
+export function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 /** dev server gallery를 iframe으로 보여주는 webview HTML 생성 */
 export function renderIframeHtml(galleryUrl: string, projectLabel: string): string {
   // CSP frame-src는 origin 단위로만 매칭
@@ -12,7 +22,7 @@ export function renderIframeHtml(galleryUrl: string, projectLabel: string): stri
   return renderShell({
     projectLabel,
     extraCsp: `frame-src ${origin};`,
-    body: `<iframe src="${galleryUrl}"></iframe>`,
+    body: `<iframe src="${escapeHtml(galleryUrl)}"></iframe>`,
     galleryOrigin: origin,
   });
 }
@@ -24,7 +34,7 @@ export function renderUnreachableHtml(galleryUrl: string): string {
     body: `
       <div class="vitrine-message">
         <h2>Vite dev server not reachable</h2>
-        <p>Vitrine expected a dev server at <code>${galleryUrl}</code> but couldn't reach it.</p>
+        <p>Vitrine expected a dev server at <code>${escapeHtml(galleryUrl)}</code> but couldn't reach it.</p>
         <p>Start your project's Vite dev server, then click <b>Switch Project</b> above.</p>
       </div>`,
   });
@@ -97,7 +107,7 @@ function renderShell(options: {
   </head>
   <body>
     <div class="vitrine-bar">
-      <span>${options.projectLabel ?? "No project detected"}</span>
+      <span>${escapeHtml(options.projectLabel ?? "No project detected")}</span>
       <button id="vitrine-switch-project">Switch Project</button>
     </div>
     <div class="vitrine-content">${options.body}</div>

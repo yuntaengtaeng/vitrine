@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { renderIframeHtml, renderNotFoundHtml, renderUnreachableHtml } from "./webview-html.js";
+import { escapeHtml, renderIframeHtml, renderNotFoundHtml, renderUnreachableHtml } from "./webview-html.js";
+
+describe("escapeHtml", () => {
+  it("escapes characters that can break markup or attributes", () => {
+    expect(escapeHtml(`<a href="x">Tom & 'Jerry'</a>`)).toBe(
+      "&lt;a href=&quot;x&quot;&gt;Tom &amp; &#39;Jerry&#39;&lt;/a&gt;",
+    );
+  });
+});
 
 describe("renderIframeHtml", () => {
   const galleryUrl = "http://localhost:5173/__vitrine";
@@ -12,6 +20,12 @@ describe("renderIframeHtml", () => {
 
   it("relays cursor messages only to the gallery origin", () => {
     expect(renderIframeHtml(galleryUrl, "app")).toContain('const galleryOrigin = "http://localhost:5173";');
+  });
+
+  it("escapes the project label taken from the folder name", () => {
+    const html = renderIframeHtml(galleryUrl, "<b>app</b>");
+    expect(html).toContain("&lt;b&gt;app&lt;/b&gt;");
+    expect(html).not.toContain("<b>app</b>");
   });
 
   it("uses a fresh script nonce for each render", () => {
