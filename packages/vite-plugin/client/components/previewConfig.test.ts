@@ -1,3 +1,4 @@
+import { forwardRef, memo } from "react";
 import { describe, expect, it } from "vitest";
 import {
   getInitialVariantKey,
@@ -11,6 +12,11 @@ import {
 describe("isPreviewComponent", () => {
   it("함수 컴포넌트를 허용", () => {
     expect(isPreviewComponent(() => null)).toBe(true);
+  });
+
+  it("memo와 forwardRef로 감싼 컴포넌트 객체를 허용", () => {
+    expect(isPreviewComponent(memo(() => null))).toBe(true);
+    expect(isPreviewComponent(forwardRef(() => null))).toBe(true);
   });
 
   it("컴포넌트가 아닌 값은 거부", () => {

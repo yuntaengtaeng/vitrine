@@ -10,9 +10,10 @@ export interface PreviewVariantOption {
   name: string;
 }
 
-/** 모듈 export가 렌더링 가능한 컴포넌트인지 판단 */
+/** 모듈 export가 렌더링 가능한 컴포넌트인지 판단 (memo, forwardRef 객체 포함) */
 export function isPreviewComponent(value: unknown): value is ComponentType {
-  return typeof value === "function";
+  if (typeof value === "function") return true;
+  return typeof value === "object" && value !== null && "$$typeof" in value;
 }
 
 /** 추론된 control 위에 preview() controls override를 병합 */
