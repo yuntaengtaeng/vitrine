@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import crypto from "node:crypto";
 import path from "node:path";
 import {
   GALLERY_ROUTE,
@@ -18,16 +17,17 @@ import {
   isProcessAlive,
   type PortFileMatch,
 } from "./port-discovery.js";
-import { findEntryAtLine, toProjectRelativeFile } from "./preview-lookup.js";
+import { resolveCursorPreviewId, toProjectRelativeFile } from "./preview-lookup.js";
+import { renderIframeHtml, renderNotFoundHtml, renderUnreachableHtml } from "./webview-html.js";
 
 const SELECTION_DEBOUNCE_MS = 200;
 
 let currentPanel: vscode.WebviewPanel | undefined;
-/** 패널이 지금 보여주는 프로젝트, 커서 추적이 프로젝트를 넘나들지 않도록 범위를 제한하는 데 사용 */
+/** 패널이 보여주는 프로젝트, 커서 추적 범위를 이 프로젝트로 제한 */
 let currentMatch: PortFileMatch | null = null;
 let lastSelectedPreviewId: string | null = null;
 let selectionDebounce: ReturnType<typeof setTimeout> | undefined;
-/** manifest fetch 도중 더 최신 커서 이벤트가 겹치는 경우 낡은 응답을 버리는 용도 */
+/** 늦게 도착한 manifest 응답을 버리기 위한 요청 순번 */
 let selectionRequestSeq = 0;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -59,8 +59,7 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
     currentPanel.webview.onDidReceiveMessage((message: unknown) => {
       if (!isWebviewToExtensionMessage(message)) return;
       if (message.type === SWITCH_PROJECT_MESSAGE_TYPE) void switchProject();
-      // 갤러리 안에서 수동 클릭으로 프리뷰가 바뀐 경우, 커서 추적 상태를 실제 표시 중인
-      // 프리뷰와 맞춰서 커서가 그 자리로 돌아왔을 때 재동기화가 스킵되지 않도록 함
+      // 갤러리에서 직접 고른 프리뷰도 기록해야 커서가 돌아왔을 때 다시 동기화됨
       if (message.type === PREVIEW_SELECTED_MESSAGE_TYPE) lastSelectedPreviewId = message.id;
     }, null, context.subscriptions);
   }
@@ -122,22 +121,19 @@ async function renderPanel(match: PortFileMatch | null): Promise<void> {
     return;
   }
 
-  const devServerUrl = `http://localhost:${match.port}${GALLERY_ROUTE}`;
-  const reachable = await isDevServerReachable(devServerUrl);
+  const galleryUrl = `http://localhost:${match.port}${GALLERY_ROUTE}`;
+  const reachable = await isDevServerReachable(galleryUrl);
   currentPanel.webview.html = reachable
-    ? renderIframeHtml(devServerUrl, match)
-    : renderUnreachableHtml(devServerUrl);
+    ? renderIframeHtml(galleryUrl, path.basename(match.root))
+    : renderUnreachableHtml(galleryUrl);
 }
 
 /** 커서 이동 시, 패널이 보여주는 프로젝트 안의 @preview 위라면 그 프리뷰로 전환 신호 전송 */
 async function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent): Promise<void> {
   if (!currentPanel || !currentMatch) return;
 
-  const relFile = toProjectRelativeFile(
-    currentMatch.root,
-    event.textEditor.document.uri.fsPath,
-  );
-  if (!relFile) return; // 지금 패널이 보여주는 프로젝트 밖 파일, 무시
+  const relFile = toProjectRelativeFile(currentMatch.root, event.textEditor.document.uri.fsPath);
+  if (!relFile) return;
 
   const cursorLine = event.selections[0]?.active.line;
   if (cursorLine == null) return;
@@ -145,16 +141,20 @@ async function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent):
   const seq = ++selectionRequestSeq;
   const manifest = await fetchManifest(currentMatch.port);
   if (!manifest) return;
-  // fetch 도중 패널이 닫히거나 더 최신 커서 이벤트가 먼저 반영된 경우 낡은 응답 폐기
   if (!currentPanel || seq !== selectionRequestSeq) return;
 
-  const entry = findEntryAtLine(manifest, relFile, cursorLine + 1); // VS Code는 0-indexed, Babel loc은 1-indexed
-  if (!entry || entry.id === lastSelectedPreviewId) return;
+  const previewId = resolveCursorPreviewId({
+    manifest,
+    relFile,
+    cursorLine,
+    lastSelectedId: lastSelectedPreviewId,
+  });
+  if (!previewId) return;
 
-  lastSelectedPreviewId = entry.id;
+  lastSelectedPreviewId = previewId;
   const message: ExtensionToGalleryMessage = {
     type: SELECT_PREVIEW_MESSAGE_TYPE,
-    id: entry.id,
+    id: previewId,
   };
   currentPanel.webview.postMessage(message);
 }
@@ -180,124 +180,4 @@ async function isDevServerReachable(url: string): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-function renderIframeHtml(devServerUrl: string, match: PortFileMatch): string {
-  // CSP frame-src는 origin 단위로만 매칭, path/query 포함 전체 URL은 iframe src에만 필요
-  const origin = new URL(devServerUrl).origin;
-  return renderShell({
-    projectLabel: path.basename(match.root),
-    extraCsp: `frame-src ${origin};`,
-    body: `<iframe src="${devServerUrl}"></iframe>`,
-    galleryOrigin: origin,
-  });
-}
-
-function renderUnreachableHtml(devServerUrl: string): string {
-  return renderShell({
-    projectLabel: null,
-    body: `
-      <div class="vitrine-message">
-        <h2>Vite dev server not reachable</h2>
-        <p>Vitrine expected a dev server at <code>${devServerUrl}</code> but couldn't reach it.</p>
-        <p>Start your project's Vite dev server, then click <b>Switch Project</b> above.</p>
-      </div>`,
-  });
-}
-
-function renderNotFoundHtml(): string {
-  return renderShell({
-    projectLabel: null,
-    body: `
-      <div class="vitrine-message">
-        <h2>No Vitrine dev server detected</h2>
-        <p>Start your project's Vite dev server (with <code>@vitrine/vite-plugin</code> configured),
-        then click <b>Switch Project</b> above.</p>
-      </div>`,
-  });
-}
-
-/** 웹뷰 공통 셸: 상단 프로젝트 표시줄 + Switch Project 버튼, 본문은 각 렌더 함수가 채움 */
-function renderShell(options: {
-  projectLabel: string | null;
-  body: string;
-  extraCsp?: string;
-  /** iframe이 있는 렌더(현재는 renderIframeHtml)에서만 전달, 커서 추적 메시지를 iframe에 중계할 때 씀 */
-  galleryOrigin?: string;
-}): string {
-  const nonce = crypto.randomBytes(16).toString("hex");
-  return `<!doctype html>
-<html>
-  <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; ${options.extraCsp ?? ""} style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
-    <style>
-      html, body { height: 100%; margin: 0; padding: 0; }
-      body {
-        display: flex;
-        flex-direction: column;
-        font-family: system-ui, sans-serif;
-        color: var(--vscode-foreground);
-      }
-      .vitrine-bar {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        padding: 4px 10px;
-        background: var(--vscode-editorWidget-background);
-        border-bottom: 1px solid var(--vscode-widget-border);
-        font-size: 0.8rem;
-        color: var(--vscode-descriptionForeground);
-      }
-      .vitrine-bar button {
-        background: var(--vscode-button-background);
-        color: var(--vscode-button-foreground);
-        border: none;
-        border-radius: 2px;
-        padding: 3px 10px;
-        cursor: pointer;
-        font-size: 0.8rem;
-      }
-      .vitrine-bar button:hover { background: var(--vscode-button-hoverBackground); }
-      .vitrine-content { flex: 1 1 auto; min-height: 0; }
-      .vitrine-content iframe { width: 100%; height: 100%; border: 0; }
-      .vitrine-message { padding: 2rem; color: var(--vscode-descriptionForeground); }
-      code {
-        background: var(--vscode-textCodeBlock-background);
-        padding: 2px 6px;
-        border-radius: 4px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="vitrine-bar">
-      <span>${options.projectLabel ?? "No project detected"}</span>
-      <button id="vitrine-switch-project">Switch Project</button>
-    </div>
-    <div class="vitrine-content">${options.body}</div>
-    <script nonce="${nonce}">
-      // 인라인 relay는 TS 검사 대상이 아니므로 protocol message type을 build 시 주입
-      const vscodeApi = acquireVsCodeApi();
-      const switchProjectMessageType = ${JSON.stringify(SWITCH_PROJECT_MESSAGE_TYPE)};
-      const previewSelectedMessageType = ${JSON.stringify(PREVIEW_SELECTED_MESSAGE_TYPE)};
-      const selectPreviewMessageType = ${JSON.stringify(SELECT_PREVIEW_MESSAGE_TYPE)};
-      document.getElementById("vitrine-switch-project").addEventListener("click", () => {
-        vscodeApi.postMessage({ type: switchProjectMessageType });
-      });
-
-      const galleryFrame = document.querySelector("iframe");
-      const galleryOrigin = ${JSON.stringify(options.galleryOrigin ?? null)};
-      window.addEventListener("message", (event) => {
-        if (galleryFrame && event.source === galleryFrame.contentWindow) {
-          if (event.data?.type === previewSelectedMessageType) vscodeApi.postMessage(event.data);
-          return;
-        }
-        if (!galleryFrame || !galleryOrigin) return;
-        if (event.data?.type !== selectPreviewMessageType) return;
-        galleryFrame.contentWindow.postMessage(event.data, galleryOrigin);
-      });
-    </script>
-  </body>
-</html>`;
 }

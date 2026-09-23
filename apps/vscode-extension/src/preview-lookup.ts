@@ -22,3 +22,17 @@ export function findEntryAtLine(
     ) ?? null
   );
 }
+
+/** 커서 위치에서 새로 선택할 프리뷰 id 조회, 해당 프리뷰가 없거나 이미 선택된 경우 null */
+export function resolveCursorPreviewId(options: {
+  manifest: ManifestEntry[];
+  relFile: string;
+  /** VS Code의 0-indexed 커서 라인 */
+  cursorLine: number;
+  lastSelectedId: string | null;
+}): string | null {
+  // manifest 라인은 Babel loc 기준 1-indexed
+  const entry = findEntryAtLine(options.manifest, options.relFile, options.cursorLine + 1);
+  if (!entry || entry.id === options.lastSelectedId) return null;
+  return entry.id;
+}
