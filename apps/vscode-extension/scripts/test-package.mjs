@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-extension-package-"));
 const vsceBin = path.join(packageRoot, "node_modules", "@vscode", "vsce", "vsce");
-const REQUIRED_FILES = ["package.json", "README.md", "LICENSE", "dist/extension.js"];
+const REQUIRED_FILES = ["package.json", "README.md", "LICENSE", "icon.png", "dist/extension.js"];
 
 function runVsce(args) {
   return execFileSync(process.execPath, [vsceBin, ...args], { cwd: packageRoot, encoding: "utf8" });

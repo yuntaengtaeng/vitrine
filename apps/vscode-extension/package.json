@@ -4,6 +4,7 @@
   "description": "Live previews of @preview-annotated React components beside your editor, rendered by your Vite dev server.",
   "version": "0.1.0",
   "publisher": "yuntaengtaeng",
+  "icon": "icon.png",
   "private": true,
   "license": "MIT",
   "repository": {
@@ -28,7 +29,7 @@
   "categories": ["Other"],
   "activationEvents": [],
   "main": "./dist/extension.js",
-  "files": ["dist", "LICENSE"],
+  "files": ["dist", "LICENSE", "icon.png"],
   "contributes": {
     "commands": [
       {
