@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@vitrine/typescript-config": "workspace:*",
-    "@vitrine/vite-plugin": "workspace:*",
+    "vite-plugin-react-vitrine": "workspace:*",
     "@vitejs/plugin-react": "catalog:vite",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",

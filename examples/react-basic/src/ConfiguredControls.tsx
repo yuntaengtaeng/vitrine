@@ -1,4 +1,4 @@
-import { preview } from "@vitrine/vite-plugin/preview";
+import { preview } from "vite-plugin-react-vitrine/preview";
 
 interface ConfiguredControlsProps {
   title: string;

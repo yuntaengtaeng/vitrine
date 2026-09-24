@@ -47,7 +47,7 @@ export function renderNotFoundHtml(): string {
     body: `
       <div class="vitrine-message">
         <h2>No Vitrine dev server detected</h2>
-        <p>Start your project's Vite dev server (with <code>@vitrine/vite-plugin</code> configured),
+        <p>Start your project's Vite dev server (with <code>vite-plugin-react-vitrine</code> configured),
         then click <b>Switch Project</b> above.</p>
       </div>`,
   });

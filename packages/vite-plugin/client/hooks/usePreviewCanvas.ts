@@ -1,5 +1,5 @@
 import { useEffect, useState, type ComponentType, type ElementType } from "react";
-import { getPreviewConfig, type PreviewConfig } from "@vitrine/vite-plugin/preview";
+import { getPreviewConfig, type PreviewConfig } from "vite-plugin-react-vitrine/preview";
 import {
   getInitialVariantKey,
   isPreviewComponent,

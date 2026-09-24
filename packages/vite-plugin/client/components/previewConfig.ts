@@ -1,5 +1,5 @@
 import type { ComponentType, ElementType } from "react";
-import type { PreviewConfig, PreviewControlType } from "@vitrine/vite-plugin/preview";
+import type { PreviewConfig, PreviewControlType } from "vite-plugin-react-vitrine/preview";
 
 export type ResolvedControl = Omit<GalleryPropControl, "type"> & { type: PreviewControlType };
 export type ControlsMap = Record<string, ResolvedControl>;

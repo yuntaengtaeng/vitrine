@@ -1,49 +1,49 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import {
-  GALLERY_MODULE_ID,
-  GALLERY_ROUTE,
-  MANIFEST_ROUTE,
-  PREVIEWS_MODULE_ID,
-  isManifest,
-} from "@vitrine/protocol";
-import vitrine from "@vitrine/vite-plugin";
+import vitrine, { GALLERY_ROUTE, MANIFEST_ROUTE } from "vite-plugin-react-vitrine";
+import { getPreviewConfig, preview } from "vite-plugin-react-vitrine/preview";
 import { createServer } from "vite";
 
-const require = createRequire(import.meta.url);
-const protocolFromCommonJs = require("@vitrine/protocol");
-assert.equal(protocolFromCommonJs.GALLERY_ROUTE, GALLERY_ROUTE);
+/** test-package.mjs가 private protocol에서 읽어 전달한 runtime 계약 */
+const contract = JSON.parse(process.env.VITRINE_CONTRACT ?? "{}");
+const installedPluginRoot = path.join(process.cwd(), "node_modules", "vite-plugin-react-vitrine");
+
+function listFiles(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directory, entry.name);
+    return entry.isDirectory() ? listFiles(entryPath) : [entryPath];
+  });
+}
 
 const installedPluginPackage = JSON.parse(
-  fs.readFileSync(
-    path.join(process.cwd(), "node_modules", "@vitrine", "vite-plugin", "package.json"),
-    "utf8",
-  ),
+  fs.readFileSync(path.join(installedPluginRoot, "package.json"), "utf8"),
 );
 assert.equal(
   installedPluginPackage.dependencies?.["@vitrine/protocol"],
-  "0.1.0",
-  "packed plugin did not convert its workspace protocol dependency",
+  undefined,
+  "packed plugin still depends on the private protocol package",
 );
+assert.equal(
+  fs.existsSync(path.join(process.cwd(), "node_modules", "@vitrine", "protocol")),
+  false,
+  "consumer install pulled in the private protocol package",
+);
+for (const file of listFiles(path.join(installedPluginRoot, "dist"))) {
+  assert.doesNotMatch(
+    fs.readFileSync(file, "utf8"),
+    /@vitrine\/protocol/,
+    `${path.relative(installedPluginRoot, file)} references the private protocol package`,
+  );
+}
 
-const galleryAssetPath = path.join(
-  process.cwd(),
-  "node_modules",
-  "@vitrine",
-  "vite-plugin",
-  "dist",
-  "gallery",
-  "gallery-client.js",
-);
-assert.ok(fs.existsSync(galleryAssetPath), "installed tarball is missing the gallery asset");
-assert.doesNotMatch(
-  fs.readFileSync(galleryAssetPath, "utf8"),
-  /@vitrine\/protocol/,
-  "gallery bundle contains a bare protocol import",
-);
+assert.equal(GALLERY_ROUTE, contract.GALLERY_ROUTE);
+assert.equal(MANIFEST_ROUTE, contract.MANIFEST_ROUTE);
+
+const SampleComponent = () => null;
+preview(SampleComponent, { args: { label: "sample" } });
+assert.deepEqual(getPreviewConfig(SampleComponent), { args: { label: "sample" } });
 
 const server = await createServer({
   root: process.cwd(),
@@ -71,20 +71,24 @@ try {
   assert.match(galleryHtml, /id="vitrine-root"/);
   const galleryModulePath = [...galleryHtml.matchAll(/<script type="module" src="([^"]+)"/g)]
     .map((match) => match[1])
-    .find((source) => source.includes(GALLERY_MODULE_ID));
+    .find((source) => source.includes(contract.GALLERY_MODULE_ID));
   assert.ok(galleryModulePath, "Gallery HTML did not reference its virtual module");
 
   const galleryModuleResponse = await request(new URL(galleryModulePath, baseUrl));
   assert.equal(galleryModuleResponse.status, 200);
   const galleryModule = await galleryModuleResponse.text();
   assert.match(galleryModule, /createRoot/);
-  assert.ok(galleryModule.includes(PREVIEWS_MODULE_ID));
+  assert.ok(galleryModule.includes(contract.PREVIEWS_MODULE_ID));
 
   const previewsModuleResponse = await request(
-    `${baseUrl}/@id/__x00__${PREVIEWS_MODULE_ID}`,
+    `${baseUrl}/@id/__x00__${contract.PREVIEWS_MODULE_ID}`,
   );
   assert.equal(previewsModuleResponse.status, 200);
   assert.match(await previewsModuleResponse.text(), /src\/Smoke\.tsx#Smoke/);
+
+  const previewSourceResponse = await request(`${baseUrl}/src/Smoke.tsx`);
+  assert.equal(previewSourceResponse.status, 200);
+  assert.match(await previewSourceResponse.text(), /export function Smoke/);
 
   let manifest = [];
   for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -97,12 +101,12 @@ try {
   }
 
   assert.equal(manifest.length, 1);
-  assert.equal(isManifest(manifest), true);
   assert.equal(manifest[0].id, "src/Smoke.tsx#Smoke");
   assert.equal(manifest[0].name, "Card");
   assert.equal(manifest[0].group, "Smoke");
   assert.equal(manifest[0].file, "src/Smoke.tsx");
   assert.equal(manifest[0].exportName, "Smoke");
+  fs.writeFileSync("manifest.json", JSON.stringify(manifest));
 } finally {
   server.httpServer?.closeAllConnections();
   await Promise.race([server.close(), delay(1_000)]);

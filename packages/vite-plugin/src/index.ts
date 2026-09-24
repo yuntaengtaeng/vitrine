@@ -3,8 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   GALLERY_MODULE_ID,
-  GALLERY_ROUTE,
-  MANIFEST_ROUTE,
+  GALLERY_ROUTE as PROTOCOL_GALLERY_ROUTE,
+  MANIFEST_ROUTE as PROTOCOL_MANIFEST_ROUTE,
   PREVIEWS_MODULE_ID,
 } from "@vitrine/protocol";
 import type { Plugin } from "vite";
@@ -20,7 +20,9 @@ export interface VitrinePluginOptions {
 
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
 const SCRIPT_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
-export { GALLERY_ROUTE, MANIFEST_ROUTE } from "@vitrine/protocol";
+// re-export 대신 값으로 선언해야 공개 declaration에 private protocol 참조가 남지 않음
+export const GALLERY_ROUTE = PROTOCOL_GALLERY_ROUTE;
+export const MANIFEST_ROUTE = PROTOCOL_MANIFEST_ROUTE;
 
 // Source와 build output에서 동일한 package root 계산
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
