@@ -29,13 +29,15 @@ Vitrine은 Storybook 대체품이 아닙니다. 문서 사이트 빌더, 시각�
 설치, 프리뷰 선언, controls와 variants는
 [vite-plugin-react-vitrine README](./packages/vite-plugin/README.md)를 참고하세요.
 
+에디터 옆에서 프리뷰를 보려면 Visual Studio Marketplace에서 [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)를 설치하세요.
+
 ## 저장소 구성
 
 | 경로 | 설명 |
 | --- | --- |
 | `packages/vite-plugin` | 배포되는 Vite plugin과 갤러리, `vite-plugin-react-vitrine` |
 | `packages/protocol` | plugin, 갤러리, 확장이 공유하는 비공개 runtime 계약 |
-| `apps/vscode-extension` | 갤러리를 패널에 보여주는 VS Code 확장 |
+| `apps/vscode-extension` | 갤러리를 패널에 보여주는 VS Code 확장, [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine) |
 | `examples/react-basic` | 개발용 예제 앱 |
 | `fixtures/multi-project` | 프로젝트 전환 테스트용 앱 두 개 |
 | `tests/compat` | 버전을 고정한 React, Vite 호환성 조합 |

@@ -105,8 +105,13 @@ vitrine({
 
 ## VS Code
 
-A companion VS Code extension that opens the gallery beside your editor and follows
-your cursor is in development. The gallery works in any browser without it.
+Install [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine) to open the gallery beside your editor. The panel
+follows your cursor and switches to the preview you are working on. The gallery also works
+in any browser without it.
+
+```bash
+code --install-extension yuntaengtaeng.vitrine
+```
 
 To let the extension find your dev server, the plugin writes its port to
 `.vitrine/port.json` in the project root. The folder ignores itself with its own
