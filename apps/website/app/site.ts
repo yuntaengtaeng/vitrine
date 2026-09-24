@@ -8,4 +8,5 @@ export const SITE = {
   setupGuideUrl: "https://github.com/yuntaengtaeng/vitrine/tree/main/packages/vite-plugin#readme",
   setupGuideKoUrl: "https://github.com/yuntaengtaeng/vitrine/blob/main/packages/vite-plugin/README.ko.md",
   issuesUrl: "https://github.com/yuntaengtaeng/vitrine/issues",
+  ogImagePath: "/og-image.png",
 } as const;
