@@ -1,242 +1,99 @@
-# vitrine
+# Vitrine
 
 [English](./README.md)
 
-> 에디터를 벗어나지 않고, Jetpack Compose Preview 경험을 React로 가져옵니다.
+편집 중인 파일 바로 옆에서 보는 React용 Jetpack Compose 스타일 프리뷰입니다.
 
-Vitrine은 컴포넌트 export 위에 `/** @preview */` 주석을 달아두면, 편집 중인
-파일 바로 옆 VS Code 패널에서 실시간으로 렌더링된 모습을 볼 수 있게 해줍니다.
-`.stories.tsx` 파일도, 별도 브라우저 탭도, 수동 등록 과정도 필요 없습니다.
-
-## 철학
-
-- **에디터가 주 인터페이스입니다.** 브라우저 탭은 대체 수단일 뿐, 목표로 하는
-  경험이 아닙니다.
-- **분리된 파일보다 인라인을.** Storybook / Ladle / Histoire와의 차별점은,
-  프리뷰가 관리해야 할 별도 파일이 아니라 미리보기 대상 export 바로 위에 붙는
-  주석이라는 점입니다.
-- **렌더링은 항상 Vite가 담당합니다.** VS Code 확장은 스스로 번들링하거나
-  렌더링하지 않습니다. webview를 열고, Vite dev server가 서빙하는 갤러리
-  페이지를 `<iframe>`으로 가리킬 뿐입니다.
-
-### 하지 않는 것 (Non-goals)
-
-- 완전한 Storybook 대체가 아닙니다 (문서화 플랫폼, 시각적 회귀 테스트,
-  애드온 생태계 없음). 프리뷰에 필요한 props 컨트롤과 variants는 지원합니다.
-- dev server를 자동으로 시작하지 않습니다 — 프로젝트의 `vite dev`는 직접
-  실행해야 합니다.
-- 멀티 프레임워크를 지원하지 않습니다 (Vue/Svelte 프리뷰는 범위 밖).
-- 컴포넌트를 자동으로 찾아주지 않습니다 — 프리뷰는 `@preview`를 통해
-  명시적으로 선언해야 합니다.
-
-## 동작 방식
-
-```
-VS Code 커맨드  →  Webview 패널  →  <iframe src="…/​__vitrine">
-                                              │
-                                     Vite dev server
-                                  (vite-plugin-react-vitrine)
-                                              │
-                                  @preview export를 스캔하고,
-                                  갤러리 페이지를 서빙
-```
-
-두 개의 패키지, 두 가지 역할:
-
-- **`packages/vite-plugin`** (`vite-plugin-react-vitrine`) — 실제 엔진 역할.
-  `@babel/parser`를 이용해 (문자열 검색이 아니라) 소스에서 `@preview` 주석이
-  달린 export를 스캔하고, 개발 모드에서 `/__vitrine` 경로에 갤러리 페이지를
-  서빙합니다.
-- **`apps/vscode-extension`** (`vitrine`) — 의도적으로 얇게 유지.
-  `Vitrine: Open Preview` 커맨드 하나로, dev server의 `/__vitrine` 경로를
-  가리키는 `<iframe>`이 담긴 webview 패널을 엽니다.
-
-## 프리뷰 선언하기
+컴포넌트 export 위에 `/** @preview */`를 붙이면 Vite dev server가 실시간 갤러리로
+렌더링하고, VS Code 확장이 그 갤러리를 에디터 옆에 보여줍니다.
 
 ```tsx
-export function Button({ variant }: { variant: "primary" | "danger" }) {
-  /* ... */
-}
-
-/** @preview */
-export const PrimaryButton = () => <Button variant="primary" />;
-
-/** @preview name="Inputs/Danger button" */
-export const DangerButton = () => <Button variant="danger" />;
-
-/** @preview */
-export default () => <Button variant="primary" />;
+/** @preview name="Inputs/Primary button" */
+export const PrimaryButton = () => <Button variant="primary">Save</Button>;
 ```
 
-- 주석은 `export const`, `export function`, 또는 `export default` 바로 위에
-  붙는 블록 주석이어야 합니다.
-- `name="..."`은 선택 사항입니다. 생략하면 export 식별자가 라벨로 사용됩니다.
-  값은 `"..."` 또는 `'...'`로 시작과 끝을 감싸야 공백을 포함할 수 있습니다
-  (`name="Danger button"` → 라벨 "Danger button"). default export는 그 자체로
-  식별자가 없어서(이름 있는 함수이거나 이미 선언된 변수를 참조하는 경우는
-  예외), 위 예시처럼 익명이면 파일 이름으로 폴백합니다 — 여기서는 "Button".
-- `name="..."` 값에 `/`가 있으면 사이드바에서 그룹으로 묶입니다, 마지막 `/`
-  앞부분이 그룹, 뒷부분이 라벨입니다 (`name="Inputs/Danger button"` → 그룹
-  "Inputs", 라벨 "Danger button"), Storybook의 `title: "Inputs/Button"` 계층
-  표기와 같은 규약입니다. `/`가 여러 개면 그룹이 중첩됩니다. 별도 `group=`
-  옵션은 없고, 파일 기준 기본 그룹핑도 없습니다 — `name=`에 `/`가 있어야만
-  그룹이 생깁니다.
+## 왜 Vitrine인가
 
-### Props 컨트롤
+- **프리뷰가 코드 옆에 있습니다.** 프리뷰는 export 위의 주석입니다. 따로 맞춰야 하는
+  stories 파일이 없습니다.
+- **렌더링은 사용자의 Vite 설정이 담당합니다.** alias, plugin, CSS, HMR이 앱과 똑같이
+  동작합니다.
+- **에디터가 주 인터페이스입니다.** 커서를 프리뷰 위로 옮기면 패널이 그 프리뷰로
+  바뀝니다. 브라우저 갤러리만 따로 써도 됩니다.
 
-Vitrine은 주석이 붙은 컴포넌트의 `string`, `number`, `boolean`, 문자열/숫자
-리터럴 union prop에 맞는 컨트롤을 생성합니다. 프로젝트의 `tsconfig.json`을
-통해 import된 prop 타입도 해석합니다.
+Vitrine은 Storybook 대체품이 아닙니다. 문서 사이트 빌더, 시각적 회귀 테스트, 애드온
+생태계는 제공하지 않습니다.
 
-의미 있는 예시 값이나 다른 컨트롤이 필요할 때만 `preview()`로 덮어씁니다:
+## 시작하기
 
-```tsx
-import { preview } from "vite-plugin-react-vitrine/preview";
+설치, 프리뷰 선언, controls와 variants는
+[vite-plugin-react-vitrine README](./packages/vite-plugin/README.md)를 참고하세요.
 
-/** @preview */
-export const Button = (props: ButtonProps) => <button>{props.children}</button>;
+## 저장소 구성
 
-preview(Button, {
-  args: { variant: "primary", children: "Save" },
-  controls: { variant: "radio" },
-  variants: {
-    primary: { name: "Primary", args: { variant: "primary" } },
-    danger: { name: "Danger", args: { variant: "danger" } },
-  },
-  defaultVariant: "primary",
-});
+| 경로 | 설명 |
+| --- | --- |
+| `packages/vite-plugin` | 배포되는 Vite plugin과 갤러리, `vite-plugin-react-vitrine` |
+| `packages/protocol` | plugin, 갤러리, 확장이 공유하는 비공개 runtime 계약 |
+| `apps/vscode-extension` | 갤러리를 패널에 보여주는 VS Code 확장 |
+| `examples/react-basic` | 개발용 예제 앱 |
+| `fixtures/multi-project` | 프로젝트 전환 테스트용 앱 두 개 |
+| `tests/compat` | 버전을 고정한 React, Vite 호환성 조합 |
+
+```text
+VS Code 패널 -> <iframe src="http://localhost:<port>/__vitrine">
+                  |
+                Vite dev server + vite-plugin-react-vitrine
+                  @preview export를 스캔하고 갤러리를 제공
 ```
 
-`preview()`는 컴포넌트를 감싸거나 바꾸지 않고 metadata만 등록합니다.
-`variants`는 같은 프리뷰의 이름 있는 args preset 사이를 이동하는 picker를
-추가합니다. `group`과 달리 module을 load한 뒤에 알 수 있는 runtime 값입니다.
+확장은 컴포넌트를 직접 번들링하거나 렌더링하지 않습니다. plugin이 기록한
+`.vitrine/port.json`으로 실행 중인 dev server를 찾아 갤러리 페이지를 띄울 뿐입니다.
 
-## 호환성
-
-`vite-plugin-react-vitrine`이 현재 선언하는 지원 범위는 다음과 같습니다.
-
-- React 18.x, 19.x
-- Vite 6.4 이상, 7.x, 8.x
-
-다음 대표 환경은 자동화된 호환성 테스트로 검증합니다.
-
-| React | Vite | TypeScript | 상태 |
-| --- | --- | --- | --- |
-| 18.3.1 | 6.4.3 | 5.6.3 | 검증됨 |
-| 18.3.1 | 7.3.6 | 5.9.3 | 검증됨 |
-| 19.2.8 | 8.2.2 | 5.9.3 | 검증됨 |
-
-위 표는 선언된 React와 Vite 범위 안의 모든 조합이 아니라 대표 호환성 lane을
-나타냅니다. TypeScript 열은 각 test fixture의 type-check에 사용한 compiler
-버전이며 TypeScript peer dependency 범위를 의미하지 않습니다.
-
-### 버전 관리 정책
-
-- 일반 workspace dependency는 역할별 pnpm named catalog로 관리합니다.
-- Example은 React 18과 Vite 7을 기본 개발 환경으로 사용합니다.
-- 호환성 lane은 의미가 재현될 수 있도록 정확한 버전을 고정합니다.
-- 새 major 지원 시 `latest`나 `minimum` lane을 변경하지 않고 새 버전 lane을
-  추가합니다. 기존 lane은 지원을 명시적으로 종료할 때까지 유지합니다.
-
-## 사용법
+## 개발
 
 ```bash
 pnpm install
-pnpm run build              # vite-plugin-react-vitrine 빌드
-pnpm run dev:example        # example 앱의 Vite dev server 시작
-pnpm run test                # Vitest 스위트 실행
+pnpm run build            # plugin과 갤러리 빌드
+pnpm run dev:example      # 예제 앱 실행
+pnpm run test             # 단위 테스트
+pnpm run lint
 ```
 
-이후 브라우저에서 `http://localhost:5173/__vitrine`을 열어 갤러리를 바로
-확인할 수 있습니다. 터미널에서 VS Code 확장을 테스트하려면 example dev
-server를 실행해 둔 상태로 두 번째 터미널에서 다음 명령을 실행합니다.
+`http://localhost:5173/__vitrine`에서 예제 갤러리를 볼 수 있습니다.
+
+확장을 실행하려면 예제 dev server를 켜둔 채 다른 터미널에서 실행합니다.
 
 ```bash
-pnpm run build:extension    # apps/vscode-extension 빌드
-pnpm run dev:host           # Extension Development Host 실행
+pnpm run build:extension
+pnpm run dev:host         # Extension Development Host 실행 (PATH에 `code` 필요)
 ```
 
-`dev:host`를 사용하려면 `code` 명령을 `PATH`에서 실행할 수 있어야 합니다. 이
-명령은 로컬 확장을 load한 별도의 Extension Development Host에서 현재 저장소를
-엽니다. 또는 Extension을 빌드한 뒤 이 폴더를 VS Code로 열고
-**F5**(`.vscode/launch.json` 사용)를 눌러 같은 테스트 환경을 실행할 수 있습니다.
-어느 방식이든 커맨드 팔레트에서 **Vitrine: Open Preview**를 실행하세요. dev
-server가 이미 실행 중이어야 하며, 그렇지 않으면 빈 화면 대신 안내 메시지가
-표시됩니다.
+VS Code에서 이 폴더를 열고 **F5**를 눌러도 됩니다. 그다음 명령 팔레트에서
+**Vitrine: Open Preview**를 실행합니다.
 
-dev server의 포트는 자동으로 감지되므로 따로 설정할 값이 없습니다. Vite
-플러그인이 서버 시작 시 실제 포트를 `<project-root>/.vitrine/port.json`에
-기록하고(해당 폴더는 스스로 `.gitignore` 처리) 확장은 활성 에디터 파일에서
-위로 올라가며 대상 프로젝트를 찾고, 없으면 워크스페이스 전체를 스캔합니다
-(동시에 여러 dev server가 떠 있으면 선택 목록을 띄웁니다). 패널 안
-**Switch Project** 버튼으로 지금 어떤 파일을 보고 있든 상관없이 다른 실행
-중인 프로젝트로 언제든 전환할 수 있습니다.
+### 배포 전 검증
 
-## 커서 위치를 따라가는 프리뷰
+```bash
+pnpm run test:package             # 패킹한 plugin을 빈 소비자 프로젝트에 설치해 검증
+pnpm run test:extension-package   # 확장 번들 검증
+pnpm run test:compat              # 모든 React, Vite 호환성 조합 실행
+```
 
-에디터 커서를 `@preview` export 위로 옮기면 클릭 없이도 패널이 자동으로 그
-프리뷰로 전환됩니다. 단, 지금 패널이 보여주는 프로젝트 안에서만 반응하며,
-다른 프로젝트 파일로 커서를 옮겨도 아무 일도 일어나지 않습니다(먼저
-**Switch Project**로 전환해야 함). 아래 알려진 이슈 참고.
+## 호환성
 
-## 라이브로 반영되는 프리뷰 목록
+`vite-plugin-react-vitrine`은 React 18, 19와 Vite 6.4+, 7, 8을 지원합니다. 다음 조합은
+호환성 검증 때마다 확인합니다.
 
-`@preview` export를 추가, 삭제, 이름 변경하면 dev server를 재시작하지 않아도
-자동으로 반영됩니다. 플러그인이 소스 파일을 감시하다가 프리뷰 목록 자체가
-실제로 달라졌을 때만 매니페스트를 무효화하고 브라우저 전체 리로드를
-트리거합니다. 기존 프리뷰 *내부*를 수정하는 건 이 대상이 아니며, 그건 평범한
-Vite/React Fast Refresh 영역입니다. 여전히 수동으로 `pnpm run build`를
-돌리고 dev server를 재시작해야 하는 유일한 부분은 갤러리 UI 자체의 소스인
-`gallery-client.tsx`입니다.
+| React | Vite | TypeScript |
+| --- | --- | --- |
+| 18.3.1 | 6.4.3 | 5.6.3 |
+| 18.3.1 | 7.3.6 | 5.9.3 |
+| 19.2.8 | 8.2.2 | 5.9.3 |
 
-## 현재까지 검증된 내용
+각 조합은 정확한 버전을 고정합니다. 새 메이저 버전을 지원할 때는 기존 조합을 바꾸지
+않고 새 조합을 추가합니다.
 
-Vite 플러그인 쪽은 실제 dev server를 대상으로 end-to-end 검증을 마쳤습니다:
-`/__vitrine` 경로, `\0`이 접두어로 붙는 데이터 virtual module
-(`virtual:vitrine-previews`), 접두어 없는 갤러리 엔트리 모듈
-(`virtual:vitrine-preview-gallery`), 그리고 AST 스캔(공백이 포함된
-`name=...` 옵션 포함)까지 모두 정상적으로 resolve/서빙됨을 확인했습니다.
+## 라이선스
 
-VS Code 확장 쪽(webview CSP, iframe 렌더링, F5 디버깅)도 실제 Extension
-Development Host 세션에서 검증을 마쳤습니다: `Vitrine: Open Preview`
-커맨드를 실행하면 webview 패널이 열리고 dev server의 example 앱 프리뷰가
-정상적으로 렌더링됩니다.
-
-dev server 포트 자동 감지는 Vite 플러그인 쪽을 실제로 라이브 검증했습니다
-(서버 시작 시 포트/PID 파일 기록, 정상 종료 시 삭제, 강제 종료된 프로세스의
-PID가 정확히 죽은 것으로 감지됨). 플러그인의 파일 기록 로직과 확장의 탐색
-로직(상위 탐색, 워크스페이스 스캔, `node_modules` 제외, PID 생존 확인)은
-Vitest 스위트로도 커버했습니다. 여러 dev server가 동시에 떠 있을 때 뜨는
-확장 쪽 선택 목록 UI와 Switch Project 버튼은 dev server 두 개를 동시에
-띄운 Extension Development Host 세션에서 직접 확인했습니다.
-
-커서 위치를 따라가는 프리뷰는 같은 프로젝트 안에서 라이브로 end-to-end
-검증했습니다: 같은 파일 안 `@preview` export 사이로 커서를 옮기면 패널이
-자동으로 전환됩니다. 라인 범위 스캔(`scan.ts`)과 커서-엔트리 매칭
-(`preview-lookup.ts`)은 Vitest로, `/__vitrine/manifest` 엔드포인트는 실제
-dev server를 대상으로 직접 확인했습니다.
-
-라이브로 반영되는 프리뷰 목록은 실제 dev server를 대상으로 검증했습니다:
-`@preview` export를 추가했다가 삭제하는 양방향 모두, 프로세스 재시작 없이
-서빙되는 `virtual:vitrine-previews` 모듈에 반영됨을 확인했습니다.
-
-## 알려진 이슈
-
-- **커서 추적은 프로젝트를 넘나들지 않습니다.** 패널이 프로젝트 A를 보여주는
-  중에 프로젝트 B의 파일로 커서를 옮겨도 아무 반응이 없습니다 — 커서 추적은
-  일부러 지금 보여주는 프로젝트로만 범위를 제한해서, 사용자가 직접 고르는
-  **Switch Project**와 충돌하지 않게 했습니다. 다른 프로젝트를 보려면 먼저
-  Switch Project로 전환하면, 그 다음부터는 새 프로젝트 안에서 커서 추적이
-  다시 동작합니다. 버그가 아니라 스코프 결정이며, 실사용에서 불편하면 다시
-  검토할 항목입니다.
-
-## 앞으로의 방향 (아직 구현 안 됨)
-
-아래 항목들은 검토했지만 의도적으로 미룬 것들이며, 잊은 게 아닙니다:
-
-- 자동 컴포넌트 탐색 (`@preview` 주석 없이도 동작)
-- 테마 / 반응형 / 줌 토글
-- Provider 자동 감지 (Router / QueryClient / ThemeProvider) 및 목(mock) 처리
-- 프리뷰별 iframe 격리
-- 사용법/가이드 문서를 이 README에서 분리해 별도 문서 사이트로 구성 (예 VitePress),
-  콘텐츠와 실사용자가 늘어서 빌드/배포 비용을 들일 가치가 생기면
+[MIT](./LICENSE)
