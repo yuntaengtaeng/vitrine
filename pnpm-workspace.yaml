@@ -28,8 +28,9 @@ catalogs:
     typescript-eslint: ^8.67.0
   node:
     "@types/node": ^22.9.0
-  vscode:
-    "@types/vscode": ^1.85.0
+  release:
+    "@changesets/cli": ^3.0.3
+    "@vscode/vsce": ^4.0.0
   babel:
     "@babel/parser": ^7.25.9
     "@babel/traverse": ^7.25.9

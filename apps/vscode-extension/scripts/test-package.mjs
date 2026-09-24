@@ -7,38 +7,38 @@ import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-extension-package-"));
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+const vsceBin = path.join(packageRoot, "node_modules", "@vscode", "vsce", "vsce");
+const REQUIRED_FILES = ["package.json", "README.md", "LICENSE", "dist/extension.js"];
 
-function runPnpm(args, options) {
-  if (process.platform !== "win32") return execFileSync(pnpmCommand, args, options);
-  return execFileSync(
-    process.env.ComSpec ?? "cmd.exe",
-    ["/d", "/s", "/c", pnpmCommand, ...args],
-    options,
-  );
+function runVsce(args) {
+  return execFileSync(process.execPath, [vsceBin, ...args], { cwd: packageRoot, encoding: "utf8" });
 }
 
 try {
   const extensionBundlePath = path.join(packageRoot, "dist", "extension.js");
   assert.ok(fs.existsSync(extensionBundlePath), "extension build is missing dist/extension.js");
-  const extensionBundle = fs.readFileSync(extensionBundlePath, "utf8");
   assert.doesNotMatch(
-    extensionBundle,
+    fs.readFileSync(extensionBundlePath, "utf8"),
     /require\(["']@vitrine\/protocol["']\)/,
     "extension bundle contains an external protocol runtime dependency",
   );
 
-  const packOutput = runPnpm(["pack", "--json", "--pack-destination", tempRoot], {
-    cwd: packageRoot,
-    encoding: "utf8",
-  });
-  const parsedPackResult = JSON.parse(packOutput);
-  const packResult = Array.isArray(parsedPackResult) ? parsedPackResult[0] : parsedPackResult;
-  assert.ok(packResult, "pnpm pack did not return extension package metadata");
+  const packagedFiles = runVsce(["ls", "--no-dependencies"])
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  for (const file of REQUIRED_FILES) {
+    assert.ok(packagedFiles.includes(file), `VSIX is missing ${file}`);
+  }
   assert.ok(
-    packResult.files.some((file) => file.path === "dist/extension.js"),
-    "extension package is missing dist/extension.js",
+    packagedFiles.every((file) => !file.startsWith("src/") && !file.startsWith("scripts/")),
+    `VSIX contains source files: ${packagedFiles.join(", ")}`,
   );
+
+  // 실제 VSIX 생성으로 publisher, engines 등 manifest 검증까지 수행
+  const vsixPath = path.join(tempRoot, "vitrine.vsix");
+  runVsce(["package", "--no-dependencies", "--out", vsixPath]);
+  assert.ok(fs.statSync(vsixPath).size > 0, "vsce produced an empty VSIX");
 
   console.log("Vitrine extension package smoke test passed");
 } finally {
