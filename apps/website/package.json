@@ -1,0 +1,31 @@
+{
+  "name": "@vitrine/website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "catalog:website",
+    "isbot": "catalog:website",
+    "motion": "catalog:website",
+    "pretendard": "catalog:website",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
+    "react-router": "catalog:website"
+  },
+  "devDependencies": {
+    "@react-router/dev": "catalog:website",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
+    "@vanilla-extract/css": "catalog:website",
+    "@vanilla-extract/vite-plugin": "catalog:website",
+    "@vitrine/brand": "workspace:*",
+    "@vitrine/typescript-config": "workspace:*",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite"
+  }
+}

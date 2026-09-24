@@ -33,8 +33,8 @@ assert.equal(
 for (const file of listFiles(path.join(installedPluginRoot, "dist"))) {
   assert.doesNotMatch(
     fs.readFileSync(file, "utf8"),
-    /@vitrine\/protocol/,
-    `${path.relative(installedPluginRoot, file)} references the private protocol package`,
+    /@vitrine\/(protocol|brand)/,
+    `${path.relative(installedPluginRoot, file)} references a private workspace package`,
   );
 }
 

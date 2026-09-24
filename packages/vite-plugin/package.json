@@ -49,6 +49,7 @@
     "typescript": "catalog:typescript"
   },
   "devDependencies": {
+    "@vitrine/brand": "workspace:*",
     "@vitrine/protocol": "workspace:*",
     "@vitrine/typescript-config": "workspace:*",
     "@types/babel__traverse": "catalog:babel",
