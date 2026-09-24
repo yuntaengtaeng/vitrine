@@ -37,5 +37,16 @@ are considered stable.
 
 ## Releasing
 
-Merging to `main` updates a "Version Packages" PR that applies pending changesets.
-Merging that PR publishes the npm package and tags both packages.
+1. Merging to `main` updates a "Version Packages" PR that applies pending changesets.
+2. Merge that PR when you are ready to release.
+3. Push a tag for the new version. This publishes the npm package through the
+   `Publish` workflow using npm Trusted Publishing, so no npm token is involved.
+
+```bash
+git switch main && git pull
+git tag vite-plugin-react-vitrine@0.2.0
+git push origin vite-plugin-react-vitrine@0.2.0
+```
+
+The workflow fails if the tag does not match `packages/vite-plugin/package.json`.
+The VS Code extension is released separately with the `Release VS Code extension` workflow.

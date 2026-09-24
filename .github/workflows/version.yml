@@ -1,21 +1,17 @@
-name: Release
+name: Version Packages
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
-concurrency: release-${{ github.ref }}
+concurrency: version-${{ github.ref }}
 
 jobs:
-  release:
-    # 저장소 변수 RELEASE_ENABLED를 켜기 전까지 npm publish를 시도하지 않음
-    if: vars.RELEASE_ENABLED == 'true'
+  version:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-      id-token: write
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -23,15 +19,11 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
+      # 대기 중인 changeset이 있을 때만 버전과 CHANGELOG를 올리는 PR을 갱신함
       - uses: changesets/action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: pnpm run version-packages
-          publish: pnpm run release
           title: "chore: version packages"
           commit: "chore: version packages"
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
