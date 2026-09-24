@@ -104,8 +104,12 @@ vitrine({
 
 ## VS Code
 
-갤러리를 에디터 옆에 열고 커서를 따라 프리뷰를 바꿔주는 VS Code 확장을 개발하고 있습니다.
-확장 없이도 갤러리는 어느 브라우저에서나 동작합니다.
+[Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)를 설치하면 갤러리를 에디터 옆에 열 수 있습니다. 패널은 커서를 따라
+작업 중인 프리뷰로 바뀝니다. 확장 없이도 갤러리는 어느 브라우저에서나 동작합니다.
+
+```bash
+code --install-extension yuntaengtaeng.vitrine
+```
 
 확장이 dev server를 찾을 수 있도록 plugin은 프로젝트 root의 `.vitrine/port.json`에 포트를 기록합니다.
 이 폴더는 자체 `.gitignore`로 스스로를 제외하므로 커밋에 포함되지 않습니다.

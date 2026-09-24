@@ -29,13 +29,16 @@ regression testing or addon ecosystem.
 See the [vite-plugin-react-vitrine README](./packages/vite-plugin/README.md) for
 installation, preview declarations, controls and variants.
 
+To see previews beside your editor, install [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine) from the
+Visual Studio Marketplace.
+
 ## Repository
 
 | Path | Description |
 | --- | --- |
 | `packages/vite-plugin` | `vite-plugin-react-vitrine`, the published Vite plugin and gallery |
 | `packages/protocol` | Private runtime contracts shared by the plugin, gallery and extension |
-| `apps/vscode-extension` | VS Code extension that shows the gallery in a panel |
+| `apps/vscode-extension` | [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine), shows the gallery in a panel |
 | `examples/react-basic` | Example app used during development |
 | `fixtures/multi-project` | Two apps for testing project switching |
 | `tests/compat` | Pinned React and Vite version lanes |
