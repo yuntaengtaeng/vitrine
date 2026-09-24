@@ -21,7 +21,6 @@
     "lint": "eslint .",
     "changeset": "changeset",
     "version-packages": "changeset version && pnpm install --lockfile-only",
-    "release": "pnpm run build && changeset publish",
     "package:extension": "pnpm --filter vitrine package"
   },
   "devDependencies": {

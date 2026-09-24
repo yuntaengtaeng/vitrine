@@ -1,0 +1,41 @@
+name: Publish
+
+on:
+  push:
+    tags: ["vite-plugin-react-vitrine@*"]
+
+concurrency: publish-${{ github.ref }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # npm Trusted Publishing(OIDC) 인증에 필요
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      # Trusted Publishing은 npm CLI 11.5.1 이상이 필요함
+      - run: npm install -g npm@11
+      - run: pnpm install --frozen-lockfile
+      - name: Check tag matches package version
+        run: |
+          expected="${GITHUB_REF_NAME#vite-plugin-react-vitrine@}"
+          actual="$(node -p "require('./packages/vite-plugin/package.json').version")"
+          if [ "$expected" != "$actual" ]; then
+            echo "Tag version $expected does not match package.json version $actual"
+            exit 1
+          fi
+      - run: pnpm run test:package
+      # pnpm pack이 catalog:, workspace: 범위를 실제 버전으로 바꾸고 npm이 OIDC로 publish함
+      - name: Publish to npm
+        working-directory: packages/vite-plugin
+        run: |
+          pnpm pack
+          npm publish ./vite-plugin-react-vitrine-*.tgz
