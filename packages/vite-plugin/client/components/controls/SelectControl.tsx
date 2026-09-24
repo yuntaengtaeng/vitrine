@@ -12,7 +12,7 @@ const Styled = {
   border: FIELD_BORDER,
   borderRadius: FIELD_BORDER_RADIUS,
   ...FIELD_FOCUS,
-  background: "white",
+  background: COLOR.surface,
   color: COLOR.body,
   fontFamily: "inherit",
   fontSize: FONT_SIZE.secondary,

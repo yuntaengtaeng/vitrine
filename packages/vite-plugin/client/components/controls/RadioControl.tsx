@@ -35,7 +35,7 @@ export const RadioControl = (props: {
           style={{
             ...Styled.Radio,
             borderColor: selected ? COLOR.activeText : COLOR.border,
-            background: selected ? COLOR.activeBg : "white",
+            background: selected ? COLOR.activeBg : COLOR.surface,
             color: selected ? COLOR.activeText : COLOR.body,
           }}
           onClick={() => props.onChange(option)}
