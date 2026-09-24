@@ -14,6 +14,9 @@ your app.
   switches to that preview.
 - **Finds your dev server.** The panel connects to the project of the active file. If
   several dev servers are running, you pick one. **Switch Project** changes it at any time.
+- **Stays out of your way.** The preview's editor group is locked, so files you open land in
+  your code editor instead of covering the preview. To turn this off, set
+  `"mainThreadWebview-vitrine.preview": false` in `workbench.editor.autoLockGroups`.
 
 ## Requirements
 

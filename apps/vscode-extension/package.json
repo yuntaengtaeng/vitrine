@@ -31,6 +31,11 @@
   "main": "./dist/extension.js",
   "files": ["dist", "LICENSE", "icon.png"],
   "contributes": {
+    "configurationDefaults": {
+      "workbench.editor.autoLockGroups": {
+        "mainThreadWebview-vitrine.preview": true
+      }
+    },
     "commands": [
       {
         "command": "vitrine.open",
