@@ -5,6 +5,9 @@ import {
   SWITCH_PROJECT_MESSAGE_TYPE,
 } from "@vitrine/protocol";
 
+const PLUGIN_PACKAGE = "vite-plugin-react-vitrine";
+const SETUP_GUIDE_URL = "https://github.com/yuntaengtaeng/vitrine/tree/main/packages/vite-plugin#readme";
+
 /** HTML 텍스트와 속성 값에 넣을 문자열 escape */
 export function escapeHtml(value: string): string {
   return value
@@ -47,8 +50,14 @@ export function renderNotFoundHtml(): string {
     body: `
       <div class="vitrine-message">
         <h2>No Vitrine dev server detected</h2>
-        <p>Start your project's Vite dev server (with <code>vite-plugin-react-vitrine</code> configured),
-        then click <b>Switch Project</b> above.</p>
+        <p>Vitrine shows the gallery served by your project's Vite dev server</p>
+        <ol class="vitrine-steps">
+          <li>Install the plugin: <code>npm install -D ${PLUGIN_PACKAGE}</code></li>
+          <li>Add <code>vitrine()</code> to <code>plugins</code> in your Vite config</li>
+          <li>Start your Vite dev server</li>
+          <li>Click <b>Switch Project</b> above</li>
+        </ol>
+        <p><a href="${SETUP_GUIDE_URL}">Open the setup guide</a></p>
       </div>`,
   });
 }
@@ -98,6 +107,8 @@ function renderShell(options: {
       .vitrine-content { flex: 1 1 auto; min-height: 0; }
       .vitrine-content iframe { width: 100%; height: 100%; border: 0; }
       .vitrine-message { padding: 2rem; color: var(--vscode-descriptionForeground); }
+      .vitrine-steps { padding-left: 1.25rem; line-height: 1.9; }
+      .vitrine-message a { color: var(--vscode-textLink-foreground); }
       code {
         background: var(--vscode-textCodeBlock-background);
         padding: 2px 6px;
