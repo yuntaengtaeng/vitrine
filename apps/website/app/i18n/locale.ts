@@ -3,6 +3,7 @@ import { en, type Messages } from "./en";
 import { ko } from "./ko";
 
 export type Locale = "en" | "ko";
+export type DocsPage = "getting-started" | "previews" | "preview-function";
 
 const MESSAGES: Record<Locale, Messages> = { en, ko };
 
@@ -17,8 +18,16 @@ export function homePath(locale: Locale): string {
 }
 
 /** 언어별 문서 경로 */
-export function docsPath(locale: Locale): string {
-  return locale === "ko" ? "/ko/docs" : "/docs";
+export function docsPath(locale: Locale, page: DocsPage = "getting-started"): string {
+  const base = locale === "ko" ? "/ko/docs" : "/docs";
+  return page === "getting-started" ? base : `${base}/${page}`;
+}
+
+export function docsPageFromPath(pathname: string): DocsPage | undefined {
+  if (!pathname.includes("/docs")) return undefined;
+  if (pathname.endsWith("/previews")) return "previews";
+  if (pathname.endsWith("/preview-function")) return "preview-function";
+  return "getting-started";
 }
 
 export function messagesFor(locale: Locale): Messages {

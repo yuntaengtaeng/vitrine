@@ -5,5 +5,9 @@ export default [
   index("routes/home.tsx", { id: "home-en" }),
   route("ko", "routes/home.tsx", { id: "home-ko" }),
   route("docs", "routes/docs.tsx", { id: "docs-en" }),
+  route("docs/previews", "routes/docs.tsx", { id: "docs-previews-en" }),
+  route("docs/preview-function", "routes/docs.tsx", { id: "docs-preview-function-en" }),
   route("ko/docs", "routes/docs.tsx", { id: "docs-ko" }),
+  route("ko/docs/previews", "routes/docs.tsx", { id: "docs-previews-ko" }),
+  route("ko/docs/preview-function", "routes/docs.tsx", { id: "docs-preview-function-ko" }),
 ] satisfies RouteConfig;

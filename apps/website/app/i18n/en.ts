@@ -67,7 +67,6 @@ export const en = {
     label: "Getting started",
     title: "Add your first component.",
     lead: "Connect Vitrine to an existing React and Vite app in four steps.",
-    onThisPage: "On this page",
     steps: [
       {
         title: "Install the plugin",

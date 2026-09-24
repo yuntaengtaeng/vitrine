@@ -1,8 +1,10 @@
 import { style } from "@vanilla-extract/css";
 import { vars } from "../../styles/theme.css";
 
+export const article = style({ minWidth: 0 });
+
 export const intro = style({
-  paddingBlock: "clamp(4rem, 9vw, 7rem)",
+  paddingBottom: "clamp(2.5rem, 6vw, 4.5rem)",
   borderBottom: `1px solid ${vars.color.border}`,
 });
 
@@ -15,10 +17,10 @@ export const label = style({
 
 export const title = style({
   margin: 0,
-  maxWidth: "13ch",
-  fontSize: "clamp(2.75rem, 7vw, 5.75rem)",
-  lineHeight: 0.98,
-  letterSpacing: "-0.055em",
+  maxWidth: "18ch",
+  fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+  lineHeight: 1,
+  letterSpacing: "-0.045em",
 });
 
 export const lead = style({
@@ -29,22 +31,8 @@ export const lead = style({
 });
 
 export const guide = style({
-  paddingBlock: "clamp(3rem, 8vw, 6rem)",
+  paddingTop: "clamp(2.5rem, 6vw, 4.5rem)",
 });
-
-export const contents = style({
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "0.75rem 1.5rem",
-  marginBottom: "3rem",
-  paddingBottom: "1.5rem",
-  borderBottom: `1px solid ${vars.color.border}`,
-  color: vars.color.textMuted,
-  fontSize: "0.9375rem",
-});
-
-export const contentsLabel = style({ color: vars.color.text, fontWeight: 650 });
-export const contentsLink = style({ color: vars.color.accent, textUnderlineOffset: "0.2em" });
 
 export const steps = style({
   margin: 0,
@@ -100,15 +88,7 @@ export const addressCode = style({
 });
 
 export const docSection = style({
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 0.7fr) minmax(0, 1.3fr)",
-  gap: "clamp(2rem, 7vw, 6rem)",
-  paddingBlock: "clamp(4rem, 9vw, 7rem)",
-  borderTop: `1px solid ${vars.color.border}`,
-  scrollMarginTop: "88px",
-  "@media": {
-    "(max-width: 760px)": { gridTemplateColumns: "minmax(0, 1fr)" },
-  },
+  minWidth: 0,
 });
 
 export const sectionLabel = style({

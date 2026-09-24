@@ -69,7 +69,6 @@ export const ko: Messages = {
     label: "시작하기",
     title: "내 컴포넌트를 추가하세요.",
     lead: "기존 React와 Vite 앱에 네 단계로 Vitrine을 연결할 수 있습니다.",
-    onThisPage: "이 문서에서 다루는 내용",
     steps: [
       {
         title: "Plugin 설치",

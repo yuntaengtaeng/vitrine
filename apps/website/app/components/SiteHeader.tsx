@@ -1,14 +1,14 @@
 import { Link, useLocation } from "react-router";
 import { SITE } from "../site";
-import { docsPath, homePath, useI18n } from "../i18n/locale";
+import { docsPageFromPath, docsPath, homePath, useI18n } from "../i18n/locale";
 import { container } from "../styles/layout.css";
 import * as styles from "./SiteHeader.css";
 
 export function SiteHeader() {
   const { locale, t } = useI18n();
   const otherLocale = locale === "ko" ? "en" : "ko";
-  const onDocsPage = useLocation().pathname.endsWith("/docs");
-  const otherLocalePath = onDocsPage ? docsPath(otherLocale) : homePath(otherLocale);
+  const docsPage = docsPageFromPath(useLocation().pathname);
+  const otherLocalePath = docsPage ? docsPath(otherLocale, docsPage) : homePath(otherLocale);
 
   return (
     <header className={styles.header}>

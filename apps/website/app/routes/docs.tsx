@@ -1,29 +1,30 @@
 import type { MetaArgs } from "react-router";
-import { SiteFooter } from "../components/SiteFooter";
-import { SiteHeader } from "../components/SiteHeader";
+import { DocsLayout } from "../features/docs/DocsLayout";
 import { GettingStarted } from "../features/docs/GettingStarted";
-import { localeFromPath, messagesFor } from "../i18n/locale";
+import { docsPageFromPath, docsPath, localeFromPath, messagesFor } from "../i18n/locale";
 
 export function meta({ location }: MetaArgs) {
   const t = messagesFor(localeFromPath(location.pathname));
+  const page = docsPageFromPath(location.pathname) ?? "getting-started";
+  const pageMeta = page === "previews" ? t.docs.declarations : page === "preview-function" ? t.docs.controls : t.docs;
+  const title = page === "getting-started" ? t.docs.meta.title : `${pageMeta.title} · Vitrine`;
+  const description = page === "getting-started" ? t.docs.meta.description : pageMeta.lead;
   return [
-    { title: t.docs.meta.title },
-    { name: "description", content: t.docs.meta.description },
-    { property: "og:title", content: t.docs.meta.title },
-    { property: "og:description", content: t.docs.meta.description },
+    { title },
+    { name: "description", content: description },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
     { property: "og:type", content: "website" },
-    { tagName: "link", rel: "alternate", hrefLang: "en", href: "/docs" },
-    { tagName: "link", rel: "alternate", hrefLang: "ko", href: "/ko/docs" },
-    { tagName: "link", rel: "alternate", hrefLang: "x-default", href: "/docs" },
+    { tagName: "link", rel: "alternate", hrefLang: "en", href: docsPath("en", page) },
+    { tagName: "link", rel: "alternate", hrefLang: "ko", href: docsPath("ko", page) },
+    { tagName: "link", rel: "alternate", hrefLang: "x-default", href: docsPath("en", page) },
   ];
 }
 
 export default function Docs() {
   return (
-    <>
-      <SiteHeader />
+    <DocsLayout>
       <GettingStarted />
-      <SiteFooter />
-    </>
+    </DocsLayout>
   );
 }
