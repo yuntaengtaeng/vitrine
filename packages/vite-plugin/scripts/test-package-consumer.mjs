@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import vitrine, { GALLERY_ROUTE, MANIFEST_ROUTE } from "@vitrine/vite-plugin";
-import { getPreviewConfig, preview } from "@vitrine/vite-plugin/preview";
+import vitrine, { GALLERY_ROUTE, MANIFEST_ROUTE } from "vite-plugin-react-vitrine";
+import { getPreviewConfig, preview } from "vite-plugin-react-vitrine/preview";
 import { createServer } from "vite";
 
 /** test-package.mjs가 private protocol에서 읽어 전달한 runtime 계약 */
 const contract = JSON.parse(process.env.VITRINE_CONTRACT ?? "{}");
-const installedPluginRoot = path.join(process.cwd(), "node_modules", "@vitrine", "vite-plugin");
+const installedPluginRoot = path.join(process.cwd(), "node_modules", "vite-plugin-react-vitrine");
 
 function listFiles(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

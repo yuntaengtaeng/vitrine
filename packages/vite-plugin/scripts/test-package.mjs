@@ -120,7 +120,7 @@ try {
       private: true,
       type: "module",
       dependencies: {
-        "@vitrine/vite-plugin": `file:${tarballPath.split(path.sep).join("/")}`,
+        "vite-plugin-react-vitrine": `file:${tarballPath.split(path.sep).join("/")}`,
         ...consumerVersions,
       },
       pnpm: {
@@ -144,8 +144,8 @@ try {
   fs.writeFileSync(
     path.join(consumerRoot, "typecheck.mts"),
     [
-      'import vitrine, { GALLERY_ROUTE, MANIFEST_ROUTE } from "@vitrine/vite-plugin";',
-      'import { preview } from "@vitrine/vite-plugin/preview";',
+      'import vitrine, { GALLERY_ROUTE, MANIFEST_ROUTE } from "vite-plugin-react-vitrine";',
+      'import { preview } from "vite-plugin-react-vitrine/preview";',
       "",
       'const plugin = vitrine({ include: ["src/**/*.tsx"] });',
       "export const values: string[] = [GALLERY_ROUTE, MANIFEST_ROUTE, plugin.name];",

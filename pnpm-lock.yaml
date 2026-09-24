@@ -131,15 +131,15 @@ importers:
       '@vitrine/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
-      '@vitrine/vite-plugin':
-        specifier: workspace:*
-        version: link:../../packages/vite-plugin
       typescript:
         specifier: catalog:typescript
         version: 5.9.3
       vite:
         specifier: catalog:vite
         version: 7.3.6(@types/node@22.20.1)(lightningcss@1.33.0)
+      vite-plugin-react-vitrine:
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin
 
   fixtures/multi-project/app-a:
     dependencies:
@@ -162,15 +162,15 @@ importers:
       '@vitrine/typescript-config':
         specifier: workspace:*
         version: link:../../../packages/typescript-config
-      '@vitrine/vite-plugin':
-        specifier: workspace:*
-        version: link:../../../packages/vite-plugin
       typescript:
         specifier: catalog:typescript
         version: 5.9.3
       vite:
         specifier: catalog:vite
         version: 7.3.6(@types/node@22.20.1)(lightningcss@1.33.0)
+      vite-plugin-react-vitrine:
+        specifier: workspace:*
+        version: link:../../../packages/vite-plugin
 
   fixtures/multi-project/app-b:
     dependencies:
@@ -193,15 +193,15 @@ importers:
       '@vitrine/typescript-config':
         specifier: workspace:*
         version: link:../../../packages/typescript-config
-      '@vitrine/vite-plugin':
-        specifier: workspace:*
-        version: link:../../../packages/vite-plugin
       typescript:
         specifier: catalog:typescript
         version: 5.9.3
       vite:
         specifier: catalog:vite
         version: 7.3.6(@types/node@22.20.1)(lightningcss@1.33.0)
+      vite-plugin-react-vitrine:
+        specifier: workspace:*
+        version: link:../../../packages/vite-plugin
 
   packages/eslint-config:
     dependencies:
@@ -289,9 +289,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 5.2.0
         version: 5.2.0(vite@6.4.3(@types/node@22.20.1)(lightningcss@1.33.0))
-      '@vitrine/vite-plugin':
-        specifier: workspace:*
-        version: link:../../../packages/vite-plugin
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -301,6 +298,9 @@ importers:
       vite:
         specifier: 6.4.3
         version: 6.4.3(@types/node@22.20.1)(lightningcss@1.33.0)
+      vite-plugin-react-vitrine:
+        specifier: workspace:*
+        version: link:../../../packages/vite-plugin
     devDependencies:
       '@types/react':
         specifier: 18.3.31
@@ -317,9 +317,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 5.2.0
         version: 5.2.0(vite@7.3.6(@types/node@22.20.1)(lightningcss@1.33.0))
-      '@vitrine/vite-plugin':
-        specifier: workspace:*
-        version: link:../../../packages/vite-plugin
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -329,6 +326,9 @@ importers:
       vite:
         specifier: 7.3.6
         version: 7.3.6(@types/node@22.20.1)(lightningcss@1.33.0)
+      vite-plugin-react-vitrine:
+        specifier: workspace:*
+        version: link:../../../packages/vite-plugin
     devDependencies:
       '@types/react':
         specifier: 18.3.31
@@ -345,9 +345,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 6.1.0
         version: 6.1.0(vite@8.2.2(@types/node@22.20.1)(esbuild@0.28.2))
-      '@vitrine/vite-plugin':
-        specifier: workspace:*
-        version: link:../../../packages/vite-plugin
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -357,6 +354,9 @@ importers:
       vite:
         specifier: 8.2.2
         version: 8.2.2(@types/node@22.20.1)(esbuild@0.28.2)
+      vite-plugin-react-vitrine:
+        specifier: workspace:*
+        version: link:../../../packages/vite-plugin
     devDependencies:
       '@types/react':
         specifier: 19.2.18

@@ -33,7 +33,7 @@ rendered live in a VS Code panel, right next to the file you're editing. No
 VS Code command  →  Webview panel  →  <iframe src="…/​__vitrine">
                                               │
                                      Vite dev server
-                                    (@vitrine/vite-plugin)
+                                  (vite-plugin-react-vitrine)
                                               │
                                   scans @preview exports,
                                   serves a gallery page
@@ -41,7 +41,7 @@ VS Code command  →  Webview panel  →  <iframe src="…/​__vitrine">
 
 Two packages, two responsibilities:
 
-- **`packages/vite-plugin`** (`@vitrine/vite-plugin`) — the actual engine.
+- **`packages/vite-plugin`** (`vite-plugin-react-vitrine`) — the actual engine.
   Scans your source for `@preview`-annotated exports (via `@babel/parser`,
   not string search), and serves a gallery page at `/__vitrine` in dev mode.
 - **`apps/vscode-extension`** (`vitrine`) — intentionally thin. One
@@ -91,7 +91,7 @@ No configuration is required. When a component needs meaningful sample values
 or a different control, register only those overrides:
 
 ```tsx
-import { preview } from "@vitrine/vite-plugin/preview";
+import { preview } from "vite-plugin-react-vitrine/preview";
 
 /** @preview */
 export const Button = (props: ButtonProps) => <button>{props.children}</button>;
@@ -114,7 +114,7 @@ isn't known until the preview's module is loaded.
 
 ## Compatibility
 
-`@vitrine/vite-plugin` currently declares support for:
+`vite-plugin-react-vitrine` currently declares support for:
 
 - React 18.x and 19.x
 - Vite 6.4+, 7.x, and 8.x
@@ -143,7 +143,7 @@ used to type-check each test fixture, not a TypeScript peer-dependency range.
 
 ```bash
 pnpm install
-pnpm run build              # builds @vitrine/vite-plugin
+pnpm run build              # builds vite-plugin-react-vitrine
 pnpm run dev:example        # starts the example app's Vite dev server
 pnpm run test                # runs the Vitest suite
 ```

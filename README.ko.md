@@ -35,7 +35,7 @@ Vitrine은 컴포넌트 export 위에 `/** @preview */` 주석을 달아두면, 
 VS Code 커맨드  →  Webview 패널  →  <iframe src="…/​__vitrine">
                                               │
                                      Vite dev server
-                                    (@vitrine/vite-plugin)
+                                  (vite-plugin-react-vitrine)
                                               │
                                   @preview export를 스캔하고,
                                   갤러리 페이지를 서빙
@@ -43,7 +43,7 @@ VS Code 커맨드  →  Webview 패널  →  <iframe src="…/​__vitrine">
 
 두 개의 패키지, 두 가지 역할:
 
-- **`packages/vite-plugin`** (`@vitrine/vite-plugin`) — 실제 엔진 역할.
+- **`packages/vite-plugin`** (`vite-plugin-react-vitrine`) — 실제 엔진 역할.
   `@babel/parser`를 이용해 (문자열 검색이 아니라) 소스에서 `@preview` 주석이
   달린 export를 스캔하고, 개발 모드에서 `/__vitrine` 경로에 갤러리 페이지를
   서빙합니다.
@@ -91,7 +91,7 @@ Vitrine은 주석이 붙은 컴포넌트의 `string`, `number`, `boolean`, 문�
 의미 있는 예시 값이나 다른 컨트롤이 필요할 때만 `preview()`로 덮어씁니다:
 
 ```tsx
-import { preview } from "@vitrine/vite-plugin/preview";
+import { preview } from "vite-plugin-react-vitrine/preview";
 
 /** @preview */
 export const Button = (props: ButtonProps) => <button>{props.children}</button>;
@@ -113,7 +113,7 @@ preview(Button, {
 
 ## 호환성
 
-`@vitrine/vite-plugin`이 현재 선언하는 지원 범위는 다음과 같습니다.
+`vite-plugin-react-vitrine`이 현재 선언하는 지원 범위는 다음과 같습니다.
 
 - React 18.x, 19.x
 - Vite 6.4 이상, 7.x, 8.x
@@ -142,7 +142,7 @@ preview(Button, {
 
 ```bash
 pnpm install
-pnpm run build              # @vitrine/vite-plugin 빌드
+pnpm run build              # vite-plugin-react-vitrine 빌드
 pnpm run dev:example        # example 앱의 Vite dev server 시작
 pnpm run test                # Vitest 스위트 실행
 ```

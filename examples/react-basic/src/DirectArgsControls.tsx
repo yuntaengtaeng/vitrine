@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { preview } from "@vitrine/vite-plugin/preview";
+import { preview } from "vite-plugin-react-vitrine/preview";
 
 interface DirectArgsControlsProps {
   children: ReactNode;

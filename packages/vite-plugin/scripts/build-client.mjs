@@ -19,7 +19,7 @@ const options = {
     "react-dom/client",
     "react/jsx-runtime",
     PREVIEWS_MODULE_ID,
-    "@vitrine/vite-plugin/preview",
+    "vite-plugin-react-vitrine/preview",
   ],
   jsx: "automatic",
   format: "esm",

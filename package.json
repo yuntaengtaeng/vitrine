@@ -8,9 +8,9 @@
   },
   "packageManager": "pnpm@10.23.0",
   "scripts": {
-    "build": "pnpm --filter @vitrine/vite-plugin build",
+    "build": "pnpm --filter vite-plugin-react-vitrine build",
     "build:extension": "pnpm --filter vitrine build",
-    "test:package": "pnpm --filter @vitrine/vite-plugin test:package",
+    "test:package": "pnpm --filter vite-plugin-react-vitrine test:package",
     "test:compat": "pnpm run build && node scripts/test-vite-compat.mjs",
     "test:extension-package": "pnpm --filter vitrine test:package",
     "dev:example": "pnpm --filter @vitrine/example-react-basic dev",
