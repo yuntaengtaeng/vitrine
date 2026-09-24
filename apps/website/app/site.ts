@@ -1,5 +1,6 @@
 export const SITE = {
   name: "Vitrine",
+  url: "https://vitrine-4kr.pages.dev",
   pluginPackage: "vite-plugin-react-vitrine",
   installCommand: "npm install -D vite-plugin-react-vitrine",
   githubUrl: "https://github.com/yuntaengtaeng/vitrine",
@@ -10,3 +11,7 @@ export const SITE = {
   issuesUrl: "https://github.com/yuntaengtaeng/vitrine/issues",
   ogImagePath: "/og-image.png",
 } as const;
+
+export function siteUrl(path: string): string {
+  return new URL(path, SITE.url).toString();
+}

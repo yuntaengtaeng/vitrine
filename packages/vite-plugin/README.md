@@ -2,6 +2,8 @@
 
 [한국어](https://github.com/yuntaengtaeng/vitrine/blob/main/packages/vite-plugin/README.ko.md)
 
+[Website](https://vitrine-4kr.pages.dev/) · [Documentation](https://vitrine-4kr.pages.dev/docs) · [VS Code extension](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+
 Inline previews for React components, rendered by your own Vite dev server.
 
 Put `/** @preview */` above a component export and it appears in a live gallery at

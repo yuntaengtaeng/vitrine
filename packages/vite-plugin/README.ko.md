@@ -2,6 +2,8 @@
 
 [English](https://github.com/yuntaengtaeng/vitrine/tree/main/packages/vite-plugin#readme)
 
+[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [VS Code 확장](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+
 React 컴포넌트 프리뷰를 프로젝트의 Vite dev server에서 바로 렌더링합니다.
 
 컴포넌트 export 위에 `/** @preview */`를 붙이면 `/__vitrine`의 실시간 갤러리에 나타납니다.
