@@ -29,7 +29,7 @@ const Styled = {
     width: 14,
     height: 14,
     borderRadius: "50%",
-    background: "white",
+    background: COLOR.surface,
     boxShadow: "0 1px 2px rgba(0,0,0,0.22)",
     transition: "left 120ms ease",
   } satisfies CSSProperties,
@@ -45,7 +45,7 @@ export const BooleanControl = (props: { value: unknown; onChange: (value: boolea
       style={Styled.Button}
       onClick={() => props.onChange(!checked)}
     >
-      <span style={{ ...Styled.Track, background: checked ? COLOR.activeText : "#cbd5e1" }}>
+      <span style={{ ...Styled.Track, background: checked ? COLOR.activeText : COLOR.switchOff }}>
         <span style={{ ...Styled.Thumb, left: checked ? 17 : 3 }} />
       </span>
       {checked ? "On" : "Off"}

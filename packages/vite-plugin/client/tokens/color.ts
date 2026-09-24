@@ -1,11 +1,16 @@
-/** 갤러리 UI 색상 토큰 */
+import { BRAND, NEUTRAL, RED } from "./palette";
+
+/** 갤러리 UI 용도별 색상 토큰, 값은 palette에서만 조회 */
 export const COLOR = {
-  border: "#e5e7eb",
-  label: "#9ca3af",
-  body: "#333",
-  muted: "#888",
-  error: "#e11d48",
-  activeBg: "#eef2ff",
-  activeText: "#4338ca",
-  hoverBg: "#f3f4f6",
+  surface: NEUTRAL[0],
+  surfaceSubtle: NEUTRAL[50],
+  border: NEUTRAL[200],
+  label: NEUTRAL[400],
+  body: NEUTRAL[800],
+  muted: NEUTRAL[500],
+  error: RED[600],
+  activeBg: BRAND[50],
+  activeText: BRAND[600],
+  hoverBg: NEUTRAL[100],
+  switchOff: NEUTRAL[300],
 } as const;

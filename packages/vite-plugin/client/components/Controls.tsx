@@ -18,7 +18,7 @@ const Styled = {
     borderTop: `1px solid ${COLOR.border}`,
     boxSizing: "border-box",
     overflowY: "auto",
-    background: "#fbfcfe",
+    background: COLOR.surfaceSubtle,
   } satisfies CSSProperties,
   Header: { display: "flex", alignItems: "baseline", gap: 8, marginBottom: "0.7rem" } satisfies CSSProperties,
   Heading: {

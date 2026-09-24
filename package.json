@@ -18,9 +18,14 @@
     "dev:fixture:b": "pnpm --filter @vitrine/fixture-multi-project-b dev",
     "dev:host": "node scripts/dev-host.mjs",
     "test": "pnpm --filter @vitrine/protocol build && vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "release": "pnpm run build && changeset publish",
+    "package:extension": "pnpm --filter vitrine package"
   },
   "devDependencies": {
+    "@changesets/cli": "catalog:release",
     "@vitrine/eslint-config": "workspace:*",
     "eslint": "catalog:lint",
     "typescript": "catalog:typescript",

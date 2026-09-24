@@ -1,0 +1,35 @@
+name: Release VS Code extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to the VS Code Marketplace (requires the VSCE_PAT secret)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run test:extension-package
+      - run: pnpm run package:extension
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vitrine-vsix
+          path: apps/vscode-extension/*.vsix
+      - if: inputs.publish
+        working-directory: apps/vscode-extension
+        run: pnpm exec vsce publish --no-dependencies --packagePath *.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}

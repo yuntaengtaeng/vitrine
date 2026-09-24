@@ -1,16 +1,35 @@
 {
   "name": "vitrine",
   "displayName": "Vitrine",
-  "description": "Compose-style inline preview for React components, inside VS Code.",
+  "description": "Live previews of @preview-annotated React components beside your editor, rendered by your Vite dev server.",
   "version": "0.1.0",
+  "publisher": "yuntaengtaeng",
+  "icon": "icon.png",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuntaengtaeng/vitrine.git",
+    "directory": "apps/vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/yuntaengtaeng/vitrine/issues"
+  },
+  "homepage": "https://github.com/yuntaengtaeng/vitrine/tree/main/apps/vscode-extension#readme",
+  "keywords": [
+    "react",
+    "vite",
+    "preview",
+    "component",
+    "storybook"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": ["Other"],
   "activationEvents": [],
   "main": "./dist/extension.js",
-  "files": ["dist"],
+  "files": ["dist", "LICENSE", "icon.png"],
   "contributes": {
     "commands": [
       {
@@ -22,13 +41,15 @@
   "scripts": {
     "build": "pnpm --filter @vitrine/protocol build && tsc -p tsconfig.json --noEmit && node scripts/build.mjs",
     "test:package": "pnpm run build && node scripts/test-package.mjs",
-    "watch": "pnpm --filter @vitrine/protocol build && node scripts/build.mjs --watch"
+    "watch": "pnpm --filter @vitrine/protocol build && node scripts/build.mjs --watch",
+    "package": "pnpm run build && vsce package --no-dependencies"
   },
   "devDependencies": {
     "@vitrine/protocol": "workspace:*",
     "@vitrine/typescript-config": "workspace:*",
-    "@types/vscode": "catalog:vscode",
+    "@types/vscode": "^1.85.0",
     "@types/node": "catalog:node",
+    "@vscode/vsce": "catalog:release",
     "esbuild": "catalog:build",
     "typescript": "catalog:typescript"
   }

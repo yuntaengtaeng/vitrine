@@ -11,11 +11,11 @@ const Styled = {
     overflow: "hidden",
     border: FIELD_BORDER,
     borderRadius: FIELD_BORDER_RADIUS,
-    background: "white",
+    background: COLOR.surface,
   } satisfies CSSProperties,
   Button: {
     border: 0,
-    background: "#f8fafc",
+    background: COLOR.surfaceSubtle,
     color: COLOR.body,
     fontSize: "1rem",
     cursor: "pointer",
