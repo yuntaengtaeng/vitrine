@@ -1,12 +1,8 @@
-name: Release VS Code extension
+name: Package VS Code extension
 
+# Marketplace 게시는 이 artifact의 VSIX를 관리 화면에 직접 업로드함
 on:
   workflow_dispatch:
-    inputs:
-      publish:
-        description: Publish to the VS Code Marketplace (requires the VSCE_PAT secret)
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -28,8 +24,3 @@ jobs:
         with:
           name: vitrine-vsix
           path: apps/vscode-extension/*.vsix
-      - if: inputs.publish
-        working-directory: apps/vscode-extension
-        run: pnpm exec vsce publish --no-dependencies --packagePath *.vsix
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}

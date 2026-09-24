@@ -49,4 +49,6 @@ git push origin vite-plugin-react-vitrine@0.2.0
 ```
 
 The workflow fails if the tag does not match `packages/vite-plugin/package.json`.
-The VS Code extension is released separately with the `Release VS Code extension` workflow.
+The VS Code extension is released manually. After its version is bumped, build the VSIX with
+`pnpm run package:extension` (or download it from the `Package VS Code extension` workflow) and
+upload it from the publisher page at https://marketplace.visualstudio.com/manage.
