@@ -34,6 +34,14 @@ describe("renderIframeHtml", () => {
   });
 });
 
+describe("renderNotFoundHtml", () => {
+  it("tells a first-time user how to install the plugin", () => {
+    const html = renderNotFoundHtml();
+    expect(html).toContain("npm install -D vite-plugin-react-vitrine");
+    expect(html).toContain('href="https://github.com/yuntaengtaeng/vitrine/tree/main/packages/vite-plugin#readme"');
+  });
+});
+
 describe("fallback pages", () => {
   it("do not allow any frame source or relay target", () => {
     for (const html of [renderNotFoundHtml(), renderUnreachableHtml("http://localhost:5173/__vitrine")]) {

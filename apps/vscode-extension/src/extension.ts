@@ -71,7 +71,7 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
 async function switchProject() {
   const match = await pickFromWorkspace();
   if (!match) {
-    vscode.window.showInformationMessage("다른 실행 중인 dev 서버를 찾지 못함");
+    vscode.window.showInformationMessage("No running Vitrine dev server found");
     return;
   }
   await renderPanel(match);
@@ -105,7 +105,7 @@ async function pickFromWorkspace(): Promise<PortFileMatch | null> {
       description: `localhost:${candidate.port}`,
       candidate,
     })),
-    { placeHolder: "미리볼 프로젝트 선택" },
+    { placeHolder: "Select a project to preview" },
   );
   return picked?.candidate ?? null;
 }
