@@ -6,7 +6,8 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-package-smoke-"));
+// Windows runner의 8.3 짧은 경로(RUNNER~1)를 root로 쓰면 Vite가 root 안의 파일도 403으로 거부함
+const tempRoot = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), "vitrine-package-smoke-"));
 const consumerRoot = path.join(tempRoot, "consumer");
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const galleryAssetPath = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
