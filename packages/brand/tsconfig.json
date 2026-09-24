@@ -1,0 +1,7 @@
+{
+  "extends": "@vitrine/typescript-config/library.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src"]
+}

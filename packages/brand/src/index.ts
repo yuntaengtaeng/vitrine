@@ -28,3 +28,15 @@ export const NEUTRAL = {
 export const RED = {
   600: "#e11d48",
 } as const;
+
+/** 어두운 테마의 배경과 본문에 쓰는 파란 기운의 짙은 중립 색 */
+export const INK = {
+  50: "#eef0f8",
+  100: "#dde1ef",
+  300: "#a6adc8",
+  500: "#6b7394",
+  700: "#262e52",
+  800: "#171d3a",
+  900: "#0e1329",
+  950: "#080b1c",
+} as const;

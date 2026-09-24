@@ -1,0 +1,14 @@
+{
+  "name": "@vitrine/brand",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vitrine brand palette shared by the gallery and the website.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@vitrine/typescript-config": "workspace:*",
+    "typescript": "catalog:typescript"
+  }
+}

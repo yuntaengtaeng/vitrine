@@ -1,4 +1,4 @@
-import { BRAND, NEUTRAL, RED } from "./palette";
+import { BRAND, NEUTRAL, RED } from "@vitrine/brand";
 
 /** 갤러리 UI 용도별 색상 토큰, 값은 palette에서만 조회 */
 export const COLOR = {
