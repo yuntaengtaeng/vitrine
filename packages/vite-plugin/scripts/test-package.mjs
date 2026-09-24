@@ -169,7 +169,7 @@ try {
     path.join(consumerRoot, "test-package-consumer.mjs"),
   );
 
-  runPackageCommand(pnpmCommand, ["install", "--offline"], {
+  runPackageCommand(pnpmCommand, ["install", "--prefer-offline"], {
     cwd: consumerRoot,
     stdio: "inherit",
   });
