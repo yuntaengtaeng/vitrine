@@ -10,7 +10,14 @@ const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-package-smoke-")
 const consumerRoot = path.join(tempRoot, "consumer");
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const galleryAssetPath = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
-const PUBLIC_FILES = ["dist/index.js", "dist/index.d.ts", "dist/preview.js", "dist/preview.d.ts"];
+const PUBLIC_FILES = [
+  "README.md",
+  "LICENSE",
+  "dist/index.js",
+  "dist/index.d.ts",
+  "dist/preview.js",
+  "dist/preview.d.ts",
+];
 
 function runPackageCommand(command, args, options) {
   if (process.platform !== "win32") return execFileSync(command, args, options);

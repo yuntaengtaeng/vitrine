@@ -1,7 +1,27 @@
 {
   "name": "vite-plugin-react-vitrine",
   "version": "0.1.0",
-  "description": "Vite plugin that scans @preview-annotated exports and serves a live preview gallery.",
+  "description": "Inline previews for React components: annotate an export with @preview and see it in a live gallery served by your Vite dev server.",
+  "keywords": [
+    "vite-plugin",
+    "vite",
+    "react",
+    "preview",
+    "component-preview",
+    "gallery",
+    "vscode"
+  ],
+  "license": "MIT",
+  "author": "yuntaengtaeng",
+  "homepage": "https://github.com/yuntaengtaeng/vitrine/tree/main/packages/vite-plugin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuntaengtaeng/vitrine.git",
+    "directory": "packages/vite-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/yuntaengtaeng/vitrine/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
