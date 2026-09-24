@@ -17,6 +17,8 @@
     "dev:fixture:a": "pnpm --filter @vitrine/fixture-multi-project-a dev",
     "dev:fixture:b": "pnpm --filter @vitrine/fixture-multi-project-b dev",
     "dev:host": "node scripts/dev-host.mjs",
+    "dev:website": "pnpm --filter @vitrine/website dev",
+    "build:website": "pnpm --filter @vitrine/website typecheck && pnpm --filter @vitrine/website build",
     "test": "pnpm --filter @vitrine/protocol build && vitest run",
     "lint": "eslint .",
     "changeset": "changeset",

@@ -3,3 +3,5 @@ dist/
 *.log
 .vscode-test/
 *.vsix
+.react-router/
+apps/website/build/
