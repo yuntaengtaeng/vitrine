@@ -108,11 +108,25 @@ export function scanSource(code: string, relFile: string): PreviewEntry[] {
         ("id" in declaration && declaration.id?.type === "Identifier" && declaration.id.name) ||
         (declaration.type === "Identifier" && declaration.name) ||
         path.basename(relFile, path.extname(relFile));
-      entries.push(makeEntry(relFile, "default", comment, nodePath.node.loc, label));
+      const loc = declaration.type === "Identifier"
+        ? spanWithDeclaration(nodePath, declaration.name)
+        : nodePath.node.loc;
+      entries.push(makeEntry(relFile, "default", comment, loc, label));
     },
   });
 
   return entries;
+}
+
+// export default Foo; 의 커서 범위를 Foo 선언 문장까지 넓혀 본문에서도 프리뷰가 선택되게 함
+function spanWithDeclaration(nodePath: NodePath, name: string): SourceLocation | null | undefined {
+  const exportLoc = nodePath.node.loc;
+  const declarationLoc = nodePath.scope.getBinding(name)?.path.getStatementParent()?.node.loc;
+  if (!exportLoc || !declarationLoc) return exportLoc;
+  return {
+    start: declarationLoc.start.line < exportLoc.start.line ? declarationLoc.start : exportLoc.start,
+    end: declarationLoc.end.line > exportLoc.end.line ? declarationLoc.end : exportLoc.end,
+  };
 }
 
 // stepsBack칸 앞 문장의 끝 위치, 폴백 주석 탐색의 하한선 (없으면 -1)
@@ -142,11 +156,13 @@ function findPreviewComment(
   return nearest?.value ?? null;
 }
 
+type SourceLocation = { start: { line: number }; end: { line: number } };
+
 function makeEntry(
   file: string,
   exportName: string,
   comment: string,
-  loc: { start: { line: number }; end: { line: number } } | null | undefined,
+  loc: SourceLocation | null | undefined,
   fallbackName: string = exportName,
 ): PreviewEntry {
   const nameMatch = comment.match(NAME_OPTION_RE);

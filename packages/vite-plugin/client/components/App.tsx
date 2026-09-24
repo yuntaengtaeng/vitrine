@@ -18,6 +18,8 @@ const Styled = {
     width: 240,
     flexShrink: 0,
     overflowY: "auto",
+    // 스크롤은 유지하고 스크롤바만 숨김
+    scrollbarWidth: "none",
     background: COLOR.surface,
     borderRight: `1px solid ${COLOR.border}`,
     padding: "0.75rem",

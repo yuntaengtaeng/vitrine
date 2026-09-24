@@ -107,6 +107,39 @@ describe("scan line ranges", () => {
     expect(entries.find((e) => e.exportName === "First")?.startLine).toBe(4);
     expect(entries.find((e) => e.exportName === "Second")?.startLine).toBe(7);
   });
+
+  it("spans from the declaration to export default of that identifier", () => {
+    const entries = scan(
+      [
+        "/** @preview */",
+        "const Chip = () => (",
+        "  <span>Chip</span>",
+        ");",
+        "",
+        "export default Chip;",
+      ].join("\n"),
+    );
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].startLine).toBe(2);
+    expect(entries[0].endLine).toBe(6);
+  });
+
+  it("includes a hoisted function declared after export default", () => {
+    const entries = scan(
+      [
+        "/** @preview */",
+        "export default Chip;",
+        "",
+        "function Chip() {",
+        "  return null;",
+        "}",
+      ].join("\n"),
+    );
+
+    expect(entries[0].startLine).toBe(2);
+    expect(entries[0].endLine).toBe(6);
+  });
 });
 
 describe("named export comment fallback scope", () => {
