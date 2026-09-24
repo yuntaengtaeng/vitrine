@@ -1,5 +1,7 @@
 # Vitrine for VS Code
 
+[Website](https://vitrine-4kr.pages.dev/) · [Documentation](https://vitrine-4kr.pages.dev/docs) · [Vite plugin](https://www.npmjs.com/package/vite-plugin-react-vitrine)
+
 See your React component previews beside the file you are editing.
 
 Vitrine shows the gallery served by

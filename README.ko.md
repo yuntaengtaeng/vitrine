@@ -2,6 +2,12 @@
 
 [English](./README.md)
 
+<p align="center">
+  <img src="./apps/website/public/favicon.svg" width="72" height="72" alt="Vitrine" />
+</p>
+
+[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [npm](https://www.npmjs.com/package/vite-plugin-react-vitrine) · [VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+
 편집 중인 파일 바로 옆에서 보는 React용 Jetpack Compose 스타일 프리뷰입니다.
 
 컴포넌트 export 위에 `/** @preview */`를 붙이면 Vite dev server가 실시간 갤러리로
@@ -20,9 +26,6 @@ export const PrimaryButton = () => <Button variant="primary">Save</Button>;
   동작합니다.
 - **에디터가 주 인터페이스입니다.** 커서를 프리뷰 위로 옮기면 패널이 그 프리뷰로
   바뀝니다. 브라우저 갤러리만 따로 써도 됩니다.
-
-Vitrine은 Storybook 대체품이 아닙니다. 문서 사이트 빌더, 시각적 회귀 테스트, 애드온
-생태계는 제공하지 않습니다.
 
 ## 시작하기
 

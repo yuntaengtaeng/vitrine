@@ -2,6 +2,12 @@
 
 [한국어](./README.ko.md)
 
+<p align="center">
+  <img src="./apps/website/public/favicon.svg" width="72" height="72" alt="Vitrine" />
+</p>
+
+[Website](https://vitrine-4kr.pages.dev/) · [Documentation](https://vitrine-4kr.pages.dev/docs) · [npm](https://www.npmjs.com/package/vite-plugin-react-vitrine) · [VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+
 Jetpack Compose style previews for React, right next to the file you are editing.
 
 Annotate a component export with `/** @preview */`. Your Vite dev server renders it in a
@@ -20,9 +26,6 @@ export const PrimaryButton = () => <Button variant="primary">Save</Button>;
   they do in your app.
 - **The editor is the main interface.** Moving the cursor onto a preview switches the
   panel to it. The browser gallery works on its own too.
-
-Vitrine is not a Storybook replacement. It has no documentation site builder, visual
-regression testing or addon ecosystem.
 
 ## Getting started
 
