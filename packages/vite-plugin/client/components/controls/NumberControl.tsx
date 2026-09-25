@@ -43,7 +43,10 @@ export const NumberControl = (props: { value: unknown; onChange: (value: number)
         type="number"
         style={Styled.Input}
         value={value}
-        onChange={(event) => props.onChange(event.currentTarget.valueAsNumber)}
+        onChange={(event) => {
+          const nextValue = event.currentTarget.valueAsNumber;
+          if (Number.isFinite(nextValue)) props.onChange(nextValue);
+        }}
       />
       <button type="button" aria-label="Increase" style={Styled.Button} onClick={() => props.onChange(value + 1)}>+</button>
     </div>
