@@ -29,6 +29,11 @@ let lastSelectedPreviewId: string | null = null;
 let selectionDebounce: ReturnType<typeof setTimeout> | undefined;
 /** 늦게 도착한 manifest 응답을 버리기 위한 요청 순번 */
 let selectionRequestSeq = 0;
+let currentPanelRender: PanelRenderRequest | null = null;
+
+interface PanelRenderRequest {
+  panel: vscode.WebviewPanel;
+}
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -54,6 +59,10 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
     );
     currentPanel.onDidDispose(() => {
       currentPanel = undefined;
+      currentMatch = null;
+      lastSelectedPreviewId = null;
+      selectionRequestSeq += 1;
+      currentPanelRender = null;
     }, null, context.subscriptions);
 
     currentPanel.webview.onDidReceiveMessage((message: unknown) => {
@@ -64,17 +73,23 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
     }, null, context.subscriptions);
   }
 
-  await renderPanel(await resolveDevServer());
+  const request = startPanelRender();
+  if (!request) return;
+  await renderPanel(request, await resolveDevServer());
 }
 
 /** 패널의 Switch Project 버튼 클릭 시, 활성 파일 무시하고 워크스페이스 전체에서 재선택 */
 async function switchProject() {
+  const request = startPanelRender();
+  if (!request) return;
+
   const match = await pickFromWorkspace();
+  if (!isCurrentPanelRender(request)) return;
   if (!match) {
     vscode.window.showInformationMessage("No running Vitrine dev server found");
     return;
   }
-  await renderPanel(match);
+  await renderPanel(request, match);
 }
 
 /** 활성 에디터 우선, 없거나 못 찾으면 워크스페이스 전체 스캔으로 폴백 */
@@ -110,38 +125,57 @@ async function pickFromWorkspace(): Promise<PortFileMatch | null> {
   return picked?.candidate ?? null;
 }
 
-async function renderPanel(match: PortFileMatch | null): Promise<void> {
-  if (!currentPanel) return;
+function startPanelRender(): PanelRenderRequest | null {
+  if (!currentPanel) return null;
 
-  currentMatch = match;
-  lastSelectedPreviewId = null;
+  selectionRequestSeq += 1;
+  const request = { panel: currentPanel };
+  currentPanelRender = request;
+  return request;
+}
+
+function isCurrentPanelRender(request: PanelRenderRequest): boolean {
+  return currentPanel === request.panel && currentPanelRender === request;
+}
+
+async function renderPanel(request: PanelRenderRequest, match: PortFileMatch | null): Promise<void> {
+  if (!isCurrentPanelRender(request)) return;
 
   if (!match) {
-    currentPanel.webview.html = renderNotFoundHtml();
+    currentMatch = null;
+    lastSelectedPreviewId = null;
+    request.panel.webview.html = renderNotFoundHtml();
     return;
   }
 
   const galleryUrl = `http://localhost:${match.port}${GALLERY_ROUTE}`;
   const reachable = await isDevServerReachable(galleryUrl);
-  currentPanel.webview.html = reachable
+  if (!isCurrentPanelRender(request)) return;
+
+  currentMatch = match;
+  lastSelectedPreviewId = null;
+  selectionRequestSeq += 1;
+  request.panel.webview.html = reachable
     ? renderIframeHtml(galleryUrl, path.basename(match.root))
     : renderUnreachableHtml(galleryUrl);
 }
 
 /** 커서 이동 시, 패널이 보여주는 프로젝트 안의 @preview 위라면 그 프리뷰로 전환 신호 전송 */
 async function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent): Promise<void> {
-  if (!currentPanel || !currentMatch) return;
+  const panel = currentPanel;
+  const match = currentMatch;
+  if (!panel || !match) return;
 
-  const relFile = toProjectRelativeFile(currentMatch.root, event.textEditor.document.uri.fsPath);
+  const relFile = toProjectRelativeFile(match.root, event.textEditor.document.uri.fsPath);
   if (!relFile) return;
 
   const cursorLine = event.selections[0]?.active.line;
   if (cursorLine == null) return;
 
   const seq = ++selectionRequestSeq;
-  const manifest = await fetchManifest(currentMatch.port);
+  const manifest = await fetchManifest(match.port);
   if (!manifest) return;
-  if (!currentPanel || seq !== selectionRequestSeq) return;
+  if (currentPanel !== panel || currentMatch !== match || seq !== selectionRequestSeq) return;
 
   const previewId = resolveCursorPreviewId({
     manifest,
@@ -156,7 +190,7 @@ async function onSelectionChanged(event: vscode.TextEditorSelectionChangeEvent):
     type: SELECT_PREVIEW_MESSAGE_TYPE,
     id: previewId,
   };
-  currentPanel.webview.postMessage(message);
+  panel.webview.postMessage(message);
 }
 
 async function fetchManifest(port: number): Promise<Manifest | null> {
@@ -171,13 +205,14 @@ async function fetchManifest(port: number): Promise<Manifest | null> {
 }
 
 async function isDevServerReachable(url: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2000);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
     const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
     return res.ok;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
