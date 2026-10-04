@@ -46,6 +46,25 @@ preview(Button, {
   defaultVariant: "primary",
 });`;
 
+const PREVIEW_SETUP = `// src/vitrine.preview.tsx
+import type { PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+import { DarkModeProvider } from "./DarkModeProvider";
+
+export default function PreviewSetup({ children }: PreviewWrapperProps) {
+  return <DarkModeProvider>{children}</DarkModeProvider>;
+}`;
+
+const PREVIEW_SETUP_CONFIG = `vitrine({ setupFile: "./src/vitrine.preview.tsx" });`;
+
+const COMPONENT_WRAPPER = `import { preview, type PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+import { SignedInProvider } from "./SignedInProvider";
+
+function SignedInPreview({ children }: PreviewWrapperProps) {
+  return <SignedInProvider>{children}</SignedInProvider>;
+}
+
+preview(Button, { wrapper: SignedInPreview });`;
+
 export function GettingStarted() {
   const { locale, t } = useI18n();
   const page = docsPageFromPath(useLocation().pathname) ?? "getting-started";
@@ -124,6 +143,18 @@ export function GettingStarted() {
               ))}
             </dl>
             <p className={styles.note}>{t.docs.controls.note}</p>
+            <section className={styles.providerSection}>
+              <h2 className={styles.providerTitle}>{t.docs.controls.providers.title}</h2>
+              <p className={styles.providerText}>{t.docs.controls.providers.lead}</p>
+              <h3 className={styles.providerSubtitle}>{t.docs.controls.providers.setupTitle}</h3>
+              <p className={styles.providerText}>{t.docs.controls.providers.setupText}</p>
+              <CodeSnippet code={PREVIEW_SETUP} />
+              <CodeSnippet code={PREVIEW_SETUP_CONFIG} />
+              <h3 className={styles.providerSubtitle}>{t.docs.controls.providers.wrapperTitle}</h3>
+              <p className={styles.providerText}>{t.docs.controls.providers.wrapperText}</p>
+              <CodeSnippet code={COMPONENT_WRAPPER} />
+              <p className={styles.note}>{t.docs.controls.providers.state}</p>
+            </section>
           </div>
         </section>}
       </div>

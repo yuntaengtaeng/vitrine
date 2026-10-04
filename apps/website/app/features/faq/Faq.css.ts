@@ -3,7 +3,6 @@ import { vars } from "../../styles/theme.css";
 
 export const list = style({
   marginTop: "2.5rem",
-  maxWidth: "780px",
   borderTop: `1px solid ${vars.color.border}`,
 });
 

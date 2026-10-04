@@ -4,22 +4,33 @@ import { vars } from "../../styles/theme.css";
 export const layout = style({
   display: "grid",
   gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1.2fr)",
-  gap: "3rem",
+  gridTemplateAreas: `"heading ." "showcase catalog"`,
+  columnGap: "3rem",
+  rowGap: "2.5rem",
   alignItems: "start",
   "@media": {
-    "(max-width: 860px)": { gridTemplateColumns: "minmax(0, 1fr)" },
+    "(max-width: 860px)": {
+      gridTemplateColumns: "minmax(0, 1fr)",
+      gridTemplateAreas: `"heading" "catalog"`,
+    },
   },
 });
 
 export const heading = style({
+  gridArea: "heading",
+});
+
+export const showcase = style({
+  gridArea: "showcase",
   position: "sticky",
   top: "88px",
   "@media": {
-    "(max-width: 860px)": { position: "static" },
+    "(max-width: 860px)": { display: "none" },
   },
 });
 
 export const catalog = style({
+  gridArea: "catalog",
   margin: 0,
   padding: 0,
   listStyle: "none",
@@ -31,9 +42,11 @@ export const entry = style({
   minHeight: "min(62vh, 560px)",
   alignContent: "center",
   paddingBlock: "3rem",
-  borderBottom: `1px solid ${vars.color.border}`,
   selectors: {
-    "&:first-child": { paddingTop: "1rem" },
+    "&:first-child": {
+      alignContent: "start",
+      paddingTop: 0,
+    },
   },
   "@media": {
     "(max-width: 860px)": {

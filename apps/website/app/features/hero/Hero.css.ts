@@ -23,6 +23,7 @@ export const label = style({
 
 export const title = style({
   margin: "0.75rem 0 0",
+  color: vars.color.accent,
   fontSize: "clamp(3rem, 8vw, 5.75rem)",
   fontWeight: 650,
   lineHeight: 1,
@@ -31,7 +32,6 @@ export const title = style({
 
 export const titleAccent = style({
   display: "block",
-  color: vars.color.accent,
 });
 
 export const lead = style({
@@ -52,7 +52,7 @@ export const extension = style({
   alignItems: "center",
   height: "48px",
   paddingInline: "1.25rem",
-  borderRadius: vars.radius.medium,
+  borderRadius: "999px",
   background: vars.color.accent,
   color: vars.color.onAccent,
   fontWeight: 600,
