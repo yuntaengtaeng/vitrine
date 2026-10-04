@@ -5,6 +5,7 @@ import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
 import { getTypeContext, getPropControls } from "./props-controls.js";
+import type { PreviewSetupModule } from "./preview-setup.js";
 
 // CJS/ESM interop에 따라 default export가 한 번 더 감싸여 오는 경우 보정
 const traverse = (
@@ -187,8 +188,8 @@ function splitNameAndGroup(raw: string): { name: string; group?: string } {
   return { name: segments[segments.length - 1], group: segments.slice(0, -1).join("/") };
 }
 
-/** 스캔된 프리뷰 목록을 가상 모듈 JS 문자열로 직렬화 */
-export function renderPreviewsModule(entries: PreviewEntry[]): string {
+/** 스캔된 프리뷰 목록과 setup module loader를 가상 모듈 JS 문자열로 직렬화 */
+export function renderPreviewsModule(entries: PreviewEntry[], setup?: PreviewSetupModule): string {
   const items = entries.map(
     (entry) =>
       `  { id: ${JSON.stringify(entry.id)}, name: ${JSON.stringify(entry.name)}, ` +
@@ -197,5 +198,14 @@ export function renderPreviewsModule(entries: PreviewEntry[]): string {
       `controls: ${JSON.stringify(entry.controls)}, ` +
       `load: () => import(${JSON.stringify("/" + entry.file)}) }`,
   );
-  return `export default [\n${items.join(",\n")}\n];\n`;
+  return `${renderPreviewSetupLoader(setup)}\nexport default [\n${items.join(",\n")}\n];\n`;
+}
+
+// 없는 파일을 import로 내보내면 Vite import 분석이 previews module 전체를 실패시킴
+function renderPreviewSetupLoader(setup: PreviewSetupModule | undefined): string {
+  if (!setup) return "export const loadPreviewSetup = undefined;";
+  if (setup.status === "unavailable") {
+    return `export const loadPreviewSetup = () => Promise.reject(new Error(${JSON.stringify(setup.message)}));`;
+  }
+  return `export const loadPreviewSetup = () => import(${JSON.stringify(setup.importPath)});`;
 }

@@ -1,9 +1,11 @@
 import type { CSSProperties } from "react";
+import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
 import { usePreviewCanvas } from "../hooks/usePreviewCanvas";
 import { ErrorText } from "./ErrorText";
 import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
 import { Controls } from "./Controls";
 import { VariantPicker } from "./VariantPicker";
+import { PreviewRenderer } from "./PreviewRenderer";
 
 const Styled = {
   Root: {
@@ -26,10 +28,20 @@ const Styled = {
   PreviewBody: { padding: "2rem", minWidth: 200, minHeight: 80, boxSizing: "border-box" } satisfies CSSProperties,
 };
 
-export const Canvas = (props: { entry: GalleryPreviewEntry | undefined }) => {
-  const { Comp, error, controls, args, setArg, variants, variantKey, setVariant } = usePreviewCanvas(props.entry);
+export const Canvas = (props: {
+  entry: GalleryPreviewEntry | undefined;
+  previewWrapper: PreviewWrapper | undefined;
+  setupError: Error | null;
+  setupLoading: boolean;
+}) => {
+  const { Comp, config, error, controls, args, setArg, variants, variantKey, setVariant } =
+    usePreviewCanvas(props.entry);
 
-  if (error) return <ErrorText>{String(error.stack ?? error.message ?? error)}</ErrorText>;
+  const displayError = props.setupError ?? error;
+  if (displayError) {
+    return <ErrorText>{String(displayError.stack ?? displayError.message ?? displayError)}</ErrorText>;
+  }
+  if (props.setupLoading) return null;
   if (!Comp) return null;
   return (
     <div style={Styled.Root}>
@@ -37,7 +49,12 @@ export const Canvas = (props: { entry: GalleryPreviewEntry | undefined }) => {
       <div style={Styled.Preview}>
         <div style={Styled.PreviewBody}>
           <PreviewErrorBoundary>
-            <Comp {...args} />
+            <PreviewRenderer
+              component={Comp}
+              args={args}
+              globalWrapper={props.previewWrapper}
+              wrapper={config.wrapper}
+            />
           </PreviewErrorBoundary>
         </div>
       </div>

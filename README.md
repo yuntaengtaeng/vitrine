@@ -24,13 +24,15 @@ export const PrimaryButton = () => <Button variant="primary">Save</Button>;
   separate stories file to keep in sync.
 - **Your Vite setup renders everything.** Aliases, plugins, CSS and HMR work exactly as
   they do in your app.
+- **Providers run inside previews.** An optional setup file mounts stateful context providers
+  around the gallery's preview tree.
 - **The editor is the main interface.** Moving the cursor onto a preview switches the
   panel to it. The browser gallery works on its own too.
 
 ## Getting started
 
 See the [vite-plugin-react-vitrine README](./packages/vite-plugin/README.md) for
-installation, preview declarations, controls and variants.
+installation, preview declarations, controls, variants and provider setup.
 
 To see previews beside your editor, install [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine) from the
 Visual Studio Marketplace.

@@ -3,9 +3,42 @@ import os from "node:os";
 import path from "node:path";
 import { isManifest } from "@vitrine/protocol";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { scanPreviews, scanSource } from "./scan.js";
+import { renderPreviewsModule, scanPreviews, scanSource } from "./scan.js";
 
 const scan = (code: string) => scanSource(code, "Button.tsx");
+
+describe("preview virtual module", () => {
+  const evaluate = (code: string) =>
+    import(`data:text/javascript,${encodeURIComponent(code)}`) as Promise<{
+      loadPreviewSetup: (() => Promise<unknown>) | undefined;
+    }>;
+
+  it("존재하는 setup file을 Vite가 분석하는 정적 경로로 지연 import", () => {
+    const moduleCode = renderPreviewsModule([], {
+      status: "found",
+      importPath: "/src/vitrine.preview.tsx",
+    });
+    expect(moduleCode).toContain('import("/src/vitrine.preview.tsx")');
+  });
+
+  it("누락된 setup file은 import 없이 안내 메시지로 reject", async () => {
+    const moduleCode = renderPreviewsModule([], {
+      status: "unavailable",
+      message: '[vitrine] setupFile not found\n  setupFile: "./src/setup.tsx"',
+    });
+    expect(moduleCode).not.toContain("import(");
+
+    const { loadPreviewSetup } = await evaluate(moduleCode);
+    await expect(loadPreviewSetup?.()).rejects.toThrow(
+      '[vitrine] setupFile not found\n  setupFile: "./src/setup.tsx"',
+    );
+  });
+
+  it("setupFile 옵션이 없으면 loader를 제공하지 않음", async () => {
+    const { loadPreviewSetup } = await evaluate(renderPreviewsModule([]));
+    expect(loadPreviewSetup).toBeUndefined();
+  });
+});
 
 describe("props controls", () => {
   let root: string;

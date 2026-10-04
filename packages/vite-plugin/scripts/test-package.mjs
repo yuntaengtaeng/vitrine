@@ -145,25 +145,31 @@ try {
         target: "ES2022",
         strict: true,
         skipLibCheck: false,
+        jsx: "react-jsx",
       },
-      include: ["typecheck.mts"],
+      include: ["typecheck.mts", "src/**/*.tsx"],
     }),
   );
   fs.writeFileSync(
     path.join(consumerRoot, "typecheck.mts"),
     [
       'import vitrine, { GALLERY_ROUTE, MANIFEST_ROUTE } from "vite-plugin-react-vitrine";',
-      'import { preview } from "vite-plugin-react-vitrine/preview";',
+      'import { preview, type PreviewWrapper } from "vite-plugin-react-vitrine/preview";',
       "",
-      'const plugin = vitrine({ include: ["src/**/*.tsx"] });',
+      'const plugin = vitrine({ include: ["src/**/*.tsx"], setupFile: "./src/preview-setup.tsx" });',
       "export const values: string[] = [GALLERY_ROUTE, MANIFEST_ROUTE, plugin.name];",
-      "preview(() => null, { args: {} });",
+      "const Wrapper: PreviewWrapper = ({ children }) => children;",
+      "preview(() => null, { args: {}, wrapper: Wrapper });",
       "",
     ].join("\n"),
   );
   fs.writeFileSync(
     path.join(consumerRoot, "src", "Smoke.tsx"),
     "/** @preview name=\"Smoke/Card\" */\nexport function Smoke() {\n  return <button>Smoke</button>;\n}\n",
+  );
+  fs.writeFileSync(
+    path.join(consumerRoot, "src", "preview-setup.tsx"),
+    'import { createElement } from "react";\nimport type { PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";\nexport default function PreviewSetup({ children }: PreviewWrapperProps) {\n  return createElement("main", null, children);\n}\n',
   );
   fs.copyFileSync(
     path.join(packageRoot, "scripts", "test-package-consumer.mjs"),

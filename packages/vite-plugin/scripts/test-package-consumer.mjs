@@ -49,7 +49,7 @@ const server = await createServer({
   root: process.cwd(),
   configFile: false,
   logLevel: "silent",
-  plugins: [vitrine()],
+  plugins: [vitrine({ setupFile: "./src/preview-setup.tsx" })],
   server: { host: "127.0.0.1", port: 0, strictPort: true },
 });
 const request = (url) =>
@@ -84,7 +84,13 @@ try {
     `${baseUrl}/@id/__x00__${contract.PREVIEWS_MODULE_ID}`,
   );
   assert.equal(previewsModuleResponse.status, 200);
-  assert.match(await previewsModuleResponse.text(), /src\/Smoke\.tsx#Smoke/);
+  const previewsModule = await previewsModuleResponse.text();
+  assert.match(previewsModule, /src\/Smoke\.tsx#Smoke/);
+  assert.match(previewsModule, /src\/preview-setup\.tsx/);
+
+  const virtualPreviews = await server.ssrLoadModule(contract.PREVIEWS_MODULE_ID);
+  const previewSetup = await virtualPreviews.loadPreviewSetup();
+  assert.equal(typeof previewSetup.default, "function");
 
   const previewSourceResponse = await request(`${baseUrl}/src/Smoke.tsx`);
   assert.equal(previewSourceResponse.status, 200);

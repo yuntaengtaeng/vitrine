@@ -93,8 +93,39 @@ preview(Button, {
 | `controls` | Control per prop: `"text"`, `"number"`, `"boolean"`, `"select"`, `"radio"`, or `{ type, options }` |
 | `variants` | Named sets of args, switchable from the gallery |
 | `defaultVariant` | Variant selected first. Defaults to the first key of `variants` |
+| `wrapper` | React wrapper for this component preview, such as a router or provider |
 
-`preview()` only registers metadata. It does not wrap or change your component.
+The wrapper only affects the preview. It does not change the exported component.
+
+## Providers and context
+
+The gallery has its own React root, so it cannot inherit context from providers mounted by
+your application. Add a setup file when every preview needs the same providers:
+
+```tsx
+// src/vitrine.preview.tsx
+import type { PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+import { DarkModeProvider } from "./DarkModeProvider";
+
+export default function PreviewSetup({ children }: PreviewWrapperProps) {
+  return <DarkModeProvider>{children}</DarkModeProvider>;
+}
+```
+
+Register the file relative to the Vite root:
+
+```ts
+vitrine({ setupFile: "./src/vitrine.preview.tsx" });
+```
+
+Include the file extension. The file must live inside the Vite root, and its path cannot contain
+`#`, `?` or `%`. If the path is invalid or the file does not exist yet, your app keeps running
+while the gallery and the terminal show the resolved path and the Vite root. The gallery reloads
+once you create the file or fix an error in it.
+
+The wrapper remains mounted while controls update the selected preview's props, so stateful
+providers keep their state. Selecting another preview mounts a fresh preview tree. Use
+`preview(Component, { wrapper: ComponentWrapper })` when only one component needs a provider.
 
 ## Plugin options
 
@@ -102,6 +133,8 @@ preview(Button, {
 vitrine({
   // Glob patterns scanned for @preview, relative to the Vite root
   include: ["src/**/*.{tsx,jsx}"],
+  // Module whose default export wraps every preview
+  setupFile: "./src/vitrine.preview.tsx",
 });
 ```
 
