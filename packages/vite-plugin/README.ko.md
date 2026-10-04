@@ -92,8 +92,39 @@ preview(Button, {
 | `controls` | prop별 control: `"text"`, `"number"`, `"boolean"`, `"select"`, `"radio"` 또는 `{ type, options }` |
 | `variants` | 갤러리에서 전환할 수 있는 이름 붙은 args 묶음 |
 | `defaultVariant` | 처음 선택되는 variant. 기본값은 `variants`의 첫 번째 키 |
+| `wrapper` | 이 컴포넌트 프리뷰를 감싸는 router나 provider 같은 React wrapper |
 
-`preview()`는 메타데이터만 등록합니다. 컴포넌트를 감싸거나 바꾸지 않습니다.
+Wrapper는 프리뷰에만 적용되며 export한 컴포넌트는 바꾸지 않습니다.
+
+## Provider와 context
+
+갤러리는 별도의 React root를 사용하므로 앱에 마운트된 provider의 context를 상속할 수 없습니다.
+모든 프리뷰에 같은 provider가 필요하면 setup file을 추가합니다.
+
+```tsx
+// src/vitrine.preview.tsx
+import type { PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+import { DarkModeProvider } from "./DarkModeProvider";
+
+export default function PreviewSetup({ children }: PreviewWrapperProps) {
+  return <DarkModeProvider>{children}</DarkModeProvider>;
+}
+```
+
+Vite root 기준 경로로 등록합니다.
+
+```ts
+vitrine({ setupFile: "./src/vitrine.preview.tsx" });
+```
+
+경로에는 확장자를 포함합니다. 파일은 Vite root 안에 있어야 하며 경로에 `#`, `?`, `%`를 쓸 수
+없습니다. 경로가 잘못되었거나 파일이 아직 없어도 앱은 계속 실행되고, gallery와 터미널에 해석된
+경로와 Vite root가 표시됩니다. 파일을 만들거나 파일의 오류를 고치면 gallery가 자동으로 다시
+로드됩니다.
+
+같은 프리뷰의 control이 prop을 바꾸는 동안 wrapper는 마운트 상태를 유지하므로 stateful provider의
+상태도 유지됩니다. 다른 프리뷰를 선택하면 새로운 프리뷰 tree가 마운트됩니다. 한 컴포넌트에만
+provider가 필요하면 `preview(Component, { wrapper: ComponentWrapper })`를 사용합니다.
 
 ## Plugin 옵션
 
@@ -101,6 +132,8 @@ preview(Button, {
 vitrine({
   // @preview를 찾을 glob 패턴, Vite root 기준
   include: ["src/**/*.{tsx,jsx}"],
+  // 모든 프리뷰를 감싸는 default export module
+  setupFile: "./src/vitrine.preview.tsx",
 });
 ```
 

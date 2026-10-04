@@ -155,6 +155,28 @@ export const note = style({
   color: vars.color.textMuted,
 });
 
+export const providerSection = style({
+  display: "grid",
+  gap: "1.25rem",
+  marginTop: "2rem",
+});
+
+export const providerTitle = style({
+  margin: 0,
+  fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
+  letterSpacing: "-0.025em",
+});
+
+export const providerSubtitle = style({
+  margin: "0.75rem 0 0",
+  fontSize: "1.125rem",
+});
+
+export const providerText = style({
+  margin: 0,
+  color: vars.color.textMuted,
+});
+
 export const next = style({
   padding: "clamp(2rem, 5vw, 3.5rem) 0",
   borderBlock: `1px solid ${vars.color.border}`,

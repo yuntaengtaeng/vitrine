@@ -50,6 +50,8 @@ export function FeatureList() {
       <div className={`${container} ${styles.layout}`}>
         <div className={styles.heading}>
           <SectionHeading label={t.features.label} title={t.features.title} />
+        </div>
+        <div className={styles.showcase}>
           <FeatureShowcase activeFeature={activeFeature} />
         </div>
         <ul className={styles.catalog}>

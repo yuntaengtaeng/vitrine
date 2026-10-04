@@ -10,6 +10,10 @@ type GalleryPreviewEntry = Pick<
 type GalleryPropControl = import("@vitrine/protocol").PropControl;
 
 declare module "virtual:vitrine-previews" {
+  const loadPreviewSetup:
+    | (() => Promise<{ default?: unknown }>)
+    | undefined;
   const entries: GalleryPreviewEntry[];
+  export { loadPreviewSetup };
   export default entries;
 }

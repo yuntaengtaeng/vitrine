@@ -5,7 +5,6 @@ import { vars } from "../../styles/theme.css";
 export const frame = style({
   position: "relative",
   height: "220px",
-  marginTop: "2.5rem",
   overflow: "hidden",
   border: `1px solid ${vars.color.border}`,
   background: vars.color.surface,

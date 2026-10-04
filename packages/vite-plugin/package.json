@@ -56,7 +56,9 @@
     "@types/node": "catalog:node",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
+    "@types/react-test-renderer": "catalog:react",
     "esbuild": "catalog:build",
+    "react-test-renderer": "catalog:react",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite"
   },

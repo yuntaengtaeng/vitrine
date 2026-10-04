@@ -18,6 +18,7 @@ interface LoadedPreview {
 
 interface PreviewCanvasState {
   Comp: ComponentType | null;
+  config: PreviewConfig<ElementType>;
   error: Error | null;
   controls: ControlsMap;
   args: Args;
@@ -68,6 +69,7 @@ export const usePreviewCanvas = (entry: GalleryPreviewEntry | undefined): Previe
 
   return {
     Comp: loaded?.Comp ?? null,
+    config,
     error,
     controls: mergeControls(inferredControls, config.controls),
     args,

@@ -24,12 +24,14 @@ export const PrimaryButton = () => <Button variant="primary">Save</Button>;
   stories 파일이 없습니다.
 - **렌더링은 사용자의 Vite 설정이 담당합니다.** alias, plugin, CSS, HMR이 앱과 똑같이
   동작합니다.
+- **Provider를 프리뷰 안에서 실행합니다.** 선택적인 setup file로 stateful context provider를
+  갤러리의 프리뷰 tree에 마운트할 수 있습니다.
 - **에디터가 주 인터페이스입니다.** 커서를 프리뷰 위로 옮기면 패널이 그 프리뷰로
   바뀝니다. 브라우저 갤러리만 따로 써도 됩니다.
 
 ## 시작하기
 
-설치, 프리뷰 선언, controls와 variants는
+설치, 프리뷰 선언, controls, variants와 provider 설정은
 [vite-plugin-react-vitrine README](./packages/vite-plugin/README.md)를 참고하세요.
 
 에디터 옆에서 프리뷰를 보려면 Visual Studio Marketplace에서 [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)를 설치하세요.

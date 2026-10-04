@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { FONT_SIZE } from "../tokens/fontSize";
 import { usePreviewSelectionSync } from "../hooks/usePreviewSelectionSync";
+import { usePreviewSetup } from "../hooks/usePreviewSetup";
 import { SidebarTree } from "./SidebarTree";
 import { buildSidebarTree } from "./sidebarGroups";
 import { Canvas } from "./Canvas";
@@ -45,8 +46,12 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-export const App = (props: { entries: GalleryPreviewEntry[] }) => {
-  const { entries } = props;
+export const App = (props: {
+  entries: GalleryPreviewEntry[];
+  loadPreviewSetup: (() => Promise<{ default?: unknown }>) | undefined;
+}) => {
+  const { entries, loadPreviewSetup } = props;
+  const previewSetup = usePreviewSetup(loadPreviewSetup);
   const [activeId, setActiveId] = usePreviewSelectionSync(entries);
   const activeEntry = entries.find((entry) => entry.id === activeId);
   const tree = buildSidebarTree(entries);
@@ -63,7 +68,13 @@ export const App = (props: { entries: GalleryPreviewEntry[] }) => {
         <SidebarTree nodes={tree} activeId={activeId} onSelect={setActiveId} />
       </div>
       <div style={Styled.CanvasWrapper}>
-        <Canvas key={activeEntry?.id ?? "empty"} entry={activeEntry} />
+        <Canvas
+          key={activeEntry?.id ?? "empty"}
+          entry={activeEntry}
+          previewWrapper={previewSetup.wrapper}
+          setupError={previewSetup.error}
+          setupLoading={previewSetup.loading}
+        />
       </div>
     </div>
   );
