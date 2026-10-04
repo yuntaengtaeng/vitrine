@@ -2,7 +2,7 @@
   "name": "vitrine",
   "displayName": "Vitrine",
   "description": "Live previews of @preview-annotated React components beside your editor, rendered by your Vite dev server.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "yuntaengtaeng",
   "icon": "icon.png",
   "private": true,

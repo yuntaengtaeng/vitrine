@@ -1,5 +1,11 @@
 # vite-plugin-react-vitrine
 
+## 0.1.2
+
+### Patch Changes
+
+- d0f08ca: Add `setupFile` and `preview(Component, { wrapper })` to provide React context to previews, and prevent invalid values in number controls.
+
 ## 0.1.1
 
 ### Patch Changes
