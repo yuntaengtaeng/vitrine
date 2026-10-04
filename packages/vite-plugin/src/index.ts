@@ -81,7 +81,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
 
     handleHotUpdate({ modules, server }) {
       if (previewSetup?.status !== "valid") return;
-      if (!needsPreviewSetupRecovery(modules, previewSetup.filePath)) return;
+      if (!needsPreviewSetupRecovery(modules, getSetupFileIdentities(previewSetup.filePath))) return;
       // full-reload는 앱 page까지 reload하므로 setup 실패 상태의 Gallery에만 알림
       server.ws.send({ type: "custom", event: PREVIEW_SETUP_RECOVER_EVENT });
     },
@@ -152,6 +152,15 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       httpServer.once("close", () => removePortFile(root));
     },
   };
+}
+
+// Vite module graph는 symlink를 푼 실제 경로를 file로 기록하므로 두 경로를 모두 비교
+function getSetupFileIdentities(filePath: string): string[] {
+  try {
+    return [filePath, fs.realpathSync.native(filePath)];
+  } catch {
+    return [filePath];
+  }
 }
 
 // 디렉터리를 가리키는 setupFile도 import할 수 없으므로 일반 파일만 존재로 판정

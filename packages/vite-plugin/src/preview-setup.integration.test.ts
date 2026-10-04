@@ -22,19 +22,28 @@ const waitFor = async (condition: () => boolean, label: string) => {
 
 /** 실제 dev server에서 setupFile 누락, 생성, 삭제, 오류 복구 흐름 검증 */
 describe("preview setup Vite integration", () => {
-  let root: string | undefined;
+  let createdPaths: string[] = [];
   let server: ViteDevServer | undefined;
 
   afterEach(async () => {
     await server?.close();
     server = undefined;
-    if (root) fs.rmSync(root, { recursive: true, force: true });
-    root = undefined;
+    for (const createdPath of createdPaths) fs.rmSync(createdPath, { recursive: true, force: true });
+    createdPaths = [];
   });
 
-  const startServer = async (setupFile: string, files: Record<string, string> = {}) => {
-    const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-setup-test-"));
-    root = projectRoot;
+  const startServer = async (
+    setupFile: string,
+    files: Record<string, string> = {},
+    { linkedRoot = false } = {},
+  ) => {
+    // Windows CI의 8.3 임시 경로를 root로 쓰면 Vite가 모든 source 요청을 403으로 거부해 실제 경로 사용
+    const realRoot = fs.mkdtempSync(
+      path.join(fs.realpathSync.native(os.tmpdir()), "vitrine-setup-test-"),
+    );
+    const projectRoot = linkedRoot ? `${realRoot}-link` : realRoot;
+    if (linkedRoot) fs.symlinkSync(realRoot, projectRoot, "junction");
+    createdPaths = linkedRoot ? [projectRoot, realRoot] : [realRoot];
     fs.mkdirSync(path.join(projectRoot, "src"));
     for (const [file, source] of Object.entries(files)) {
       fs.writeFileSync(path.join(projectRoot, file), source);
@@ -145,9 +154,10 @@ describe("preview setup Vite integration", () => {
   });
 
   it.each([
-    ["setup module", "src/setup.tsx"],
-    ["setup 의존 module", "src/theme.ts"],
-  ])("처음부터 변환에 실패한 %s 수정 시 앱 page 대신 갤러리에만 복구 신호", async (_label, brokenFile) => {
+    ["setup module", "src/setup.tsx", false],
+    ["setup 의존 module", "src/theme.ts", false],
+    ["symlink root의 setup module", "src/setup.tsx", true],
+  ])("처음부터 변환에 실패한 %s 수정 시 앱 page 대신 갤러리에만 복구 신호", async (_label, brokenFile, linkedRoot) => {
     const sources: Record<string, string> = {
       "src/setup.tsx":
         'import { theme } from "./theme";\n' +
@@ -157,6 +167,7 @@ describe("preview setup Vite integration", () => {
     const { request, fullReloadCount, recoverEventCount, waitForRecoverEvent, writeFile } = await startServer(
       "./src/setup.tsx",
       { ...sources, [brokenFile]: `${sources[brokenFile]}export const broken = ;\n` },
+      { linkedRoot },
     );
 
     const setup = await requestSetupModule(request);

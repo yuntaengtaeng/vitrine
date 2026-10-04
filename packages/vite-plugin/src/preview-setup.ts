@@ -83,25 +83,27 @@ export function getPreviewSetupModule(
  * 아직 분석되지 않은 setup module 또는 그 의존 module이 바뀌었는지 판단
  *
  * Vite는 변환 실패와 미요청 module을 구분 없이 갱신 전파에서 제외하므로 복구 여부는 Gallery가 판단
+ * setupFilePaths에는 root 기준 경로와 symlink를 푼 실제 경로를 함께 전달
  */
 export function needsPreviewSetupRecovery(
   changedModules: readonly PreviewSetupGraphNode[],
-  setupFilePath: string,
+  setupFilePaths: readonly string[],
 ): boolean {
+  const setupFiles = new Set(setupFilePaths.map((file) => path.resolve(file)));
   return changedModules.some(
-    (mod) => mod.isSelfAccepting === undefined && isInSetupModuleTree(mod, setupFilePath),
+    (mod) => mod.isSelfAccepting === undefined && isInSetupModuleTree(mod, setupFiles),
   );
 }
 
 // setup module에서 시작하는 import tree에 속하는지 importer를 거슬러 확인
-function isInSetupModuleTree(mod: PreviewSetupGraphNode, setupFilePath: string): boolean {
+function isInSetupModuleTree(mod: PreviewSetupGraphNode, setupFiles: ReadonlySet<string>): boolean {
   const visited = new Set<PreviewSetupGraphNode>();
   const pending = [mod];
   while (pending.length > 0) {
     const current = pending.pop()!;
     if (visited.has(current)) continue;
     visited.add(current);
-    if (current.file && path.resolve(current.file) === setupFilePath) return true;
+    if (current.file && setupFiles.has(path.resolve(current.file))) return true;
     pending.push(...current.importers);
   }
   return false;

@@ -110,28 +110,35 @@ describe("needsPreviewSetupRecovery", () => {
   ): PreviewSetupGraphNode => ({ file, isSelfAccepting, importers: new Set(importers) });
 
   it("변환에 성공한 적 없는 setup module 변경은 복구 대상", () => {
-    expect(needsPreviewSetupRecovery([node(setupFilePath, undefined)], setupFilePath)).toBe(true);
+    expect(needsPreviewSetupRecovery([node(setupFilePath, undefined)], [setupFilePath])).toBe(true);
   });
 
   it("setup이 import하는 변환 실패 module 변경도 복구 대상", () => {
     const setup = node(setupFilePath, true);
     const provider = node(path.join(root, "src", "Provider.tsx"), undefined, [setup]);
     const theme = node(path.join(root, "src", "theme.ts"), undefined, [provider]);
-    expect(needsPreviewSetupRecovery([theme], setupFilePath)).toBe(true);
+    expect(needsPreviewSetupRecovery([theme], [setupFilePath])).toBe(true);
   });
 
   it("정상 HMR 경계가 있거나 setup tree 밖인 module은 Vite HMR에 맡김", () => {
-    expect(needsPreviewSetupRecovery([node(setupFilePath, true)], setupFilePath)).toBe(false);
+    expect(needsPreviewSetupRecovery([node(setupFilePath, true)], [setupFilePath])).toBe(false);
     const preview = node(path.join(root, "src", "Badge.tsx"), undefined, [
       node(path.join(root, "src", "App.tsx"), true),
     ]);
-    expect(needsPreviewSetupRecovery([preview], setupFilePath)).toBe(false);
+    expect(needsPreviewSetupRecovery([preview], [setupFilePath])).toBe(false);
+  });
+
+  it("module graph가 symlink를 푼 실제 경로로 기록한 setup module도 인식", () => {
+    const realSetupFilePath = path.join(path.resolve("real-project"), "src", "setup.tsx");
+    const setup = node(realSetupFilePath.replaceAll("\\", "/"), undefined);
+    expect(needsPreviewSetupRecovery([setup], [setupFilePath])).toBe(false);
+    expect(needsPreviewSetupRecovery([setup], [setupFilePath, realSetupFilePath])).toBe(true);
   });
 
   it("순환 import가 있어도 탐색 종료", () => {
     const a = node(path.join(root, "src", "a.ts"), undefined);
     const b = node(path.join(root, "src", "b.ts"), undefined, [a]);
     a.importers.add(b);
-    expect(needsPreviewSetupRecovery([a], setupFilePath)).toBe(false);
+    expect(needsPreviewSetupRecovery([a], [setupFilePath])).toBe(false);
   });
 });
