@@ -4,7 +4,7 @@ import { resolveTheme } from "./colorTheme";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
-/** Gallery 색 테마를 정해 \`<html data-vt-theme>\`에 적용 */
+/** Gallery 색 테마를 정해 `<html data-vt-theme>`에 적용 */
 export const useColorTheme = (embedded: boolean, host: NegotiatedCapabilities | null): ThemeKind => {
   const [systemDark, setSystemDark] = useState(() => window.matchMedia(DARK_QUERY).matches);
   const [hostTheme, setHostTheme] = useState<ThemeKind | null>(null);

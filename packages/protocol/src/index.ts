@@ -46,6 +46,8 @@ export interface GalleryConfig {
   viewports: GalleryViewport[];
   /** 스캔에 실제로 쓰는 glob 패턴, Vite root 기준 */
   include: string[];
+  /** `snapshots: false`로 끄지 않았는지 */
+  snapshots: boolean;
 }
 
 /** Gallery client virtual module 식별자 */
@@ -232,3 +234,4 @@ function isPropControl(value: unknown): value is PropControl {
 
 export * from "./frame.js";
 export * from "./capabilities.js";
+export * from "./snapshots.js";

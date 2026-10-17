@@ -10,6 +10,7 @@ import { ErrorText } from "./ErrorText";
 import { PreviewErrorBoundary } from "./preview/PreviewErrorBoundary";
 import { PreviewGrid } from "./preview/PreviewGrid";
 import { PreviewRenderer } from "./preview/PreviewRenderer";
+import { SnapshotPreview } from "./preview/SnapshotPreview";
 import { usePreviewModule } from "./preview/usePreviewModule";
 import { usePreviewSetup, type PreviewSetupLoader } from "./preview/usePreviewSetup";
 import { resolveCanvasView } from "./preview/canvasView";
@@ -107,20 +108,30 @@ export const FrameApp = (props: {
         <PreviewGrid
           cells={render.layout.cells}
           columns={render.layout.columns}
-          renderCell={(cell) => (
-            // 칸 하나의 실패는 그 칸에만 표시하고 나머지 variant는 계속 보여줌
-            <PreviewErrorBoundary resetKey={JSON.stringify(cell)} onError={ignoreCellError} onRendered={reportRendered}>
-              <PreviewRenderer
-                component={view.preview.component}
-                args={resolveFrameArgs(entry.controls, view.preview.config, cell)}
-                globalWrapper={setup.wrapper}
-                wrapper={view.preview.config.wrapper}
+          overlay={render.layout.overlay}
+          renderCell={(cell) =>
+            cell.snapshot ? (
+              <SnapshotPreview
+                entry={entry}
+                cell={{ ...cell, snapshot: cell.snapshot }}
+                setupWrapper={setup.wrapper}
                 globals={globalsFor(cell.variantKey)}
-                actions={entry.actions ?? NO_ACTIONS}
-                onAction={reportAction}
               />
-            </PreviewErrorBoundary>
-          )}
+            ) : (
+              // 칸 하나의 실패는 그 칸에만 표시하고 나머지 variant는 계속 보여줌
+              <PreviewErrorBoundary resetKey={JSON.stringify(cell)} onError={ignoreCellError} onRendered={reportRendered}>
+                <PreviewRenderer
+                  component={view.preview.component}
+                  args={resolveFrameArgs(entry.controls, view.preview.config, cell)}
+                  globalWrapper={setup.wrapper}
+                  wrapper={view.preview.config.wrapper}
+                  globals={globalsFor(cell.variantKey)}
+                  actions={entry.actions ?? NO_ACTIONS}
+                  onAction={reportAction}
+                />
+              </PreviewErrorBoundary>
+            )
+          }
         />
       )}
       {view.kind === "ready" && entry && render?.layout.kind !== "grid" && (

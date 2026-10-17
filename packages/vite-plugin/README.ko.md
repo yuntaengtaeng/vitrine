@@ -182,6 +182,8 @@ vitrine({
   setupFile: "./src/vitrine.preview.tsx",
   // gallery viewport 프리셋 변경 (실험 단계)
   viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
+  // 스냅샷 히스토리 설정, false면 끔 (실험 단계)
+  snapshots: { limit: 20 },
 });
 ```
 
@@ -192,6 +194,29 @@ vitrine({
 프리셋은 Mobile 375px, Tablet 768px, Desktop 1280px입니다. `viewports`는 이 목록을 받아 보여줄
 목록을 돌려주므로 추가, 삭제, 교체가 모두 가능합니다. 무대를 채우는 Responsive는 항상
 제공됩니다. 이름이 겹치거나 너비가 양의 정수가 아니면 경고를 남기고 기본 목록을 씁니다.
+
+### 스냅샷 히스토리
+
+dev server가 켜져 있는 동안 `@preview`가 있는 파일을 저장할 때마다 메모리에 보관하므로, gallery의
+History 보기에서 옛 버전을 지금 버전 옆에 나란히 또는 겹쳐서 볼 수 있습니다. Snapshot 1은 서버를
+켤 때, 또는 파일에 `@preview`가 생긴 때의 내용입니다. 문법 오류가 있거나 내용이 같은 저장은
+건너뜁니다. 파일마다 Snapshot 1과 최근 저장본을 합쳐 기본 20개를 보관합니다. 서버를 끄거나 파일을
+지우거나 `@preview`가 사라지면 기록도 사라지고, 이름을 바꾼 파일은 새 기록으로 시작합니다.
+
+옛 버전은 import하는 다른 파일의 지금 버전과 함께 그려집니다. 옛 버전에 프리뷰 export가 없으면 그
+칸에 안내가 나옵니다.
+
+입력마다 저장하는 에디터에서는 기록이 빨리 찹니다. `shouldRecord`로 저장을 남길지 정할 수 있습니다.
+
+```ts
+vitrine({
+  snapshots: {
+    limit: 30,
+    // 3초에 한 번까지만 기록
+    shouldRecord: ({ lastRecordedAt, now }) => lastRecordedAt === null || now - lastRecordedAt > 3000,
+  },
+});
+```
 
 ## VS Code
 

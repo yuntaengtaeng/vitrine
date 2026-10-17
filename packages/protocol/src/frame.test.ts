@@ -36,6 +36,7 @@ describe("isGalleryToFrameMessage", () => {
     const cells = [
       { key: "primary", label: "Primary", variantKey: "primary", args: {} },
       { key: "danger", label: "Danger", variantKey: "danger", args: { label: "Delete" } },
+      { key: "old", label: "Snapshot 2", variantKey: null, args: {}, snapshot: 2 },
     ];
     expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells } })).toBe(true);
     expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells: [] } })).toBe(true);

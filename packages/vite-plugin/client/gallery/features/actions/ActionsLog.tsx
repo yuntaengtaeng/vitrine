@@ -1,6 +1,6 @@
 import type { FrameActionMessage } from "@vitrine/protocol";
 import * as styles from "./ActionsLog.css";
-import { formatActionTime } from "./actionTime";
+import { clockTime } from "../../shared/clockTime";
 
 export const ActionsLog = (props: {
   calls: readonly Omit<FrameActionMessage, "type">[];
@@ -14,7 +14,7 @@ export const ActionsLog = (props: {
     <ol className={styles.list} aria-label="Action calls" reversed>
       {[...props.calls].reverse().map((call, index) => (
         <li key={`${call.at}-${index}`} className={styles.row}>
-          <span className={styles.time}>{formatActionTime(call.at)}</span>
+          <span className={styles.time}>{clockTime(call.at, { milliseconds: true })}</span>
           <span className={styles.name}>{call.name}</span>
           <span className={styles.args}>{call.args.join(", ")}</span>
         </li>

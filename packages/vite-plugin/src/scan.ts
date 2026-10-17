@@ -80,6 +80,11 @@ function scanFile(file: string, root: string, fileCache: FileCache): PreviewEntr
 
 /** 소스 문자열에서 @preview export 스캔 (relFile은 프로젝트 루트 기준 POSIX 경로) */
 export function scanSource(code: string, relFile: string): PreviewEntry[] {
+  return scanParsedSource(code, relFile) ?? [];
+}
+
+/** scanSource와 같지만 파싱에 실패하면 null, 저장 중인 문법 오류와 @preview가 사라진 경우를 구분할 때 사용 */
+export function scanParsedSource(code: string, relFile: string): PreviewEntry[] | null {
   let ast;
   try {
     ast = parse(code, {
@@ -88,7 +93,7 @@ export function scanSource(code: string, relFile: string): PreviewEntry[] {
       attachComment: true,
     });
   } catch {
-    return [];
+    return null;
   }
 
   const comments = ast.comments ?? [];

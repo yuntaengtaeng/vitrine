@@ -91,6 +91,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
             onStageChange={updateStage}
             onFailedChange={markFailed}
             link={pendingLink?.previewId === activeEntry.id ? pendingLink : undefined}
+            snapshotsEnabled={props.config.snapshots}
           />
         )}
         </div>

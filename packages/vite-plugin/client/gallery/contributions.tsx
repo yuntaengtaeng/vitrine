@@ -1,10 +1,12 @@
-import type { FrameGlobalValues, FrameLayout, GalleryViewport } from "@vitrine/protocol";
+import type { FrameGlobalValues, FrameLayout, GalleryViewport, SnapshotHistory } from "@vitrine/protocol";
 import type { ComponentType } from "react";
 import { ActionsLog, ClearActionsButton } from "./features/actions/ActionsLog";
 import { CodePanel } from "./features/code/CodePanel";
 import { ControlsPanel, ResetAllButton } from "./features/controls/ControlsPanel";
 import { VariantPicker } from "./features/controls/VariantPicker";
 import { GlobalsPicker } from "./features/globals/GlobalsPicker";
+import { historyLayout, resolveSnapshot, type HistoryChoice } from "./features/history/history";
+import { HistoryPicker } from "./features/history/HistoryPicker";
 import { matrixAxes, planMatrix, resolveMatrixAxes, type MatrixChoice } from "./features/matrix/matrix";
 import { MatrixAxesPicker } from "./features/matrix/MatrixAxesPicker";
 import type { LayoutInput } from "./features/previewSession/frameLink";
@@ -29,17 +31,25 @@ export interface ContributionProps {
   onGlobalChange: (name: string, value: string) => void;
   matrix: MatrixChoice;
   onMatrixChange: (choice: MatrixChoice) => void;
+  /** 이 프리뷰 파일의 스냅샷 목록, 끄거나 아직 받지 못했으면 null */
+  history: SnapshotHistory | null;
+  historyChoice: HistoryChoice;
+  onHistoryChange: (choice: HistoryChoice) => void;
 }
 
-/** 보기가 배치를 만들 때 쓰는 사용자 설정 */
+/** 보기가 배치를 만들 때 쓰는 사용자 설정과 Gallery 데이터 */
 export interface ViewSettings {
   matrix: MatrixChoice;
+  history: { record: SnapshotHistory | null; choice: HistoryChoice };
 }
+
+/** 보기를 쓸 수 있는지 판단하는 데 필요한 지금 프리뷰 정보 */
+export type ViewAvailability = Pick<LayoutInput, "variants" | "controls"> & { snapshotCount: number };
 
 export interface GalleryView {
   id: string;
   label: string;
-  available: (input: Pick<LayoutInput, "variants" | "controls">) => boolean;
+  available: (input: ViewAvailability) => boolean;
   layout: (input: LayoutInput, settings: ViewSettings) => FrameLayout;
 }
 
@@ -64,17 +74,24 @@ const matrixLayout = (input: LayoutInput, settings: ViewSettings): FrameLayout =
   return plan.kind === "ready" ? plan.layout : { kind: "grid", cells: [] };
 };
 
+const historyViewLayout = (input: LayoutInput, settings: ViewSettings): FrameLayout => {
+  const { record, choice } = settings.history;
+  return historyLayout(record && resolveSnapshot(record, choice), choice.mode, input);
+};
+
 export const VIEWS: readonly GalleryView[] = [
   { id: "single", label: "Single", available: () => true, layout: singleLayout },
   { id: "variants", label: "Variants", available: ({ variants }) => variants.length > 1, layout: variantsLayout },
   { id: "matrix", label: "Matrix", available: ({ controls }) => matrixAxes(controls).length > 0, layout: matrixLayout },
+  // 마지막 기록은 지금 버전과 같아 비교하려면 기록이 둘 이상 필요
+  { id: "history", label: "History", available: ({ snapshotCount }) => snapshotCount > 1, layout: historyViewLayout },
 ];
 
 /** 고른 보기를 지금 프리뷰에서 쓸 수 없으면 첫 보기 */
 export function resolveView(
   views: readonly GalleryView[],
   id: string,
-  input: Pick<LayoutInput, "variants" | "controls">,
+  input: ViewAvailability,
 ): GalleryView {
   return views.find((view) => view.id === id && view.available(input)) ?? views[0];
 }
@@ -112,6 +129,15 @@ const MatrixItem = ({ session, viewId, matrix, onMatrixChange }: ContributionPro
   );
 };
 
+const HistoryItem = ({ viewId, history, historyChoice, onHistoryChange }: ContributionProps) => {
+  if (viewId !== "history" || !history) return null;
+  const snapshot = resolveSnapshot(history, historyChoice);
+  if (!snapshot) return null;
+  return (
+    <HistoryPicker history={history} snapshot={snapshot.number} mode={historyChoice.mode} onChange={onHistoryChange} />
+  );
+};
+
 const BackgroundItem = ({ stage, onStageChange }: ContributionProps) => (
   <BackgroundPicker value={stage.background} onChange={(background) => onStageChange({ background })} />
 );
@@ -123,6 +149,7 @@ const ViewportItem = ({ stage, viewports, onStageChange }: ContributionProps) =>
 export const TOOLBAR_ITEMS: readonly GalleryToolbarItem[] = [
   { id: "variant", align: "start", Item: VariantItem },
   { id: "matrix", align: "start", Item: MatrixItem },
+  { id: "history", align: "start", Item: HistoryItem },
   { id: "globals", align: "end", Item: GlobalsItem },
   { id: "background", align: "end", Item: BackgroundItem },
   { id: "viewport", align: "end", Item: ViewportItem },

@@ -41,8 +41,9 @@ describe("resolveViewports", () => {
 
 describe("renderGalleryConfigModule", () => {
   it("설정을 default export로 직렬화", () => {
-    expect(renderGalleryConfigModule({ viewports: [{ name: "Main", width: 800 }], include: ["src/**/*.tsx"] })).toBe(
-      'export default {"viewports":[{"name":"Main","width":800}],"include":["src/**/*.tsx"]};\n',
+    const config = { viewports: [{ name: "Main", width: 800 }], include: ["src/**/*.tsx"], snapshots: true };
+    expect(renderGalleryConfigModule(config)).toBe(
+      'export default {"viewports":[{"name":"Main","width":800}],"include":["src/**/*.tsx"],"snapshots":true};\n',
     );
   });
 });

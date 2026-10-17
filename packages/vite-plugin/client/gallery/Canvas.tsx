@@ -8,6 +8,8 @@ import { CanvasHeader } from "./features/header/CanvasHeader";
 import { ErrorCard } from "./features/previewError/ErrorCard";
 import { MAX_MATRIX_CELLS, matrixAxes, planMatrix, type MatrixChoice } from "./features/matrix/matrix";
 import { MatrixLimitNotice } from "./features/matrix/MatrixAxesPicker";
+import type { HistoryChoice } from "./features/history/history";
+import { useSnapshotHistory } from "./features/history/useSnapshotHistory";
 import { LoadingOverlay } from "./features/stage/LoadingOverlay";
 import { PreviewStage } from "./features/stage/PreviewStage";
 import type { StageSettings } from "./features/stage/stageSettings";
@@ -27,15 +29,23 @@ export const Canvas = (props: {
   onFailedChange: (previewId: string, failed: boolean) => void;
   /** 이 프리뷰를 상태 링크로 연 경우 그 상태 */
   link?: StateLink;
+  snapshotsEnabled: boolean;
 }) => {
   const { entry, onFailedChange, onStageChange } = props;
   const viewId = props.stage.view;
   // 축은 프리뷰마다 prop이 달라 프리뷰를 바꾸면 처음부터 고름
   const [matrix, setMatrix] = useState<MatrixChoice>({});
+  const history = useSnapshotHistory(entry.file, props.snapshotsEnabled);
+  const [historyChoice, setHistoryChoice] = useState<HistoryChoice>({ mode: "side" });
+  const snapshotCount = history?.snapshots.length ?? 0;
   // 보기 사용 가능 여부는 frame이 알려준 variant와 control 목록에 달려 있어 보낼 때 정함
   const layoutFor = useCallback<LayoutFor>(
-    (input) => resolveView(VIEWS, viewId, input).layout(input, { matrix }),
-    [viewId, matrix],
+    (input) =>
+      resolveView(VIEWS, viewId, { ...input, snapshotCount }).layout(input, {
+        matrix,
+        history: { record: history, choice: historyChoice },
+      }),
+    [viewId, matrix, history, historyChoice, snapshotCount],
   );
   const [globals, chooseGlobal] = useGlobalSelection(props.link?.globals);
   const session = usePreviewSession(layoutFor, globals, props.link);
@@ -45,7 +55,7 @@ export const Canvas = (props: {
   const ActivePanel = activeTab.Panel;
   const ActiveActions = activeTab.Actions;
   const { ready, error } = session.status;
-  const viewInput = { variants: ready?.variants ?? [], controls: ready?.controls ?? {} };
+  const viewInput = { variants: ready?.variants ?? [], controls: ready?.controls ?? {}, snapshotCount };
   const availableViews = VIEWS.filter((view) => view.available(viewInput));
   const activeViewId = resolveView(VIEWS, viewId, viewInput).id;
   const matrixPlan =
@@ -66,6 +76,9 @@ export const Canvas = (props: {
     onGlobalChange: chooseGlobal,
     matrix,
     onMatrixChange: setMatrix,
+    history,
+    historyChoice,
+    onHistoryChange: setHistoryChoice,
   };
 
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);

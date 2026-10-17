@@ -185,6 +185,8 @@ vitrine({
   setupFile: "./src/vitrine.preview.tsx",
   // Edit the gallery's viewport presets (experimental)
   viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
+  // Snapshot history settings, or false to turn it off (experimental)
+  snapshots: { limit: 20 },
 });
 ```
 
@@ -196,6 +198,31 @@ The defaults are Mobile 375px, Tablet 768px and Desktop 1280px. `viewports` rece
 returns the list to show, so you can add, remove or replace presets. Responsive, which fills
 the stage, is always available. Names must be unique and widths must be positive integers;
 otherwise the plugin warns and keeps the defaults.
+
+### Snapshot history
+
+While the dev server runs, every save of a file with `@preview` is kept in memory, so the
+gallery's History view can show an older version next to the current one, side by side or
+overlaid. Snapshot 1 is the file when the server started, or when it got `@preview`. Saves with
+syntax errors or unchanged content are skipped. Each file keeps Snapshot 1 and its latest saves,
+20 in total by default. History ends when the server stops, the file is deleted or it loses
+`@preview`, and renamed files start a new history.
+
+An older version is rendered with the current version of the files it imports. If it no longer
+exports the preview, its cell says so.
+
+Editors that save on every keystroke can fill the history quickly. `shouldRecord` decides
+whether a save is kept:
+
+```ts
+vitrine({
+  snapshots: {
+    limit: 30,
+    // Keep at most one save every 3 seconds
+    shouldRecord: ({ lastRecordedAt, now }) => lastRecordedAt === null || now - lastRecordedAt > 3000,
+  },
+});
+```
 
 ## VS Code
 

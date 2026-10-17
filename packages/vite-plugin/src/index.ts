@@ -11,6 +11,9 @@ import {
   OPEN_IN_EDITOR_ROUTE,
   PREVIEWS_MODULE_ID,
   PREVIEW_SETUP_RECOVER_EVENT,
+  SNAPSHOTS_CHANGED_EVENT,
+  SNAPSHOTS_ROUTE,
+  SNAPSHOT_QUERY,
 } from "@vitrine/protocol";
 import type { Logger, Plugin } from "vite";
 import { DEFAULT_INCLUDE, createPreviewScanner, type PreviewScanner } from "./scan.js";
@@ -25,6 +28,8 @@ import {
 } from "./preview-setup.js";
 import { toViteOpenInEditorUrl } from "./open-in-editor.js";
 import { renderGalleryConfigModule, resolveViewports } from "./gallery-config.js";
+import { applySnapshotChange } from "./snapshot-recorder.js";
+import { createSnapshotStore } from "./snapshot-store.js";
 
 // 공개 옵션 타입은 공개 entry에 둬야 배포 declaration이 내부 module을 참조하지 않음
 /** 무대 iframe 너비 프리셋 (Responsive는 항상 따로 제공) */
@@ -37,6 +42,22 @@ export interface ViewportOption {
 /** 기본 viewport 목록을 받아 원하는 목록을 돌려주는 함수, 추가, 삭제, 교체 모두 가능 */
 export type ViewportsOption = (defaults: ViewportOption[]) => ViewportOption[];
 
+export interface SnapshotRecordContext {
+  /** Vite root 기준 경로 */
+  file: string;
+  /** 마지막으로 기록한 시각(ms), 처음이면 null */
+  lastRecordedAt: number | null;
+  now: number;
+}
+
+/** 스냅샷 히스토리 설정 (ADR 010) */
+export interface SnapshotOptions {
+  /** 파일마다 보관할 수, Snapshot 1 포함 (기본 20) */
+  limit?: number;
+  /** false를 돌려주면 이번 저장은 기록하지 않음, 자동 저장 에디터용 */
+  shouldRecord?: (context: SnapshotRecordContext) => boolean;
+}
+
 export interface VitrinePluginOptions {
   /** 프로젝트 루트 기준 @preview export 스캔 글롭 패턴 */
   include?: string[];
@@ -44,6 +65,8 @@ export interface VitrinePluginOptions {
   setupFile?: string;
   /** Gallery viewport 목록 변경, 기본 목록을 받아 추가, 삭제, 교체한 목록 반환 (Responsive는 항상 유지, 실험 단계) */
   viewports?: ViewportsOption;
+  /** `@preview` 파일 저장본을 dev server 메모리에 보관해 옛 버전과 비교, false면 끔 (실험 단계) */
+  snapshots?: false | SnapshotOptions;
 }
 
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
@@ -70,6 +93,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
   let scanner!: PreviewScanner;
   let tracker!: PreviewTracker;
   let galleryConfigModule = "";
+  const snapshotStore = options.snapshots === false ? null : createSnapshotStore(options.snapshots);
   const isPreviewSetupFile = (file: string) =>
     previewSetup?.status === "valid" && path.resolve(file) === previewSetup.filePath;
 
@@ -90,7 +114,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       // 사용자 함수는 Node에서 한 번 실행하고 Gallery에는 결과만 데이터로 전달 (ADR 007)
       const { viewports, warning } = resolveViewports(options.viewports);
       if (warning) logger.warn(warning);
-      galleryConfigModule = renderGalleryConfigModule({ viewports, include });
+      galleryConfigModule = renderGalleryConfigModule({ viewports, include, snapshots: snapshotStore !== null });
     },
 
     resolveId(id) {
@@ -117,6 +141,13 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       if (id === FRAME_MODULE_ID) {
         return fs.readFileSync(frameClientPath, "utf-8");
       }
+      const [file, query] = id.split("?");
+      const snapshot = query && new URLSearchParams(query).get(SNAPSHOT_QUERY);
+      if (snapshot) {
+        const code = snapshotStore?.content(toRootRelative(root, file), Number(snapshot));
+        if (code === undefined) throw new Error(`[vitrine] Snapshot ${snapshot} of ${file} is no longer kept`);
+        return code;
+      }
       return null;
     },
 
@@ -131,7 +162,34 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       const logScanError = (error: unknown) => {
         server.config.logger.error(`[vitrine] preview scan failed: ${String(error)}`);
       };
-      tracker.refresh().catch(logScanError);
+      // 서버를 켤 때의 @preview 파일 내용이 Snapshot 1
+      tracker
+        .refresh()
+        .then(() => {
+          for (const file of new Set(tracker.getEntries().map((entry) => entry.file))) {
+            const code = fs.readFileSync(path.join(root, file), "utf-8");
+            if (snapshotStore) applySnapshotChange(snapshotStore, file, code, Date.now());
+          }
+        })
+        .catch(logScanError);
+
+      server.middlewares.use(SNAPSHOTS_ROUTE, (req, res) => {
+        const file = new URL(req.url ?? "", "http://localhost").searchParams.get("file") ?? "";
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify(snapshotStore?.history(file) ?? { snapshots: [], pruned: 0 }));
+      });
+
+      const recordSnapshot = (absolute: string) => {
+        if (!snapshotStore) return;
+        const file = toRootRelative(root, absolute);
+        const code = fs.existsSync(absolute) ? fs.readFileSync(absolute, "utf-8") : null;
+        const tracked = tracker.getEntries().some((entry) => entry.file === file);
+        // include 밖이거나 @preview가 없던 파일은 기록을 시작하지 않음, 이미 기록 중이면 유지나 폐기를 판단
+        if (code !== null && !tracked && !snapshotStore.has(file)) return;
+        if (applySnapshotChange(snapshotStore, file, code, Date.now())) {
+          server.ws.send({ type: "custom", event: SNAPSHOTS_CHANGED_EVENT, data: { file } });
+        }
+      };
 
       const reloadPreviewsModule = () => {
         const mod = server.moduleGraph.getModuleById(RESOLVED_PREVIEWS_MODULE_ID);
@@ -187,6 +245,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
           .then((changed) => {
             // 가상 모듈은 watch 대상이 아니라서 목록이 바뀔 때만 직접 무효화
             if (changed) reloadPreviewsModule();
+            recordSnapshot(file);
           })
           .catch(logScanError);
       };
@@ -264,3 +323,7 @@ const FRAME_HTML = `<!doctype html>
   </body>
 </html>
 `;
+
+function toRootRelative(root: string, file: string): string {
+  return path.relative(root, file).split(path.sep).join("/");
+}

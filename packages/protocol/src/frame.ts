@@ -59,13 +59,21 @@ export interface FrameGridCell {
   label: string;
   variantKey: string | null;
   args: FrameArgs;
+  /** 있으면 그 번호의 옛 버전 모듈로 그림 (ADR 010) */
+  snapshot?: number;
 }
 
 /** Frame 안 렌더링 배치, single은 메시지의 variantKey와 args로 하나만 그림 */
 export type FrameLayout =
   | { kind: "single" }
   /** columns가 있으면 그 수만큼 열을 고정, 없으면 너비에 맞춰 채움 */
-  | { kind: "grid"; cells: FrameGridCell[]; columns?: number };
+  | {
+      kind: "grid";
+      cells: FrameGridCell[];
+      columns?: number;
+      /** 칸을 나란히 두지 않고 겹침, 뒤 칸이 반투명하게 위에 놓임 */
+      overlay?: boolean;
+    };
 
 /** Gallery -> Frame: 지금 그릴 상태 전체, 마지막 메시지가 이김 */
 export interface FrameRenderMessage {
@@ -158,7 +166,8 @@ function isFrameLayout(value: unknown): value is FrameLayout {
     value.kind === "grid" &&
     Array.isArray(value.cells) &&
     value.cells.every(isFrameGridCell) &&
-    (value.columns === undefined || (Number.isSafeInteger(value.columns) && (value.columns as number) > 0))
+    (value.columns === undefined || (Number.isSafeInteger(value.columns) && (value.columns as number) > 0)) &&
+    (value.overlay === undefined || typeof value.overlay === "boolean")
   );
 }
 
@@ -168,7 +177,8 @@ function isFrameGridCell(value: unknown): value is FrameGridCell {
     isNonEmptyString(value.key) &&
     typeof value.label === "string" &&
     (value.variantKey === null || isNonEmptyString(value.variantKey)) &&
-    isFrameArgs(value.args)
+    isFrameArgs(value.args) &&
+    (value.snapshot === undefined || (Number.isSafeInteger(value.snapshot) && (value.snapshot as number) > 0))
   );
 }
 
