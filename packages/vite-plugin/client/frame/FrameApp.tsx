@@ -1,11 +1,11 @@
 import { FRAME_ERROR_MESSAGE_TYPE, FRAME_SIZE_MESSAGE_TYPE, type FrameRenderMessage } from "@vitrine/protocol";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { ErrorText } from "../components/ErrorText";
-import { PreviewErrorBoundary } from "../components/PreviewErrorBoundary";
-import { PreviewRenderer } from "../components/PreviewRenderer";
-import { usePreviewModule } from "../hooks/usePreviewModule";
-import { usePreviewSetup, type PreviewSetupLoader } from "../hooks/usePreviewSetup";
-import { resolveCanvasView } from "../preview/canvasView";
+import { ErrorText } from "./ErrorText";
+import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
+import { PreviewRenderer } from "./PreviewRenderer";
+import { usePreviewModule } from "./usePreviewModule";
+import { usePreviewSetup, type PreviewSetupLoader } from "./usePreviewSetup";
+import { resolveCanvasView } from "./canvasView";
 import { buildFrameReady, resolveFrameArgs } from "./frameState";
 import { sendToGallery, subscribeToGallery } from "./galleryBridge";
 import { useReportedHeight } from "./useReportedHeight";

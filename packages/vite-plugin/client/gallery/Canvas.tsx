@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
-import { PreviewFrameStage } from "../gallery/PreviewFrameStage";
-import type { StageSettings } from "../preview/stageSettings";
+import { PreviewFrameStage } from "./PreviewFrameStage";
+import type { StageSettings } from "./stageSettings";
 import { CanvasHeader } from "./CanvasHeader";
 
 const Styled = {

@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties } from "react";
-import { useFocusShortcut } from "../hooks/useFocusShortcut";
+import { useFocusShortcut } from "./useFocusShortcut";
 import { COLOR } from "../tokens/color";
 import { FONT_SIZE } from "../tokens/fontSize";
 import { FIELD_BORDER, FIELD_BORDER_RADIUS, FIELD_FOCUS } from "./controls/fieldStyle";

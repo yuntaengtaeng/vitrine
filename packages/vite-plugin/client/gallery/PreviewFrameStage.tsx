@@ -1,9 +1,9 @@
 import { FRAME_ROUTE } from "@vitrine/protocol";
 import { useState, type CSSProperties } from "react";
-import { Controls } from "../components/Controls";
-import { StageToolbar } from "../components/StageToolbar";
-import { VariantPicker } from "../components/VariantPicker";
-import { frameCssWidth, stageWidthLabel, type StageBackground, type StageSettings } from "../preview/stageSettings";
+import { Controls } from "./Controls";
+import { StageToolbar } from "./StageToolbar";
+import { VariantPicker } from "./VariantPicker";
+import { frameCssWidth, stageWidthLabel, type StageBackground, type StageSettings } from "./stageSettings";
 import { COLOR } from "../tokens/color";
 import { FONT_SIZE } from "../tokens/fontSize";
 import type { FrameRenderState } from "./frameLink";

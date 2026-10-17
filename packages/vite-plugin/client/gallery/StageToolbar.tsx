@@ -8,7 +8,7 @@ import {
   stageWidthLabel,
   type StageBackground,
   type StageSettings,
-} from "../preview/stageSettings";
+} from "./stageSettings";
 
 const SWATCH: Record<StageBackground, { label: string; background: string }> = {
   light: { label: "Light background", background: COLOR.surface },

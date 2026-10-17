@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveCanvasView } from "./canvasView";
-import type { LoadedPreview } from "./previewConfig";
+import type { LoadedPreview } from "../preview/previewConfig";
 
 const preview: LoadedPreview = { component: () => null, config: {} };
 const idle = { setupError: null, setupLoading: false, loadError: null, preview: null };

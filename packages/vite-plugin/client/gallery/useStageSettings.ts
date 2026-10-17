@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { parseStageSettings, type StageSettings } from "../preview/stageSettings";
+import { parseStageSettings, type StageSettings } from "./stageSettings";
 
 const STORAGE_KEY = "vitrine:stage";
 

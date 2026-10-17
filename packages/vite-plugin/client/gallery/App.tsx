@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
-import { usePreviewSelectionSync } from "../hooks/usePreviewSelectionSync";
-import { useStageSettings } from "../hooks/useStageSettings";
+import { usePreviewSelectionSync } from "./usePreviewSelectionSync";
+import { useStageSettings } from "./useStageSettings";
 import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
 import { isEmbeddedInFrame } from "./editorLink";
