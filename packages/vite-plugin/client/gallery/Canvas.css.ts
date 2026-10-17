@@ -14,3 +14,11 @@ export const toolbar = style({
   borderBottom: `1px solid ${vars.color.border}`,
   "@container": { [NARROW]: { padding: `0.35rem ${vars.space.md}` } },
 });
+
+export const toolbarEnd = style({
+  display: "flex",
+  alignItems: "center",
+  flexWrap: "wrap",
+  gap: `${vars.space.sm} 0.9rem`,
+  marginLeft: "auto",
+});

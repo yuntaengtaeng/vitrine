@@ -2,6 +2,7 @@ import { FRAME_ERROR_MESSAGE_TYPE, FRAME_SIZE_MESSAGE_TYPE, type FrameRenderMess
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ErrorText } from "./ErrorText";
 import { PreviewErrorBoundary } from "./preview/PreviewErrorBoundary";
+import { PreviewGrid } from "./preview/PreviewGrid";
 import { PreviewRenderer } from "./preview/PreviewRenderer";
 import { usePreviewModule } from "./preview/usePreviewModule";
 import { usePreviewSetup, type PreviewSetupLoader } from "./preview/usePreviewSetup";
@@ -25,6 +26,8 @@ const reportHeight = (height: number) => sendToGallery({ type: FRAME_SIZE_MESSAG
 
 const reportError = (error: Error) =>
   sendToGallery({ type: FRAME_ERROR_MESSAGE_TYPE, message: error.message, stack: error.stack });
+
+const ignoreCellError = () => {};
 
 /** iframe 안에서 setup file과 프리뷰 하나를 로드하고 Gallery가 보낸 상태로 렌더링 */
 export const FrameApp = (props: {
@@ -74,7 +77,23 @@ export const FrameApp = (props: {
   return (
     <div ref={rootRef} style={Styled.Root} data-vitrine-frame={view.kind}>
       {view.kind === "error" && <ErrorText>{String(view.error.stack ?? view.error.message)}</ErrorText>}
-      {view.kind === "ready" && entry && (
+      {view.kind === "ready" && entry && render?.layout.kind === "grid" && (
+        <PreviewGrid
+          cells={render.layout.cells}
+          renderCell={(cell) => (
+            // 칸 하나의 실패는 그 칸에만 표시하고 나머지 variant는 계속 보여줌
+            <PreviewErrorBoundary resetKey={JSON.stringify(cell)} onError={ignoreCellError} onRendered={reportRendered}>
+              <PreviewRenderer
+                component={view.preview.component}
+                args={resolveFrameArgs(entry.controls, view.preview.config, cell)}
+                globalWrapper={setup.wrapper}
+                wrapper={view.preview.config.wrapper}
+              />
+            </PreviewErrorBoundary>
+          )}
+        />
+      )}
+      {view.kind === "ready" && entry && render?.layout.kind !== "grid" && (
         <PreviewErrorBoundary resetKey={JSON.stringify(render)} onError={reportRenderError} onRendered={reportRendered}>
           <PreviewRenderer
             component={view.preview.component}

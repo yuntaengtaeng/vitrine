@@ -1,11 +1,11 @@
 import { useState } from "react";
-import type { FrameRenderState } from "./frameLink";
+import type { FrameSelection, LayoutFor } from "./frameLink";
 import { displayedArgs, toOverrideValue } from "./frameStatus";
 import { usePreviewFrame } from "./usePreviewFrame";
 
-export const usePreviewSession = () => {
-  const [selection, setSelection] = useState<FrameRenderState | null>(null);
-  const { iframeRef, status } = usePreviewFrame(selection);
+export const usePreviewSession = (layoutFor: LayoutFor) => {
+  const [selection, setSelection] = useState<FrameSelection | null>(null);
+  const { iframeRef, status } = usePreviewFrame(selection, layoutFor);
   const { ready } = status;
 
   // 첫 frameReady로 frame이 고른 초기 variant를 알게 되면 그때부터 Gallery가 상태를 소유

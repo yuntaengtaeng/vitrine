@@ -42,8 +42,16 @@ export interface FrameVariant {
   name: string;
 }
 
-/** Frame 안 렌더링 배치 */
-export type FrameLayout = { kind: "single" };
+/** 격자 보기의 칸 하나, 칸마다 variant와 바꾼 값을 따로 가짐 */
+export interface FrameGridCell {
+  key: string;
+  label: string;
+  variantKey: string | null;
+  args: FrameArgs;
+}
+
+/** Frame 안 렌더링 배치, single은 메시지의 variantKey와 args로 하나만 그림 */
+export type FrameLayout = { kind: "single" } | { kind: "grid"; cells: FrameGridCell[] };
 
 /** Gallery -> Frame: 지금 그릴 상태 전체, 마지막 메시지가 이김 */
 export interface FrameRenderMessage {
@@ -100,8 +108,23 @@ export function isGalleryToFrameMessage(value: unknown): value is GalleryToFrame
     value.protocol === FRAME_PROTOCOL &&
     (value.variantKey === null || isNonEmptyString(value.variantKey)) &&
     isFrameArgs(value.args) &&
-    isRecord(value.layout) &&
-    value.layout.kind === "single"
+    isFrameLayout(value.layout)
+  );
+}
+
+function isFrameLayout(value: unknown): value is FrameLayout {
+  if (!isRecord(value)) return false;
+  if (value.kind === "single") return true;
+  return value.kind === "grid" && Array.isArray(value.cells) && value.cells.every(isFrameGridCell);
+}
+
+function isFrameGridCell(value: unknown): value is FrameGridCell {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.key) &&
+    typeof value.label === "string" &&
+    (value.variantKey === null || isNonEmptyString(value.variantKey)) &&
+    isFrameArgs(value.args)
   );
 }
 

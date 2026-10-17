@@ -9,7 +9,11 @@ describe("parseStageSettings", () => {
   });
 
   it("저장된 배경과 viewport 이름 복원", () => {
-    expect(parseStageSettings('{"background":"dark","viewport":"Mobile"}')).toEqual({ background: "dark", viewport: "Mobile" });
+    expect(parseStageSettings('{"background":"dark","viewport":"Mobile","view":"variants"}')).toEqual({
+      background: "dark",
+      viewport: "Mobile",
+      view: "variants",
+    });
   });
 
   it("모르는 배경과 이전 버전의 너비 설정은 기본값으로 대체", () => {

@@ -64,3 +64,27 @@ test("frame이 늦게 뜨면 로딩 표시 후 프리뷰로 바뀜", async ({ pa
   await expect((await previewFrame(page)).getByText("New", { exact: true })).toBeVisible();
   await expect(page.getByText("Loading preview")).toHaveCount(0);
 });
+
+test("Variants 보기는 variant마다 칸을 그리고 바꾼 값을 모든 칸에 적용", async ({ page }) => {
+  await openPreview(page, "Button");
+  const frame = await previewFrame(page);
+
+  await page.getByRole("group", { name: "View" }).getByRole("button", { name: "Variants" }).click();
+
+  await expect(frame.getByRole("region", { name: "Primary" }).getByRole("button", { name: "Confirm" })).toBeVisible();
+  await expect(frame.getByRole("region", { name: "Danger" }).getByRole("button", { name: "Delete" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Variants" })).toHaveCount(0);
+
+  await page.getByRole("group", { name: "View" }).getByRole("button", { name: "Single" }).click();
+  await expect(frame.getByRole("region", { name: "Danger" })).toHaveCount(0);
+  await expect(page.getByRole("group", { name: "Variants" })).toBeVisible();
+});
+
+test("variant가 하나 이하인 프리뷰에는 보기 전환이 없고 Single로 보임", async ({ page }) => {
+  await openPreview(page, "Button");
+  await page.getByRole("group", { name: "View" }).getByRole("button", { name: "Variants" }).click();
+
+  await openPreview(page, "Badge");
+  await expect(page.getByRole("group", { name: "View" })).toHaveCount(0);
+  await expect((await previewFrame(page)).getByText("New", { exact: true })).toBeVisible();
+});

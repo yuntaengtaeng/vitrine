@@ -27,6 +27,8 @@ Gallery 화면에는 세 가지 등록 지점을 둔다. 코어 기능도 모두
 interface GalleryView {
   id: string;
   label: string;
+  /** frame이 알려준 variant 목록으로 이 프리뷰에서 쓸 수 있는지 판단 */
+  available: (variants: readonly FrameVariant[]) => boolean;
   /** 순수 함수, frame은 이 데이터로 그리고 Gallery는 사용자 코드를 실행하지 않음 */
   layout: (preview: PreviewState) => FrameLayout;
 }
@@ -44,15 +46,18 @@ interface GalleryToolbarItem {
 }
 ```
 
-- 등록은 기능 폴더가 내보내는 객체이고, gallery 최상위 module이 목록으로 모아 `Canvas`가 순서대로
-  그린다. 기능을 더할 때 `Canvas`는 바뀌지 않는다.
+- 기능 폴더는 등록을 모르는 컴포넌트와 순수 함수만 내보낸다. gallery 최상위 `contributions`
+  module이 이를 등록 객체로 감싸 목록을 만들고 `Canvas`가 순서대로 그린다. 기능을 더할 때
+  `Canvas`는 바뀌지 않는다. `ContributionProps`가 여러 기능의 타입을 묶으므로 기능 폴더가 이를
+  알면 feature 경계를 넘게 된다.
 - 등록한 컴포넌트는 같은 `ContributionProps`를 props로 받는다. 지금 프리뷰 상태와 조작
   (variant, 바꾼 값, 초기화), 무대 설정, 지금 보기가 들어 있다. React Context는 쓰지 않는다
   ([code-philosophy 5장](../code-philosophy.md#설정-props보다-조합-context는-마지막)).
 - 보기는 화면을 직접 그리지 않고 frame에 보낼 데이터만 만든다. Variants는
   `{ kind: "grid", cells }`이고, 이후 Prop matrix도 cells만 다르게 만든다
   ([ADR 007](./007-preview-frame.md)).
-- 보기가 하나뿐이면 보기 전환을 숨기고, 탭이 하나뿐이면 탭 머리를 숨긴다.
+- 이 프리뷰에서 쓸 수 있는 보기가 하나뿐이면 보기 전환을 숨기고, 탭이 하나뿐이면 탭 머리를
+  숨긴다. 고른 보기를 쓸 수 없는 프리뷰에서는 첫 보기(Single)로 보여준다.
 - 고른 보기와 탭은 무대 설정처럼 프리뷰를 바꿔도 유지한다.
 - 확장(VS Code)이 있어야 하는 항목은 필요한 capability를 선언하고, handshake 결과에 없으면 등록
   목록에서 빠진다([ADR 006](./006-capability-handshake.md)). 2-4에서 구현한다.
@@ -68,7 +73,8 @@ interface GalleryToolbarItem {
 
 ## 결과
 
-- 새 화면 기능은 기능 폴더 안에서 등록 객체 하나로 끝나고 `Canvas`와 다른 기능은 바뀌지 않는다.
+- 새 화면 기능은 기능 폴더의 컴포넌트와 `contributions`의 등록 한 줄로 끝나고, `Canvas`와 다른
+  기능은 바뀌지 않는다.
 - 보기의 `layout`이 순수 함수라 frame 없이 단위 테스트한다.
 - 등록 객체가 모든 기능에 같은 props를 넘기므로, 한 기능만 쓰는 값도 `ContributionProps`에 들어갈
   수 있다. 커지면 나눈다.

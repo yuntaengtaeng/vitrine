@@ -2,6 +2,8 @@ import { FRAME_PROTOCOL, isGalleryToFrameMessage, type FrameReadyMessage, type G
 import { describe, expect, it } from "vitest";
 import { createGalleryFrameLink, toRenderMessage } from "./frameLink";
 
+const SINGLE = { kind: "single" } as const;
+
 const ready: FrameReadyMessage = {
   type: "frameReady",
   protocol: FRAME_PROTOCOL,
@@ -17,12 +19,12 @@ describe("createGalleryFrameLink", () => {
     const sent: GalleryToFrameMessage[] = [];
     const link = createGalleryFrameLink((message) => sent.push(message));
 
-    link.render({ variantKey: "primary", args: { label: "one" } });
-    link.render({ variantKey: "danger", args: { label: "two" } });
+    link.render({ variantKey: "primary", args: { label: "one" }, layout: SINGLE });
+    link.render({ variantKey: "danger", args: { label: "two" }, layout: SINGLE });
     expect(sent).toEqual([]);
 
     link.receive(ready);
-    expect(sent).toEqual([toRenderMessage({ variantKey: "danger", args: { label: "two" } })]);
+    expect(sent).toEqual([toRenderMessage({ variantKey: "danger", args: { label: "two" }, layout: SINGLE })]);
   });
 
   it("준비된 뒤의 상태 변경은 바로 전송", () => {
@@ -30,7 +32,7 @@ describe("createGalleryFrameLink", () => {
     const link = createGalleryFrameLink((message) => sent.push(message));
     link.receive(ready);
 
-    link.render({ variantKey: null, args: { count: 2 } });
+    link.render({ variantKey: null, args: { count: 2 }, layout: SINGLE });
     expect(sent).toHaveLength(1);
     expect(sent[0].args).toEqual({ count: 2 });
   });
@@ -38,7 +40,7 @@ describe("createGalleryFrameLink", () => {
   it("frame이 다시 뜨면 최신 상태를 다시 전송", () => {
     const sent: GalleryToFrameMessage[] = [];
     const link = createGalleryFrameLink((message) => sent.push(message));
-    link.render({ variantKey: null, args: { count: 1 } });
+    link.render({ variantKey: null, args: { count: 1 }, layout: SINGLE });
     link.receive(ready);
     link.receive(ready);
     expect(sent).toHaveLength(2);
@@ -70,8 +72,8 @@ describe("Gallery와 frame 왕복", () => {
     galleryPort.start();
     framePort.start();
 
-    link.render({ variantKey: null, args: { label: "draft" } });
-    link.render({ variantKey: null, args: { label: "final" } });
+    link.render({ variantKey: null, args: { label: "draft" }, layout: SINGLE });
+    link.render({ variantKey: null, args: { label: "final" }, layout: SINGLE });
     framePort.postMessage(ready);
 
     await firstRender;

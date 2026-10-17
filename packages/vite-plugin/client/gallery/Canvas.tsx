@@ -1,15 +1,15 @@
 import type { GalleryViewport } from "@vitrine/protocol";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import * as styles from "./Canvas.css";
-import { ControlsPanel } from "./features/controls/ControlsPanel";
-import { VariantPicker } from "./features/controls/VariantPicker";
+import { PANEL_TABS, TOOLBAR_ITEMS, VIEWS, resolveView, type ContributionProps } from "./contributions";
+import type { LayoutFor } from "./features/previewSession/frameLink";
 import { usePreviewSession } from "./features/previewSession/usePreviewSession";
 import { CanvasHeader } from "./features/header/CanvasHeader";
 import { ErrorCard } from "./features/previewError/ErrorCard";
 import { LoadingOverlay } from "./features/stage/LoadingOverlay";
 import { PreviewStage } from "./features/stage/PreviewStage";
-import { StageToolbar } from "./features/stage/StageToolbar";
 import type { StageSettings } from "./features/stage/stageSettings";
+import { ViewSwitcher } from "./features/views/ViewSwitcher";
 import { openInEditor } from "./shared/editorLink";
 
 export const Canvas = (props: {
@@ -20,9 +20,24 @@ export const Canvas = (props: {
   onStageChange: (patch: Partial<StageSettings>) => void;
   onFailedChange: (previewId: string, failed: boolean) => void;
 }) => {
-  const { entry, onFailedChange } = props;
-  const session = usePreviewSession();
+  const { entry, onFailedChange, onStageChange } = props;
+  const viewId = props.stage.view;
+  // 보기 사용 가능 여부는 frame이 알려준 variant 목록에 달려 있어 보낼 때 정함
+  const layoutFor = useCallback<LayoutFor>(
+    (state) => resolveView(VIEWS, viewId, state.variants).layout(state),
+    [viewId],
+  );
+  const session = usePreviewSession(layoutFor);
   const { ready, error } = session.status;
+  const variants = ready?.variants ?? [];
+  const availableViews = VIEWS.filter((view) => view.available(variants));
+  const contribution: ContributionProps = {
+    session,
+    viewId: resolveView(VIEWS, viewId, variants).id,
+    stage: props.stage,
+    viewports: props.viewports,
+    onStageChange,
+  };
 
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);
 
@@ -30,12 +45,17 @@ export const Canvas = (props: {
     <div className={styles.root}>
       <CanvasHeader entry={entry} canOpenInEditor={props.canOpenInEditor} />
       <div className={styles.toolbar}>
-        <VariantPicker
-          variants={ready?.variants ?? []}
-          activeKey={session.activeVariantKey}
-          onSelect={session.selectVariant}
-        />
-        <StageToolbar settings={props.stage} viewports={props.viewports} onChange={props.onStageChange} />
+        {availableViews.length > 1 && (
+          <ViewSwitcher views={availableViews} activeId={contribution.viewId} onSelect={(view) => onStageChange({ view })} />
+        )}
+        {TOOLBAR_ITEMS.filter((item) => item.align === "start").map(({ id, Item }) => (
+          <Item key={id} {...contribution} />
+        ))}
+        <div className={styles.toolbarEnd}>
+          {TOOLBAR_ITEMS.filter((item) => item.align === "end").map(({ id, Item }) => (
+            <Item key={id} {...contribution} />
+          ))}
+        </div>
       </div>
       <PreviewStage
         entry={entry}
@@ -54,16 +74,9 @@ export const Canvas = (props: {
           )
         }
       />
-      {ready && session.args && (
-        <ControlsPanel
-          controls={ready.controls}
-          args={session.args}
-          changed={session.changedArgs}
-          onChange={session.changeArg}
-          onReset={session.resetArg}
-          onResetAll={session.resetAllArgs}
-        />
-      )}
+      {PANEL_TABS.map(({ id, Panel }) => (
+        <Panel key={id} {...contribution} />
+      ))}
     </div>
   );
 };

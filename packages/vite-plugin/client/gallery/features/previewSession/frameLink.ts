@@ -4,15 +4,25 @@ import {
   FRAME_RENDER_MESSAGE_TYPE,
   isFrameToGalleryMessage,
   type FrameArgs,
+  type FrameLayout,
   type FrameRenderMessage,
   type FrameToGalleryMessage,
+  type FrameVariant,
   type GalleryToFrameMessage,
 } from "@vitrine/protocol";
 
-/** Gallery가 frame에 그리게 할 상태 */
-export interface FrameRenderState {
+/** Gallery가 고른 variant와 바꾼 값 */
+export interface FrameSelection {
   variantKey: string | null;
   args: FrameArgs;
+}
+
+/** 지금 보기의 배치 함수 */
+export type LayoutFor = (state: { variants: readonly FrameVariant[]; overrides: FrameArgs }) => FrameLayout;
+
+/** Gallery가 frame에 그리게 할 상태 */
+export interface FrameRenderState extends FrameSelection {
+  layout: FrameLayout;
 }
 
 /** Gallery 상태를 frame render 메시지로 변환 */
@@ -22,7 +32,7 @@ export function toRenderMessage(state: FrameRenderState): FrameRenderMessage {
     protocol: FRAME_PROTOCOL,
     variantKey: state.variantKey,
     args: state.args,
-    layout: { kind: "single" },
+    layout: state.layout,
   };
 }
 

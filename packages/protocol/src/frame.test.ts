@@ -19,11 +19,24 @@ describe("isGalleryToFrameMessage", () => {
     expect(isGalleryToFrameMessage({ ...render, args: { size: null } })).toBe(true);
   });
 
+  it("칸마다 variant와 값을 가진 grid layout 허용", () => {
+    const cells = [
+      { key: "primary", label: "Primary", variantKey: "primary", args: {} },
+      { key: "danger", label: "Danger", variantKey: "danger", args: { label: "Delete" } },
+    ];
+    expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells } })).toBe(true);
+    expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells: [] } })).toBe(true);
+  });
+
   it("다른 protocol 버전, 직렬화할 수 없는 args, 모르는 layout은 거부", () => {
     expect(isGalleryToFrameMessage({ ...render, protocol: FRAME_PROTOCOL + 1 })).toBe(false);
     expect(isGalleryToFrameMessage({ ...render, args: { onClick: {} } })).toBe(false);
     expect(isGalleryToFrameMessage({ ...render, args: { count: Number.NaN } })).toBe(false);
     expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid" } })).toBe(false);
+    expect(isGalleryToFrameMessage({ ...render, layout: { kind: "matrix" } })).toBe(false);
+    expect(
+      isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells: [{ key: "", label: "", variantKey: null, args: {} }] } }),
+    ).toBe(false);
     expect(isGalleryToFrameMessage({ ...render, variantKey: "" })).toBe(false);
   });
 });
