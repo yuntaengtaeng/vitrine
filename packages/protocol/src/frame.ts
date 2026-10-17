@@ -62,7 +62,10 @@ export interface FrameGridCell {
 }
 
 /** Frame 안 렌더링 배치, single은 메시지의 variantKey와 args로 하나만 그림 */
-export type FrameLayout = { kind: "single" } | { kind: "grid"; cells: FrameGridCell[] };
+export type FrameLayout =
+  | { kind: "single" }
+  /** columns가 있으면 그 수만큼 열을 고정, 없으면 너비에 맞춰 채움 */
+  | { kind: "grid"; cells: FrameGridCell[]; columns?: number };
 
 /** Gallery -> Frame: 지금 그릴 상태 전체, 마지막 메시지가 이김 */
 export interface FrameRenderMessage {
@@ -151,7 +154,12 @@ export function isGalleryToFrameMessage(value: unknown): value is GalleryToFrame
 function isFrameLayout(value: unknown): value is FrameLayout {
   if (!isRecord(value)) return false;
   if (value.kind === "single") return true;
-  return value.kind === "grid" && Array.isArray(value.cells) && value.cells.every(isFrameGridCell);
+  return (
+    value.kind === "grid" &&
+    Array.isArray(value.cells) &&
+    value.cells.every(isFrameGridCell) &&
+    (value.columns === undefined || (Number.isSafeInteger(value.columns) && (value.columns as number) > 0))
+  );
 }
 
 function isFrameGridCell(value: unknown): value is FrameGridCell {

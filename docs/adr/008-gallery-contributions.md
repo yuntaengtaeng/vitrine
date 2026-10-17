@@ -19,7 +19,7 @@ Gallery 화면에는 세 가지 등록 지점을 둔다. 코어 기능도 모두
 
 | 등록 지점 | 하는 일 | 코어 기능 |
 | --- | --- | --- |
-| 보기(view) | 지금 상태를 frame에 보낼 `layout` 데이터로 바꿈 | Single, Variants |
+| 보기(view) | 지금 상태를 frame에 보낼 `layout` 데이터로 바꿈 | Single, Variants, Matrix |
 | 패널 탭(panel tab) | 무대 아래 패널의 탭 하나를 그림 | Props, Code |
 | toolbar 항목(toolbar item) | 무대 위 toolbar의 한 칸을 그림 | Variant 선택, 배경, viewport |
 
@@ -27,10 +27,10 @@ Gallery 화면에는 세 가지 등록 지점을 둔다. 코어 기능도 모두
 interface GalleryView {
   id: string;
   label: string;
-  /** frame이 알려준 variant 목록으로 이 프리뷰에서 쓸 수 있는지 판단 */
-  available: (variants: readonly FrameVariant[]) => boolean;
+  /** frame이 알려준 variant와 control 목록으로 이 프리뷰에서 쓸 수 있는지 판단 */
+  available: (input: { variants: FrameVariant[]; controls: Record<string, FrameControl> }) => boolean;
   /** 순수 함수, frame은 이 데이터로 그리고 Gallery는 사용자 코드를 실행하지 않음 */
-  layout: (preview: PreviewState) => FrameLayout;
+  layout: (input: LayoutInput, settings: ViewSettings) => FrameLayout;
 }
 
 interface GalleryPanelTab {
@@ -58,8 +58,9 @@ interface GalleryToolbarItem {
   (variant, 바꾼 값, 초기화), 무대 설정, 지금 보기가 들어 있다. React Context는 쓰지 않는다
   ([code-philosophy 5장](../code-philosophy.md#설정-props보다-조합-context는-마지막)).
 - 보기는 화면을 직접 그리지 않고 frame에 보낼 데이터만 만든다. Variants는
-  `{ kind: "grid", cells }`이고, 이후 Prop matrix도 cells만 다르게 만든다
-  ([ADR 007](./007-preview-frame.md)).
+  `{ kind: "grid", cells }`이고, Matrix는 열 수(`columns`)를 고정한 grid다
+  ([ADR 007](./007-preview-frame.md)). Matrix 축처럼 보기가 쓰는 사용자 설정은 `ViewSettings`로
+  받는다.
 - 이 프리뷰에서 쓸 수 있는 보기가 하나뿐이면 보기 전환을 숨기고, 탭이 하나뿐이면 탭 머리를
   숨긴다. 고른 보기를 쓸 수 없는 프리뷰에서는 첫 보기(Single)로 보여준다.
 - 고른 보기와 탭은 무대 설정처럼 프리뷰를 바꿔도 유지한다.

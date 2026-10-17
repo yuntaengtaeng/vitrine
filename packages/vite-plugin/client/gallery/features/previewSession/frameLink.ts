@@ -4,6 +4,7 @@ import {
   FRAME_RENDER_MESSAGE_TYPE,
   isFrameToGalleryMessage,
   type FrameArgs,
+  type FrameControl,
   type FrameGlobalValues,
   type FrameLayout,
   type FrameRenderMessage,
@@ -19,7 +20,14 @@ export interface FrameSelection {
 }
 
 /** 지금 보기의 배치 함수 */
-export type LayoutFor = (state: { variants: readonly FrameVariant[]; overrides: FrameArgs }) => FrameLayout;
+export interface LayoutInput {
+  variants: readonly FrameVariant[];
+  controls: Record<string, FrameControl>;
+  variantKey: string | null;
+  overrides: FrameArgs;
+}
+
+export type LayoutFor = (input: LayoutInput) => FrameLayout;
 
 /** Gallery가 frame에 그리게 할 상태 */
 export interface FrameRenderState extends FrameSelection {

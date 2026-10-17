@@ -1,11 +1,13 @@
 import type { GalleryViewport } from "@vitrine/protocol";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import * as styles from "./Canvas.css";
 import { PANEL_TABS, TOOLBAR_ITEMS, VIEWS, resolveView, type ContributionProps } from "./contributions";
 import type { LayoutFor } from "./features/previewSession/frameLink";
 import { usePreviewSession } from "./features/previewSession/usePreviewSession";
 import { CanvasHeader } from "./features/header/CanvasHeader";
 import { ErrorCard } from "./features/previewError/ErrorCard";
+import { MAX_MATRIX_CELLS, matrixAxes, planMatrix, type MatrixChoice } from "./features/matrix/matrix";
+import { MatrixLimitNotice } from "./features/matrix/MatrixAxesPicker";
 import { LoadingOverlay } from "./features/stage/LoadingOverlay";
 import { PreviewStage } from "./features/stage/PreviewStage";
 import type { StageSettings } from "./features/stage/stageSettings";
@@ -28,10 +30,12 @@ export const Canvas = (props: {
 }) => {
   const { entry, onFailedChange, onStageChange } = props;
   const viewId = props.stage.view;
-  // 보기 사용 가능 여부는 frame이 알려준 variant 목록에 달려 있어 보낼 때 정함
+  // 축은 프리뷰마다 prop이 달라 프리뷰를 바꾸면 처음부터 고름
+  const [matrix, setMatrix] = useState<MatrixChoice>({});
+  // 보기 사용 가능 여부는 frame이 알려준 variant와 control 목록에 달려 있어 보낼 때 정함
   const layoutFor = useCallback<LayoutFor>(
-    (state) => resolveView(VIEWS, viewId, state.variants).layout(state),
-    [viewId],
+    (input) => resolveView(VIEWS, viewId, input).layout(input, { matrix }),
+    [viewId, matrix],
   );
   const [globals, chooseGlobal] = useGlobalSelection(props.link?.globals);
   const session = usePreviewSession(layoutFor, globals, props.link);
@@ -41,17 +45,27 @@ export const Canvas = (props: {
   const ActivePanel = activeTab.Panel;
   const ActiveActions = activeTab.Actions;
   const { ready, error } = session.status;
-  const variants = ready?.variants ?? [];
-  const availableViews = VIEWS.filter((view) => view.available(variants));
+  const viewInput = { variants: ready?.variants ?? [], controls: ready?.controls ?? {} };
+  const availableViews = VIEWS.filter((view) => view.available(viewInput));
+  const activeViewId = resolveView(VIEWS, viewId, viewInput).id;
+  const matrixPlan =
+    activeViewId === "matrix"
+      ? planMatrix(matrixAxes(viewInput.controls), matrix, {
+          variantKey: session.activeVariantKey ?? null,
+          overrides: session.overrides,
+        })
+      : null;
   const contribution: ContributionProps = {
     entry,
     session,
-    viewId: resolveView(VIEWS, viewId, variants).id,
+    viewId: activeViewId,
     stage: props.stage,
     viewports: props.viewports,
     onStageChange,
     globals,
     onGlobalChange: chooseGlobal,
+    matrix,
+    onMatrixChange: setMatrix,
   };
 
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);
@@ -92,11 +106,13 @@ export const Canvas = (props: {
         viewports={props.viewports}
         overlay={session.status.phase === "loading" && <LoadingOverlay />}
         fallback={
-          error && (
+          error ? (
             <ErrorCard
               failure={error}
               onOpenInEditor={props.canOpenInEditor ? () => openInEditor(entry.id) : undefined}
             />
+          ) : (
+            matrixPlan?.kind === "tooMany" && <MatrixLimitNotice count={matrixPlan.count} max={MAX_MATRIX_CELLS} />
           )
         }
       />

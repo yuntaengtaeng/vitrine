@@ -39,6 +39,8 @@ describe("isGalleryToFrameMessage", () => {
     ];
     expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells } })).toBe(true);
     expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells: [] } })).toBe(true);
+    expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells, columns: 2 } })).toBe(true);
+    expect(isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells, columns: 0 } })).toBe(false);
   });
 
   it("다른 protocol 버전, 직렬화할 수 없는 args, 모르는 layout은 거부", () => {

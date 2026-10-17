@@ -30,13 +30,18 @@ export const usePreviewFrame = (selection: FrameSelection | null, layoutFor: Lay
     };
   }, []);
 
-  // 격자 보기는 frame이 알려준 variant 목록이 있어야 칸을 만들 수 있어 ready가 바뀌면 다시 보냄
-  const variants = status.ready?.variants;
+  // 보기는 frame이 알려준 variant와 control 목록으로 배치를 만들므로 ready가 바뀌면 다시 보냄
+  const { ready } = status;
   useEffect(() => {
     if (!selection) return;
-    const layout = layoutFor({ variants: variants ?? [], overrides: selection.args });
+    const layout = layoutFor({
+      variants: ready?.variants ?? [],
+      controls: ready?.controls ?? {},
+      variantKey: selection.variantKey,
+      overrides: selection.args,
+    });
     linkRef.current?.render({ ...selection, layout, globals });
-  }, [selection, variants, layoutFor, globals]);
+  }, [selection, ready, layoutFor, globals]);
 
   return { iframeRef, status, clearActions: () => dispatch(CLEAR_ACTIONS) };
 };

@@ -106,6 +106,7 @@ export const FrameApp = (props: {
       {view.kind === "ready" && entry && render?.layout.kind === "grid" && (
         <PreviewGrid
           cells={render.layout.cells}
+          columns={render.layout.columns}
           renderCell={(cell) => (
             // 칸 하나의 실패는 그 칸에만 표시하고 나머지 variant는 계속 보여줌
             <PreviewErrorBoundary resetKey={JSON.stringify(cell)} onError={ignoreCellError} onRendered={reportRendered}>

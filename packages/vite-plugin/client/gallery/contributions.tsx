@@ -1,11 +1,13 @@
-import type { FrameGlobalValues, FrameVariant, GalleryViewport } from "@vitrine/protocol";
+import type { FrameGlobalValues, FrameLayout, GalleryViewport } from "@vitrine/protocol";
 import type { ComponentType } from "react";
 import { ActionsLog, ClearActionsButton } from "./features/actions/ActionsLog";
 import { CodePanel } from "./features/code/CodePanel";
 import { ControlsPanel, ResetAllButton } from "./features/controls/ControlsPanel";
 import { VariantPicker } from "./features/controls/VariantPicker";
 import { GlobalsPicker } from "./features/globals/GlobalsPicker";
-import type { LayoutFor } from "./features/previewSession/frameLink";
+import { matrixAxes, planMatrix, resolveMatrixAxes, type MatrixChoice } from "./features/matrix/matrix";
+import { MatrixAxesPicker } from "./features/matrix/MatrixAxesPicker";
+import type { LayoutInput } from "./features/previewSession/frameLink";
 import type { usePreviewSession } from "./features/previewSession/usePreviewSession";
 import { BackgroundPicker } from "./features/stage/background/BackgroundPicker";
 import type { StageSettings } from "./features/stage/stageSettings";
@@ -25,13 +27,20 @@ export interface ContributionProps {
   /** toolbar에서 고른 globals */
   globals: FrameGlobalValues;
   onGlobalChange: (name: string, value: string) => void;
+  matrix: MatrixChoice;
+  onMatrixChange: (choice: MatrixChoice) => void;
+}
+
+/** 보기가 배치를 만들 때 쓰는 사용자 설정 */
+export interface ViewSettings {
+  matrix: MatrixChoice;
 }
 
 export interface GalleryView {
   id: string;
   label: string;
-  available: (variants: readonly FrameVariant[]) => boolean;
-  layout: LayoutFor;
+  available: (input: Pick<LayoutInput, "variants" | "controls">) => boolean;
+  layout: (input: LayoutInput, settings: ViewSettings) => FrameLayout;
 }
 
 export interface GalleryToolbarItem {
@@ -49,14 +58,25 @@ export interface GalleryPanelTab {
   Actions?: ComponentType<ContributionProps>;
 }
 
+const matrixLayout = (input: LayoutInput, settings: ViewSettings): FrameLayout => {
+  const plan = planMatrix(matrixAxes(input.controls), settings.matrix, input);
+  // 칸이 너무 많으면 frame에는 아무것도 그리지 않고 무대에 안내를 보여줌
+  return plan.kind === "ready" ? plan.layout : { kind: "grid", cells: [] };
+};
+
 export const VIEWS: readonly GalleryView[] = [
   { id: "single", label: "Single", available: () => true, layout: singleLayout },
-  { id: "variants", label: "Variants", available: (variants) => variants.length > 1, layout: variantsLayout },
+  { id: "variants", label: "Variants", available: ({ variants }) => variants.length > 1, layout: variantsLayout },
+  { id: "matrix", label: "Matrix", available: ({ controls }) => matrixAxes(controls).length > 0, layout: matrixLayout },
 ];
 
 /** 고른 보기를 지금 프리뷰에서 쓸 수 없으면 첫 보기 */
-export function resolveView(views: readonly GalleryView[], id: string, variants: readonly FrameVariant[]): GalleryView {
-  return views.find((view) => view.id === id && view.available(variants)) ?? views[0];
+export function resolveView(
+  views: readonly GalleryView[],
+  id: string,
+  input: Pick<LayoutInput, "variants" | "controls">,
+): GalleryView {
+  return views.find((view) => view.id === id && view.available(input)) ?? views[0];
 }
 
 const VariantItem = ({ session, viewId }: ContributionProps) =>
@@ -76,6 +96,22 @@ const GlobalsItem = ({ session, globals, onGlobalChange }: ContributionProps) =>
   return <GlobalsPicker declared={ready.globals} chosen={globals} fixed={fixed} onChange={onGlobalChange} />;
 };
 
+const MatrixItem = ({ session, viewId, matrix, onMatrixChange }: ContributionProps) => {
+  const { ready } = session.status;
+  if (viewId !== "matrix" || !ready) return null;
+  const axes = matrixAxes(ready.controls);
+  const resolved = resolveMatrixAxes(axes, matrix);
+  if (!resolved) return null;
+  return (
+    <MatrixAxesPicker
+      axes={axes}
+      rows={resolved.rows.name}
+      columns={resolved.columns?.name ?? null}
+      onChange={onMatrixChange}
+    />
+  );
+};
+
 const BackgroundItem = ({ stage, onStageChange }: ContributionProps) => (
   <BackgroundPicker value={stage.background} onChange={(background) => onStageChange({ background })} />
 );
@@ -86,6 +122,7 @@ const ViewportItem = ({ stage, viewports, onStageChange }: ContributionProps) =>
 
 export const TOOLBAR_ITEMS: readonly GalleryToolbarItem[] = [
   { id: "variant", align: "start", Item: VariantItem },
+  { id: "matrix", align: "start", Item: MatrixItem },
   { id: "globals", align: "end", Item: GlobalsItem },
   { id: "background", align: "end", Item: BackgroundItem },
   { id: "viewport", align: "end", Item: ViewportItem },
