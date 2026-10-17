@@ -25,7 +25,7 @@ describe("renderIframeHtml", () => {
   it("relays only the message types the protocol allows in each direction", () => {
     const html = renderIframeHtml(galleryUrl, "app");
     expect(html).toContain('const galleryToExtensionTypes = ["previewSelected","capabilitiesRequest"];');
-    expect(html).toContain('const extensionToGalleryTypes = ["selectPreview","capabilitiesResponse"];');
+    expect(html).toContain('const extensionToGalleryTypes = ["selectPreview","capabilitiesResponse","themeChanged"];');
   });
 
   it("escapes the project label taken from the folder name", () => {

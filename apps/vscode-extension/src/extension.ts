@@ -19,7 +19,7 @@ import {
   type PortFileMatch,
 } from "./port-discovery.js";
 import { resolveCursorPreviewId, toProjectRelativeFile } from "./preview-lookup.js";
-import { capabilitiesResponse } from "./capabilities.js";
+import { capabilitiesResponse, themeChanged } from "./capabilities.js";
 import { renderIframeHtml, renderNotFoundHtml, renderUnreachableHtml } from "./webview-html.js";
 
 const SELECTION_DEBOUNCE_MS = 200;
@@ -40,6 +40,7 @@ interface PanelRenderRequest {
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("vitrine.open", () => openPreviewPanel(context)),
+    vscode.window.onDidChangeActiveColorTheme(() => postTheme()),
     vscode.window.onDidChangeTextEditorSelection((event) => {
       clearTimeout(selectionDebounce);
       selectionDebounce = setTimeout(() => void onSelectionChanged(event), SELECTION_DEBOUNCE_MS);
@@ -48,6 +49,13 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
+function postTheme() {
+  const { kind } = vscode.window.activeColorTheme;
+  // 고대비 테마도 배경 밝기에 맞춰 light, dark 둘 중 하나로 보냄
+  const isDark = kind === vscode.ColorThemeKind.Dark || kind === vscode.ColorThemeKind.HighContrast;
+  void currentPanel?.webview.postMessage(themeChanged(isDark));
+}
 
 async function openPreviewPanel(context: vscode.ExtensionContext) {
   if (currentPanel) {
@@ -72,7 +80,10 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
       if (message.type === SWITCH_PROJECT_MESSAGE_TYPE) void switchProject();
       // 갤러리에서 직접 고른 프리뷰도 기록해야 커서가 돌아왔을 때 다시 동기화됨
       if (message.type === PREVIEW_SELECTED_MESSAGE_TYPE) lastSelectedPreviewId = message.id;
-      if (message.type === CAPABILITIES_REQUEST_MESSAGE_TYPE) void currentPanel?.webview.postMessage(capabilitiesResponse());
+      if (message.type === CAPABILITIES_REQUEST_MESSAGE_TYPE) {
+        void currentPanel?.webview.postMessage(capabilitiesResponse());
+        postTheme();
+      }
     }, null, context.subscriptions);
   }
 

@@ -96,7 +96,10 @@ import하지 않는다. `frame/`은 `gallery/`와 stylesheet를 import하지 않
   하나로 나온다. plugin이 `/__vitrine/gallery.css`로 서빙하고 Gallery HTML이 `<link>`로 읽는다.
   vanilla-extract는 devDependency라 배포 package의 runtime 의존성이 늘지 않는다.
 - 색, 간격, radius, 글자 크기는 `shared/theme/theme.css.ts`의 계약(`--vt-*` CSS 변수)만 쓴다.
-  다크 모드와 VS Code 테마는 같은 계약에 값만 바꿔 붙인다.
+  다크 모드는 `<html data-vt-theme="dark">`에서 같은 계약에 색 값만 바꿔 붙인다. 브라우저는
+  `prefers-color-scheme`을, VS Code는 `theme.sync` handshake가 맞으면 확장이 보내는 테마를 따른다.
+- 프리뷰 뒤 배경(Light, Dark, 투명)은 사용자 컴포넌트를 비춰 보는 값이라 Gallery 테마와 상관없이
+  고정 색을 쓴다.
 - 보조 글자는 흰 배경과 사이드바 배경 모두에서 4.5:1 이상인 `textMuted` 하나로 쓰고, 위계는
   크기와 굵기로 만든다.
 - 상태 스타일은 JS 조건 대신 `aria-pressed`, `aria-current`, `aria-checked` 같은 속성 selector로 쓴다.

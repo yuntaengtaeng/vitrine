@@ -1,10 +1,15 @@
 import { style, styleVariants } from "@vanilla-extract/css";
+import { INK, NEUTRAL } from "@vitrine/brand";
 import { vars } from "../../../shared/theme/theme.css";
 import { fieldBorder } from "../../../shared/ui/field.css";
 import type { StageBackground } from "./background";
 
+// 프리뷰 뒤 배경은 사용자 컴포넌트를 비춰 보는 값이라 Gallery 테마를 따르지 않고 고정
+const LIGHT = NEUTRAL[0];
+const DARK = INK[900];
+
 const checkerboard = (cell: number) =>
-  `repeating-conic-gradient(${vars.color.checkerDark} 0 25%, ${vars.color.checkerLight} 0 50%) 0 0 / ${cell}px ${cell}px`;
+  `repeating-conic-gradient(${NEUTRAL[200]} 0 25%, ${NEUTRAL[0]} 0 50%) 0 0 / ${cell}px ${cell}px`;
 
 export const picker = style({
   display: "inline-flex",
@@ -27,15 +32,15 @@ const swatchBase = style({
 });
 
 const swatchBackground: Record<StageBackground, string> = {
-  light: vars.color.surface,
-  dark: vars.color.frameDark,
+  light: LIGHT,
+  dark: DARK,
   transparent: checkerboard(8),
 };
 
 export const swatch = styleVariants(swatchBackground, (background) => [swatchBase, { background }]);
 
 export const frame = styleVariants({
-  light: { background: vars.color.surface, outlineColor: vars.color.frameBorder },
-  dark: { background: vars.color.frameDark, outlineColor: vars.color.frameDarkBorder },
+  light: { background: LIGHT, outlineColor: vars.color.frameBorder },
+  dark: { background: DARK, outlineColor: vars.color.frameBorder },
   transparent: { background: checkerboard(14), outlineColor: vars.color.frameBorder },
 });

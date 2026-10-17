@@ -80,6 +80,11 @@ describe("message validators", () => {
     expect(isExtensionToGalleryMessage({ type: "capabilitiesRequest", protocol: 1, capabilities })).toBe(false);
   });
 
+  it("accepts a theme change with a known kind only", () => {
+    expect(isExtensionToGalleryMessage({ type: "themeChanged", kind: "dark" })).toBe(true);
+    expect(isExtensionToGalleryMessage({ type: "themeChanged", kind: "sepia" })).toBe(false);
+  });
+
   it("rejects missing ids, unknown messages and opposite directions", () => {
     expect(isWebviewToExtensionMessage({ type: "previewSelected", id: "" })).toBe(false);
     expect(isWebviewToExtensionMessage({ type: "selectPreview", id: "preview-id" })).toBe(false);

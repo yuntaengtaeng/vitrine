@@ -1,4 +1,4 @@
-import { createGlobalTheme, createGlobalThemeContract, globalStyle } from "@vanilla-extract/css";
+import { assignVars, createGlobalTheme, createGlobalThemeContract, globalStyle } from "@vanilla-extract/css";
 import { BRAND, INK, NEUTRAL, RED } from "@vitrine/brand";
 
 // 다크 모드와 VS Code 테마는 같은 계약에 값만 바꿔 적용하므로 이름을 CSS 변수로 고정
@@ -21,10 +21,6 @@ export const vars = createGlobalThemeContract(
       errorBorder: "color-error-border",
       stageDot: "color-stage-dot",
       frameBorder: "color-frame-border",
-      frameDark: "color-frame-dark",
-      frameDarkBorder: "color-frame-dark-border",
-      checkerLight: "color-checker-light",
-      checkerDark: "color-checker-dark",
       switchOff: "color-switch-off",
     },
     space: {
@@ -56,6 +52,27 @@ export const vars = createGlobalThemeContract(
   (_value, path) => `vt-${path.join("-")}`,
 );
 
+type ColorTokens = Record<keyof typeof vars.color, string>;
+
+const darkColors: ColorTokens = {
+  surface: INK[900],
+  surfaceSubtle: INK[800],
+  sidebar: INK[950],
+  sidebarActive: INK[700],
+  hover: INK[800],
+  border: INK[700],
+  text: INK[50],
+  textMuted: INK[300],
+  accent: BRAND[300],
+  accentSoft: INK[800],
+  error: RED[400],
+  errorSoft: RED[900],
+  errorBorder: RED[600],
+  stageDot: INK[700],
+  frameBorder: INK[500],
+  switchOff: INK[500],
+};
+
 createGlobalTheme(":root", vars, {
   color: {
     surface: NEUTRAL[0],
@@ -73,10 +90,6 @@ createGlobalTheme(":root", vars, {
     errorBorder: RED[200],
     stageDot: NEUTRAL[200],
     frameBorder: BRAND[200],
-    frameDark: INK[900],
-    frameDarkBorder: INK[700],
-    checkerLight: NEUTRAL[0],
-    checkerDark: NEUTRAL[200],
     switchOff: NEUTRAL[300],
   },
   space: { xs: "4px", sm: "8px", md: "12px", lg: "16px", xl: "24px", xxl: "32px" },
@@ -100,4 +113,9 @@ globalStyle("*, *::before, *::after", { boxSizing: "border-box" });
 globalStyle(":focus-visible", {
   outline: `2px solid ${vars.color.accent}`,
   outlineOffset: 2,
+});
+
+globalStyle(':root[data-vt-theme="dark"]', {
+  colorScheme: "dark",
+  vars: assignVars(vars.color, darkColors),
 });

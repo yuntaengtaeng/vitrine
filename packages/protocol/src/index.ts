@@ -9,10 +9,13 @@ import {
 import {
   CAPABILITIES_REQUEST_MESSAGE_TYPE,
   CAPABILITIES_RESPONSE_MESSAGE_TYPE,
+  THEME_CHANGED_MESSAGE_TYPE,
   isCapabilitiesRequestMessage,
   isCapabilitiesResponseMessage,
+  isThemeChangedMessage,
   type CapabilitiesRequestMessage,
   type CapabilitiesResponseMessage,
+  type ThemeChangedMessage,
 } from "./capabilities.js";
 
 /** Standalone Gallery HTTP 경로 */
@@ -130,7 +133,7 @@ export interface SelectPreviewMessage {
 export type WebviewToExtensionMessage = SwitchProjectMessage | GalleryToExtensionMessage;
 
 /** Extension에서 Gallery로 전달 가능한 message */
-export type ExtensionToGalleryMessage = SelectPreviewMessage | CapabilitiesResponseMessage;
+export type ExtensionToGalleryMessage = SelectPreviewMessage | CapabilitiesResponseMessage | ThemeChangedMessage;
 
 /** Gallery에서 Extension으로 전달 가능한 message */
 export type GalleryToExtensionMessage = PreviewSelectedMessage | CapabilitiesRequestMessage;
@@ -139,7 +142,11 @@ export type GalleryToExtensionMessage = PreviewSelectedMessage | CapabilitiesReq
 export const GALLERY_TO_EXTENSION_RELAY_TYPES = [PREVIEW_SELECTED_MESSAGE_TYPE, CAPABILITIES_REQUEST_MESSAGE_TYPE];
 
 /** webview relay가 Extension에서 Gallery로 넘기는 type, 목록에 없으면 버림 */
-export const EXTENSION_TO_GALLERY_RELAY_TYPES = [SELECT_PREVIEW_MESSAGE_TYPE, CAPABILITIES_RESPONSE_MESSAGE_TYPE];
+export const EXTENSION_TO_GALLERY_RELAY_TYPES = [
+  SELECT_PREVIEW_MESSAGE_TYPE,
+  CAPABILITIES_RESPONSE_MESSAGE_TYPE,
+  THEME_CHANGED_MESSAGE_TYPE,
+];
 
 /**
  * 외부 값의 프리뷰 manifest 계약 일치 판단
@@ -178,7 +185,7 @@ export function isWebviewToExtensionMessage(
 export function isExtensionToGalleryMessage(
   value: unknown,
 ): value is ExtensionToGalleryMessage {
-  if (isCapabilitiesResponseMessage(value)) return true;
+  if (isCapabilitiesResponseMessage(value) || isThemeChangedMessage(value)) return true;
   return (
     isRecord(value) &&
     value.type === SELECT_PREVIEW_MESSAGE_TYPE &&

@@ -69,6 +69,7 @@ export const numberInput = style({
   borderLeft: fieldBorder,
   borderRight: fieldBorder,
   outlineColor: vars.color.accent,
+  background: vars.color.surface,
   textAlign: "center",
   color: vars.color.text,
   fontFamily: "inherit",

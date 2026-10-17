@@ -6,6 +6,22 @@ export const CAPABILITIES_PROTOCOL = 1;
 export const CAPABILITIES_REQUEST_MESSAGE_TYPE = "capabilitiesRequest";
 export const CAPABILITIES_RESPONSE_MESSAGE_TYPE = "capabilitiesResponse";
 
+/** Gallery 색을 VS Code 테마에 맞춤 */
+export const THEME_SYNC_CAPABILITY = "theme.sync";
+export const THEME_CHANGED_MESSAGE_TYPE = "themeChanged";
+
+export type ThemeKind = "light" | "dark";
+
+/** Extension -> Gallery: 지금 VS Code 테마의 밝기, handshake 응답 직후와 테마가 바뀔 때마다 보냄 */
+export interface ThemeChangedMessage {
+  type: typeof THEME_CHANGED_MESSAGE_TYPE;
+  kind: ThemeKind;
+}
+
+export function isThemeChangedMessage(value: unknown): value is ThemeChangedMessage {
+  return isRecord(value) && value.type === THEME_CHANGED_MESSAGE_TYPE && (value.kind === "light" || value.kind === "dark");
+}
+
 /** `영역.동작` 이름별 기능 버전 */
 export type Capabilities = Record<string, number>;
 
