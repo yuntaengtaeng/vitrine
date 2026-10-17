@@ -2,6 +2,10 @@ import * as vscode from "vscode";
 import path from "node:path";
 import {
   CAPABILITIES_REQUEST_MESSAGE_TYPE,
+  SAVE_VARIANT_MESSAGE_TYPE,
+  SAVE_VARIANT_RESULT_MESSAGE_TYPE,
+  type SaveVariantMessage,
+  type SaveVariantResultMessage,
   GALLERY_ROUTE,
   MANIFEST_ROUTE,
   PREVIEW_SELECTED_MESSAGE_TYPE,
@@ -20,6 +24,7 @@ import {
 } from "./port-discovery.js";
 import { resolveCursorPreviewId, toProjectRelativeFile } from "./preview-lookup.js";
 import { capabilitiesResponse, themeChanged } from "./capabilities.js";
+import { variantEditConflict } from "./variant-save.js";
 import { renderIframeHtml, renderNotFoundHtml, renderUnreachableHtml } from "./webview-html.js";
 
 const SELECTION_DEBOUNCE_MS = 200;
@@ -49,6 +54,32 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
+/** plugin이 계산한 편집을 버퍼에 적용하고 저장, 에디터의 undo 기록에 남음 */
+async function saveVariant(message: SaveVariantMessage) {
+  const reply = (result: { ok: true; key: string } | { ok: false; reason: string }) => {
+    const response: SaveVariantResultMessage = { type: SAVE_VARIANT_RESULT_MESSAGE_TYPE, ...result };
+    void currentPanel?.webview.postMessage(response);
+  };
+  const uri = vscode.Uri.file(message.file);
+  // Gallery 메시지가 가리키는 파일이라도 열린 workspace 밖은 고치지 않음
+  if (!vscode.workspace.getWorkspaceFolder(uri)) return reply({ ok: false, reason: "The file is outside this workspace" });
+  try {
+    const document = await vscode.workspace.openTextDocument(uri);
+    const conflict = variantEditConflict(document.getText(), document.isDirty, message.contentHash);
+    if (conflict) return reply({ ok: false, reason: conflict });
+    const edit = new vscode.WorkspaceEdit();
+    for (const change of message.edits) {
+      edit.replace(uri, new vscode.Range(document.positionAt(change.start), document.positionAt(change.end)), change.text);
+    }
+    if (!(await vscode.workspace.applyEdit(edit)) || !(await document.save())) {
+      return reply({ ok: false, reason: "VS Code could not apply the edit" });
+    }
+    reply({ ok: true, key: message.key });
+  } catch (error) {
+    reply({ ok: false, reason: String(error) });
+  }
+}
 
 function postTheme() {
   const { kind } = vscode.window.activeColorTheme;
@@ -80,6 +111,7 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
       if (message.type === SWITCH_PROJECT_MESSAGE_TYPE) void switchProject();
       // 갤러리에서 직접 고른 프리뷰도 기록해야 커서가 돌아왔을 때 다시 동기화됨
       if (message.type === PREVIEW_SELECTED_MESSAGE_TYPE) lastSelectedPreviewId = message.id;
+      if (message.type === SAVE_VARIANT_MESSAGE_TYPE) void saveVariant(message);
       if (message.type === CAPABILITIES_REQUEST_MESSAGE_TYPE) {
         void currentPanel?.webview.postMessage(capabilitiesResponse());
         postTheme();

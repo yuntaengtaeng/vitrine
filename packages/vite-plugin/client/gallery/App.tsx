@@ -1,4 +1,4 @@
-import type { GalleryConfig } from "@vitrine/protocol";
+import { VARIANT_SAVE_CAPABILITY, type GalleryConfig } from "@vitrine/protocol";
 import { useEffect, useRef, useState } from "react";
 import * as styles from "./App.css";
 import { usePreviewSelectionSync } from "./usePreviewSelectionSync";
@@ -92,6 +92,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
             onFailedChange={markFailed}
             link={pendingLink?.previewId === activeEntry.id ? pendingLink : undefined}
             snapshotsEnabled={props.config.snapshots}
+            canSaveVariant={host?.supported[VARIANT_SAVE_CAPABILITY] !== undefined}
           />
         )}
         </div>

@@ -73,6 +73,8 @@ CJS entry를 함께 build한다. Node, React, Vite, VS Code API에는 의존하�
 - `port-file.ts`: port file 기록
 - `snapshot-store.ts`, `snapshot-recorder.ts`: `@preview` 파일 저장본 보관과 기록, 유지, 폐기 판단
   ([ADR 010](adr/010-snapshot-history.md))
+- `variant-edit.ts`: Save as variant 편집을 AST로 계산. 파일은 쓰지 않고, 확장이 버퍼 hash를 확인한
+  뒤 적용
 
 Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
 `client/`는 두 bundle로 나눈다.

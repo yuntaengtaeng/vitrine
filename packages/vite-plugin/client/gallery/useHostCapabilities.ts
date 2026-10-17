@@ -2,6 +2,7 @@ import {
   CAPABILITIES_PROTOCOL,
   CAPABILITIES_REQUEST_MESSAGE_TYPE,
   THEME_SYNC_CAPABILITY,
+  VARIANT_SAVE_CAPABILITY,
   isCapabilitiesResponseMessage,
   negotiateCapabilities,
   type Capabilities,
@@ -11,7 +12,7 @@ import {
 import { useEffect, useState } from "react";
 
 /** Gallery가 확장과 함께 할 수 있는 기능과 버전 (ADR 006) */
-export const GALLERY_CAPABILITIES: Capabilities = { [THEME_SYNC_CAPABILITY]: 1 };
+export const GALLERY_CAPABILITIES: Capabilities = { [THEME_SYNC_CAPABILITY]: 1, [VARIANT_SAVE_CAPABILITY]: 1 };
 
 // 옛 확장의 relay는 모르는 type을 넘기지 않아 응답이 오지 않으므로 기다림을 끊음
 const RESPONSE_TIMEOUT_MS = 1500;

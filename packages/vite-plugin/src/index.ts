@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +15,9 @@ import {
   SNAPSHOTS_CHANGED_EVENT,
   SNAPSHOTS_ROUTE,
   SNAPSHOT_QUERY,
+  VARIANT_EDIT_ROUTE,
+  type VariantEditRequest,
+  type VariantEditResponse,
 } from "@vitrine/protocol";
 import type { Logger, Plugin } from "vite";
 import { DEFAULT_INCLUDE, createPreviewScanner, type PreviewScanner } from "./scan.js";
@@ -30,6 +34,7 @@ import { toViteOpenInEditorUrl } from "./open-in-editor.js";
 import { renderGalleryConfigModule, resolveViewports } from "./gallery-config.js";
 import { applySnapshotChange } from "./snapshot-recorder.js";
 import { createSnapshotStore } from "./snapshot-store.js";
+import { planVariantEdit } from "./variant-edit.js";
 
 // 공개 옵션 타입은 공개 entry에 둬야 배포 declaration이 내부 module을 참조하지 않음
 /** 무대 iframe 너비 프리셋 (Responsive는 항상 따로 제공) */
@@ -172,6 +177,27 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
           }
         })
         .catch(logScanError);
+
+      // 파일은 쓰지 않고 편집만 계산, 적용은 저장하지 않은 버퍼를 아는 VS Code 확장이 함
+      server.middlewares.use(VARIANT_EDIT_ROUTE, (req, res) => {
+        const reply = (response: VariantEditResponse) => {
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(response));
+        };
+        let body = "";
+        req.on("data", (chunk: Buffer) => (body += chunk.toString("utf-8")));
+        req.on("end", () => {
+          const request = parseVariantEditRequest(body);
+          const entry = request && tracker.getEntries().find((candidate) => candidate.id === request.previewId);
+          if (!request || !entry) return reply({ ok: false, reason: "This preview is no longer in the project" });
+          const file = path.join(root, entry.file);
+          const source = fs.readFileSync(file, "utf-8");
+          const plan = planVariantEdit(source, entry.exportName, request.name, request.args);
+          if (!plan.ok) return reply(plan);
+          const contentHash = crypto.createHash("sha256").update(source).digest("hex");
+          reply({ ok: true, file, contentHash, edits: plan.edits, key: plan.key });
+        });
+      });
 
       server.middlewares.use(SNAPSHOTS_ROUTE, (req, res) => {
         const file = new URL(req.url ?? "", "http://localhost").searchParams.get("file") ?? "";
@@ -326,4 +352,21 @@ const FRAME_HTML = `<!doctype html>
 
 function toRootRelative(root: string, file: string): string {
   return path.relative(root, file).split(path.sep).join("/");
+}
+
+function parseVariantEditRequest(body: string): VariantEditRequest | null {
+  try {
+    const value: unknown = JSON.parse(body);
+    if (typeof value !== "object" || value === null) return null;
+    const { previewId, name, args } = value as Record<string, unknown>;
+    if (typeof previewId !== "string" || typeof name !== "string" || !name.trim()) return null;
+    if (typeof args !== "object" || args === null) return null;
+    const values = Object.entries(args).filter(
+      (entry): entry is [string, string | number | boolean] =>
+        typeof entry[1] === "string" || typeof entry[1] === "boolean" || (typeof entry[1] === "number" && Number.isFinite(entry[1])),
+    );
+    return { previewId, name: name.trim(), args: Object.fromEntries(values) };
+  } catch {
+    return null;
+  }
 }

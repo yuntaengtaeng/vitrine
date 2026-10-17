@@ -17,6 +17,14 @@ import {
   type CapabilitiesResponseMessage,
   type ThemeChangedMessage,
 } from "./capabilities.js";
+import {
+  SAVE_VARIANT_MESSAGE_TYPE,
+  SAVE_VARIANT_RESULT_MESSAGE_TYPE,
+  isSaveVariantMessage,
+  isSaveVariantResultMessage,
+  type SaveVariantMessage,
+  type SaveVariantResultMessage,
+} from "./variants.js";
 
 /** Standalone Gallery HTTP 경로 */
 export const GALLERY_ROUTE = "/__vitrine";
@@ -140,19 +148,28 @@ export interface SelectPreviewMessage {
 export type WebviewToExtensionMessage = SwitchProjectMessage | GalleryToExtensionMessage;
 
 /** Extension에서 Gallery로 전달 가능한 message */
-export type ExtensionToGalleryMessage = SelectPreviewMessage | CapabilitiesResponseMessage | ThemeChangedMessage;
+export type ExtensionToGalleryMessage =
+  | SelectPreviewMessage
+  | CapabilitiesResponseMessage
+  | ThemeChangedMessage
+  | SaveVariantResultMessage;
 
 /** Gallery에서 Extension으로 전달 가능한 message */
-export type GalleryToExtensionMessage = PreviewSelectedMessage | CapabilitiesRequestMessage;
+export type GalleryToExtensionMessage = PreviewSelectedMessage | CapabilitiesRequestMessage | SaveVariantMessage;
 
 /** webview relay가 Gallery에서 Extension으로 넘기는 type, 목록에 없으면 버림 */
-export const GALLERY_TO_EXTENSION_RELAY_TYPES = [PREVIEW_SELECTED_MESSAGE_TYPE, CAPABILITIES_REQUEST_MESSAGE_TYPE];
+export const GALLERY_TO_EXTENSION_RELAY_TYPES = [
+  PREVIEW_SELECTED_MESSAGE_TYPE,
+  CAPABILITIES_REQUEST_MESSAGE_TYPE,
+  SAVE_VARIANT_MESSAGE_TYPE,
+];
 
 /** webview relay가 Extension에서 Gallery로 넘기는 type, 목록에 없으면 버림 */
 export const EXTENSION_TO_GALLERY_RELAY_TYPES = [
   SELECT_PREVIEW_MESSAGE_TYPE,
   CAPABILITIES_RESPONSE_MESSAGE_TYPE,
   THEME_CHANGED_MESSAGE_TYPE,
+  SAVE_VARIANT_RESULT_MESSAGE_TYPE,
 ];
 
 /**
@@ -181,7 +198,7 @@ export function isWebviewToExtensionMessage(
 ): value is WebviewToExtensionMessage {
   if (!isRecord(value)) return false;
   if (value.type === SWITCH_PROJECT_MESSAGE_TYPE) return true;
-  if (isCapabilitiesRequestMessage(value)) return true;
+  if (isCapabilitiesRequestMessage(value) || isSaveVariantMessage(value)) return true;
   return value.type === PREVIEW_SELECTED_MESSAGE_TYPE && isNonEmptyString(value.id);
 }
 
@@ -192,7 +209,9 @@ export function isWebviewToExtensionMessage(
 export function isExtensionToGalleryMessage(
   value: unknown,
 ): value is ExtensionToGalleryMessage {
-  if (isCapabilitiesResponseMessage(value) || isThemeChangedMessage(value)) return true;
+  if (isCapabilitiesResponseMessage(value) || isThemeChangedMessage(value) || isSaveVariantResultMessage(value)) {
+    return true;
+  }
   return (
     isRecord(value) &&
     value.type === SELECT_PREVIEW_MESSAGE_TYPE &&
@@ -235,3 +254,4 @@ function isPropControl(value: unknown): value is PropControl {
 export * from "./frame.js";
 export * from "./capabilities.js";
 export * from "./snapshots.js";
+export * from "./variants.js";

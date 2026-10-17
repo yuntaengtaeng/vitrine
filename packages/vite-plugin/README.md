@@ -238,6 +238,14 @@ To let the extension find your dev server, the plugin writes its port to
 `.vitrine/port.json` in the project root. The folder ignores itself with its own
 `.gitignore`, so it never shows up in your commits.
 
+Inside VS Code, the Props tab can save the current props as a new variant: name it, and the
+extension adds it to `preview()` in your file, creating the `preview()` call and its import if
+needed. The edit goes through the editor, so undo works. It only applies when the file matches
+what the gallery read, so it never overwrites unsaved changes. Anonymous default exports cannot
+get variants, and functions or elements in props are not written. The gallery and the extension
+agree on this and other features when the panel opens, and an outdated side shows a one-line
+update notice.
+
 ## Compatibility
 
 | Package | Supported versions |

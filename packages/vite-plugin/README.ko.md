@@ -230,6 +230,13 @@ code --install-extension yuntaengtaeng.vitrine
 확장이 dev server를 찾을 수 있도록 plugin은 프로젝트 root의 `.vitrine/port.json`에 포트를 기록합니다.
 이 폴더는 자체 `.gitignore`로 스스로를 제외하므로 커밋에 포함되지 않습니다.
 
+VS Code 안에서는 Props 탭에서 지금 props를 새 variant로 저장할 수 있습니다. 이름을 정하면 확장이
+파일의 `preview()`에 추가하고, 필요하면 `preview()` 호출과 import도 만듭니다. 편집은 에디터를 거치므로
+undo할 수 있고, gallery가 읽은 내용과 파일이 같을 때만 적용되어 저장하지 않은 수정을 덮어쓰지
+않습니다. 익명 default export에는 variant를 만들 수 없고, props의 함수나 element 값은 쓰지 않습니다.
+gallery와 확장은 패널을 열 때 이 기능을 포함해 함께 지원하는 기능을 맞추고, 한쪽이 오래되었으면
+업데이트 안내를 한 줄 보여줍니다.
+
 ## 호환성
 
 | 패키지 | 지원 버전 |

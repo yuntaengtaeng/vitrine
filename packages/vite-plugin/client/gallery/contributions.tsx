@@ -7,6 +7,7 @@ import { VariantPicker } from "./features/controls/VariantPicker";
 import { GlobalsPicker } from "./features/globals/GlobalsPicker";
 import { historyLayout, resolveSnapshot, type HistoryChoice } from "./features/history/history";
 import { HistoryPicker } from "./features/history/HistoryPicker";
+import { SaveVariantForm } from "./features/saveVariant/SaveVariantForm";
 import { matrixAxes, planMatrix, resolveMatrixAxes, type MatrixChoice } from "./features/matrix/matrix";
 import { MatrixAxesPicker } from "./features/matrix/MatrixAxesPicker";
 import type { LayoutInput } from "./features/previewSession/frameLink";
@@ -35,6 +36,8 @@ export interface ContributionProps {
   history: SnapshotHistory | null;
   historyChoice: HistoryChoice;
   onHistoryChange: (choice: HistoryChoice) => void;
+  /** VS Code 확장과 variant.save를 맞췄는지 */
+  canSaveVariant: boolean;
 }
 
 /** 보기가 배치를 만들 때 쓰는 사용자 설정과 Gallery 데이터 */
@@ -169,8 +172,12 @@ const PropsPanel = ({ session }: ContributionProps) => {
   );
 };
 
-const PropsActions = ({ session }: ContributionProps) =>
-  session.changedArgs.size > 0 ? <ResetAllButton onResetAll={session.resetAllArgs} /> : null;
+const PropsActions = ({ entry, session, canSaveVariant }: ContributionProps) => (
+  <>
+    {canSaveVariant && session.args && <SaveVariantForm previewId={entry.id} args={session.args} />}
+    {session.changedArgs.size > 0 && <ResetAllButton onResetAll={session.resetAllArgs} />}
+  </>
+);
 
 const CodeTab = ({ session }: ContributionProps) => {
   const { ready } = session.status;

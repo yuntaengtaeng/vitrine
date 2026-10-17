@@ -30,6 +30,7 @@ export const Canvas = (props: {
   /** 이 프리뷰를 상태 링크로 연 경우 그 상태 */
   link?: StateLink;
   snapshotsEnabled: boolean;
+  canSaveVariant: boolean;
 }) => {
   const { entry, onFailedChange, onStageChange } = props;
   const viewId = props.stage.view;
@@ -79,6 +80,7 @@ export const Canvas = (props: {
     history,
     historyChoice,
     onHistoryChange: setHistoryChoice,
+    canSaveVariant: props.canSaveVariant,
   };
 
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);
