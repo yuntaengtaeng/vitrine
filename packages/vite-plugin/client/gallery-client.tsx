@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import "./gallery/shared/theme/theme.css";
 import config from "virtual:vitrine-gallery-config";
 import previews from "virtual:vitrine-previews";
 import { App } from "./gallery/App";

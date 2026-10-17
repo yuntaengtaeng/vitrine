@@ -89,6 +89,16 @@ catalogs:
     typescript:
       specifier: ^5.6.3
       version: 5.9.3
+  vanilla-extract:
+    '@vanilla-extract/css':
+      specifier: ^1.21.2
+      version: 1.21.2
+    '@vanilla-extract/esbuild-plugin':
+      specifier: ^2.3.22
+      version: 2.3.22
+    '@vanilla-extract/vite-plugin':
+      specifier: ^5.2.6
+      version: 5.2.6
   vite:
     '@vitejs/plugin-react':
       specifier: ^5.2.0
@@ -103,12 +113,6 @@ catalogs:
     '@react-router/dev':
       specifier: ^8.4.0
       version: 8.4.0
-    '@vanilla-extract/css':
-      specifier: ^1.21.2
-      version: 1.21.2
-    '@vanilla-extract/vite-plugin':
-      specifier: ^5.2.6
-      version: 5.2.6
     isbot:
       specifier: ^5.2.2
       version: 5.2.2
@@ -132,6 +136,9 @@ importers:
       '@playwright/test':
         specifier: catalog:test
         version: 1.64.1
+      '@vanilla-extract/vite-plugin':
+        specifier: catalog:vanilla-extract
+        version: 5.2.6(@types/node@22.20.1)(esbuild@0.28.2)(vite@8.2.2(@types/node@22.20.1)(esbuild@0.28.2)(yaml@2.9.1))(yaml@2.9.1)
       '@vitrine/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
@@ -203,10 +210,10 @@ importers:
         specifier: catalog:react19
         version: 19.3.0(@types/react@19.3.0)
       '@vanilla-extract/css':
-        specifier: catalog:website
+        specifier: catalog:vanilla-extract
         version: 1.21.2
       '@vanilla-extract/vite-plugin':
-        specifier: catalog:website
+        specifier: catalog:vanilla-extract
         version: 5.2.6(@types/node@22.20.1)(esbuild@0.28.2)(vite@7.3.6(@types/node@22.20.1)(lightningcss@1.33.0)(yaml@2.9.1))(yaml@2.9.1)
       '@vitrine/brand':
         specifier: workspace:*
@@ -394,6 +401,12 @@ importers:
       '@types/react-test-renderer':
         specifier: catalog:react
         version: 18.3.1
+      '@vanilla-extract/css':
+        specifier: catalog:vanilla-extract
+        version: 1.21.2
+      '@vanilla-extract/esbuild-plugin':
+        specifier: catalog:vanilla-extract
+        version: 2.3.22(esbuild@0.28.2)
       '@vitrine/brand':
         specifier: workspace:*
         version: link:../brand
@@ -1641,6 +1654,14 @@ packages:
 
   '@vanilla-extract/css@1.21.2':
     resolution: {integrity: sha512-ehF/tmv2MxQwOJB1DicALUqnjZTnmY9Y7J2ccKB578JzZpYeL6sLAUqbaXo1taw1Erp0qBq0I4Kejs0uU/pBfg==}
+
+  '@vanilla-extract/esbuild-plugin@2.3.22':
+    resolution: {integrity: sha512-unxruCeuGR2BpmEuSV49++V4whdX7uPWADIiPwAe6zEOXwPrXQK+VtXjjZ/yN40vGfE7OJP/4WSDM5RuYX4LoQ==}
+    peerDependencies:
+      esbuild: '>=0.17.6'
+    peerDependenciesMeta:
+      esbuild:
+        optional: true
 
   '@vanilla-extract/integration@8.0.10':
     resolution: {integrity: sha512-01IB5gbrgTe8IIrtfRXXTmACl5D8Enzqp2cKbCWaMKXmnoilXXVCPbJoA96q88PXkNDXsXepCxUugMvEmL3c7A==}
@@ -4090,6 +4111,15 @@ snapshots:
     transitivePeerDependencies:
       - babel-plugin-macros
 
+  '@vanilla-extract/esbuild-plugin@2.3.22(esbuild@0.28.2)':
+    dependencies:
+      '@vanilla-extract/integration': 8.0.10
+    optionalDependencies:
+      esbuild: 0.28.2
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
+
   '@vanilla-extract/integration@8.0.10':
     dependencies:
       '@babel/core': 7.29.7
@@ -4113,6 +4143,27 @@ snapshots:
       '@vanilla-extract/compiler': 0.7.2(@types/node@22.20.1)(esbuild@0.28.2)(yaml@2.9.1)
       '@vanilla-extract/integration': 8.0.10
       vite: 7.3.6(@types/node@22.20.1)(lightningcss@1.33.0)(yaml@2.9.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - '@vitejs/devtools'
+      - babel-plugin-macros
+      - esbuild
+      - jiti
+      - less
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
+  '@vanilla-extract/vite-plugin@5.2.6(@types/node@22.20.1)(esbuild@0.28.2)(vite@8.2.2(@types/node@22.20.1)(esbuild@0.28.2)(yaml@2.9.1))(yaml@2.9.1)':
+    dependencies:
+      '@vanilla-extract/compiler': 0.7.2(@types/node@22.20.1)(esbuild@0.28.2)(yaml@2.9.1)
+      '@vanilla-extract/integration': 8.0.10
+      vite: 8.2.2(@types/node@22.20.1)(esbuild@0.28.2)(yaml@2.9.1)
     transitivePeerDependencies:
       - '@types/node'
       - '@vitejs/devtools'

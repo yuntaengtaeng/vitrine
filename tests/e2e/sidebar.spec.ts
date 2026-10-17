@@ -40,3 +40,24 @@ test("group을 접고 펼치기", async ({ page }) => {
   await cards.click();
   await expect(sidebar.getByRole("button", { name: "Short card", exact: true })).toBeVisible();
 });
+
+test.describe("좁은 패널", () => {
+  test.use({ viewport: { width: 420, height: 760 } });
+
+  test("사이드바는 서랍으로 열고, 프리뷰를 고르거나 Escape를 누르면 닫힘", async ({ page }) => {
+    await page.goto("/__vitrine");
+    const sidebar = page.getByRole("navigation", { name: "Previews" });
+    const menu = page.getByRole("button", { name: "Previews" });
+    await expect(sidebar).toBeHidden();
+
+    await menu.click();
+    await sidebar.getByRole("button", { name: "Badge", exact: true }).click();
+    await expect(sidebar).toBeHidden();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Badge");
+
+    await menu.click();
+    await expect(sidebar).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(sidebar).toBeHidden();
+  });
+});

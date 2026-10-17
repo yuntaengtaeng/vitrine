@@ -6,6 +6,14 @@ function makeEntry(id: string, group?: string): GalleryPreviewEntry {
 }
 
 describe("buildSidebarTree", () => {
+  it("같은 단계에서 group 없는 entry를 group보다 먼저 배치", () => {
+    const tree = buildSidebarTree([makeEntry("A"), makeEntry("B", "X"), makeEntry("C"), makeEntry("D", "X/Y"), makeEntry("E", "X")]);
+    expect(tree.map((node) => (node.type === "entry" ? node.entry.id : node.label))).toEqual(["A", "C", "X"]);
+    const group = tree[2];
+    if (group.type !== "group") throw new Error("expected group");
+    expect(group.children.map((node) => (node.type === "entry" ? node.entry.id : node.label))).toEqual(["B", "E", "Y"]);
+  });
+
   it("group 없는 entry는 최상위에 그대로 배치", () => {
     const entries = [makeEntry("Button"), makeEntry("Badge")];
     const tree = buildSidebarTree(entries);

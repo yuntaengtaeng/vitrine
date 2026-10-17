@@ -1,27 +1,5 @@
-import type { CSSProperties } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
 import type { FrameVariant } from "@vitrine/protocol";
-
-const Styled = {
-  Root: { display: "flex", gap: "0.4rem", flexWrap: "wrap" } satisfies CSSProperties,
-  Tab: {
-    base: {
-      border: "none",
-      borderBottom: "2px solid transparent",
-      padding: "0.3rem 0.1rem",
-      fontSize: FONT_SIZE.label,
-      fontFamily: "inherit",
-      cursor: "pointer",
-      background: "transparent",
-      color: COLOR.label,
-    } satisfies CSSProperties,
-    active: {
-      borderBottom: `2px solid ${COLOR.activeText}`,
-      color: COLOR.activeText,
-    } satisfies CSSProperties,
-  },
-};
+import * as styles from "./VariantPicker.css";
 
 export const VariantPicker = (props: {
   variants: FrameVariant[];
@@ -31,21 +9,18 @@ export const VariantPicker = (props: {
   if (props.variants.length === 0) return null;
 
   return (
-    <div style={Styled.Root} role="group" aria-label="Variants">
-      {props.variants.map((variant) => {
-        const active = variant.key === props.activeKey;
-        return (
-          <button
-            key={variant.key}
-            type="button"
-            aria-pressed={active}
-            style={{ ...Styled.Tab.base, ...(active ? Styled.Tab.active : {}) }}
-            onClick={() => props.onSelect(variant.key)}
-          >
-            {variant.name}
-          </button>
-        );
-      })}
+    <div className={styles.root} role="group" aria-label="Variants">
+      {props.variants.map((variant) => (
+        <button
+          key={variant.key}
+          type="button"
+          aria-pressed={variant.key === props.activeKey}
+          className={styles.tab}
+          onClick={() => props.onSelect(variant.key)}
+        >
+          {variant.name}
+        </button>
+      ))}
     </div>
   );
 };

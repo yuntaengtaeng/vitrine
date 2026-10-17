@@ -1,30 +1,7 @@
-import { Fragment, type CSSProperties, type ReactNode } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
+import { Fragment, type ReactNode } from "react";
 import { ChevronDownIcon } from "../../shared/icons/ChevronDownIcon";
 import { countSidebarEntries, type SidebarNode } from "./sidebarNodes";
-
-const Styled = {
-  GroupToggle: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    width: "100%",
-    padding: "0.55rem 0.7rem 0.25rem",
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-    fontFamily: "inherit",
-    fontSize: FONT_SIZE.label,
-    fontWeight: 700,
-    letterSpacing: "0.03em",
-    color: COLOR.label,
-    textAlign: "left",
-  } satisfies CSSProperties,
-  Chevron: { transition: "transform 120ms ease" } satisfies CSSProperties,
-  Count: { marginLeft: "auto", fontWeight: 500, fontVariantNumeric: "tabular-nums" } satisfies CSSProperties,
-  GroupChildren: { marginLeft: 8 } satisfies CSSProperties,
-};
+import * as styles from "./SidebarTree.css";
 
 export const SidebarTree = (props: {
   nodes: SidebarNode[];
@@ -45,15 +22,15 @@ export const SidebarTree = (props: {
           <button
             type="button"
             aria-expanded={expanded}
-            style={Styled.GroupToggle}
+            className={styles.groupToggle}
             onClick={() => props.onToggleGroup(node.key)}
           >
-            <ChevronDownIcon size={12} style={{ ...Styled.Chevron, transform: expanded ? "none" : "rotate(-90deg)" }} />
+            <ChevronDownIcon size={12} className={styles.chevron} />
             {node.label}
-            <span style={Styled.Count}>{countSidebarEntries(node.children)}</span>
+            <span className={styles.count}>{countSidebarEntries(node.children)}</span>
           </button>
           {expanded && (
-            <div style={Styled.GroupChildren}>
+            <div className={styles.groupChildren}>
               <SidebarTree {...props} nodes={node.children} />
             </div>
           )}

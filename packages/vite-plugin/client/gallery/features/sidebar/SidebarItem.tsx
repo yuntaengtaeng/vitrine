@@ -1,37 +1,4 @@
-import { useState, type CSSProperties } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
-
-const Styled = {
-  Item: {
-    base: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      width: "100%",
-      textAlign: "left",
-      padding: "0.55rem 0.7rem",
-      marginBottom: 2,
-      border: "none",
-      background: "transparent",
-      color: COLOR.body,
-      cursor: "pointer",
-      borderRadius: 6,
-      fontSize: FONT_SIZE.base,
-      fontFamily: "inherit",
-    } satisfies CSSProperties,
-    active: { background: COLOR.sidebarActiveBg, color: COLOR.activeText, fontWeight: 600 } satisfies CSSProperties,
-    hover: { background: COLOR.sidebarHoverBg } satisfies CSSProperties,
-  },
-  FailedDot: {
-    width: 7,
-    height: 7,
-    marginLeft: "auto",
-    flexShrink: 0,
-    borderRadius: "50%",
-    background: COLOR.error,
-  } satisfies CSSProperties,
-};
+import * as styles from "./SidebarItem.css";
 
 export const SidebarItem = (props: {
   entry: GalleryPreviewEntry;
@@ -39,25 +6,17 @@ export const SidebarItem = (props: {
   failed: boolean;
   onSelect: (id: string) => void;
 }) => {
-  const { entry, isActive, onSelect } = props;
-  const [hover, setHover] = useState(false);
-  const style = {
-    ...Styled.Item.base,
-    ...(isActive ? Styled.Item.active : hover ? Styled.Item.hover : {}),
-  };
-
+  const { entry } = props;
   return (
     <button
       type="button"
-      aria-current={isActive ? "true" : undefined}
-      style={style}
+      aria-current={props.isActive ? "true" : undefined}
+      className={styles.item}
       title={props.failed ? `${entry.file}, failed to render` : entry.file}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onClick={() => onSelect(entry.id)}
+      onClick={() => props.onSelect(entry.id)}
     >
       {entry.name}
-      {props.failed && <span aria-hidden="true" style={Styled.FailedDot} data-preview-failed />}
+      {props.failed && <span aria-hidden="true" className={styles.failedDot} data-preview-failed />}
     </button>
   );
 };

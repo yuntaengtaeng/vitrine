@@ -29,6 +29,7 @@
   "devDependencies": {
     "@changesets/cli": "catalog:release",
     "@playwright/test": "catalog:test",
+    "@vanilla-extract/vite-plugin": "catalog:vanilla-extract",
     "@vitrine/eslint-config": "workspace:*",
     "eslint": "catalog:lint",
     "typescript": "catalog:typescript",

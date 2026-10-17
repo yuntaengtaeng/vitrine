@@ -64,6 +64,27 @@ const galleryBoundaries = [
     files: [`${GALLERY_ROOT}/*.{ts,tsx}`],
     rules: { "no-restricted-imports": ["error", { patterns: [NO_FRAME_IMPORT] }] },
   },
+  {
+    name: "vitrine/frame",
+    files: ["packages/vite-plugin/client/frame/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: String.raw`(\.css$|^@vanilla-extract/)`,
+              message: "frame은 사용자 문서라 stylesheet를 넣지 않고 inline style만 사용합니다.",
+            },
+            {
+              regex: String.raw`^(\.\./)+gallery/`,
+              message: "frame은 Gallery 코드를 import하지 않습니다.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export default defineConfig(

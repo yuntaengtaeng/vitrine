@@ -1,23 +1,8 @@
-import { useRef, type CSSProperties, type KeyboardEvent } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
-import { FIELD_BORDER_RADIUS } from "../../shared/ui/fieldStyle";
+import { useRef, type KeyboardEvent } from "react";
+import * as styles from "./controls.css";
 import { focusableRadioIndex, nextRadioIndex } from "./radioKeyboard";
 
 type Option = string | number;
-
-const Styled = {
-  Radios: { display: "flex", flexWrap: "wrap", gap: 4 } satisfies CSSProperties,
-  Radio: {
-    minHeight: 30,
-    padding: "0.25rem 0.6rem",
-    border: `1px solid ${COLOR.border}`,
-    borderRadius: FIELD_BORDER_RADIUS,
-    fontFamily: "inherit",
-    fontSize: FONT_SIZE.secondary,
-    cursor: "pointer",
-  } satisfies CSSProperties,
-};
 
 export const RadioControl = (props: {
   label: string;
@@ -38,7 +23,7 @@ export const RadioControl = (props: {
   };
 
   return (
-    <div style={Styled.Radios} role="radiogroup" aria-label={props.label}>
+    <div className={styles.radios} role="radiogroup" aria-label={props.label}>
       {props.options.map((option, index) => {
         const selected = index === selectedIndex;
         return (
@@ -51,12 +36,7 @@ export const RadioControl = (props: {
             role="radio"
             aria-checked={selected}
             tabIndex={index === tabStopIndex ? 0 : -1}
-            style={{
-              ...Styled.Radio,
-              borderColor: selected ? COLOR.activeText : COLOR.border,
-              background: selected ? COLOR.activeBg : COLOR.surface,
-              color: selected ? COLOR.activeText : COLOR.body,
-            }}
+            className={styles.radio}
             onClick={() => props.onChange(option)}
             onKeyDown={(event) => moveSelection(event, index)}
           >

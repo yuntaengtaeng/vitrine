@@ -73,7 +73,7 @@ CJS entry를 함께 build한다. Node, React, Vite, VS Code API에는 의존하�
 - `port-file.ts`: port file 기록
 
 Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
-`client/`는 두 bundle과 공유 token으로 나눈다.
+`client/`는 두 bundle로 나눈다.
 
 - `frame/`: iframe 안에서 사용자 module을 불러 렌더링. `preview/`는 프리뷰 module과 setup file
   로드, 렌더링, 에러 경계를, `bridge/`는 Gallery와 주고받는 message와 높이 보고를 맡음
@@ -82,13 +82,29 @@ Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 wo
   - 최상위 module: feature를 조합하고 여러 feature에 걸친 앱 상태(선택, 실패한 프리뷰)를 소유
   - `features/`: `sidebar/`, `header/`, `previewSession/`(iframe 연결과 variant, 바꾼 값),
     `stage/`(배경, viewport, iframe 무대), `controls/`(Props 패널과 variant 선택),
-    `previewError/`(에러 카드)
-  - `shared/`: 여러 feature가 쓰는 UI 스타일과 helper
-- `tokens/`: 두 bundle이 공유하는 색, 글자 크기, 패턴
+    `previewError/`(에러 카드), `emptyState/`
+  - `shared/`: 여러 feature가 쓰는 theme, UI 스타일, 아이콘, helper
 
 `gallery/`는 `frame/`을 import하지 않는다. feature끼리 import하지 않고, `shared/`는 feature를
-import하지 않는다. 이 경계는 루트 `eslint.config.mjs`의 `no-restricted-imports`가 강제하며,
-`features/` 아래 새 폴더는 자동으로 같은 규칙을 받는다.
+import하지 않는다. `frame/`은 `gallery/`와 stylesheet를 import하지 않는다. 이 경계는 루트
+`eslint.config.mjs`의 `no-restricted-imports`가 강제하며, `features/` 아래 새 폴더는 자동으로
+같은 규칙을 받는다.
+
+### Gallery 스타일
+
+- Gallery는 vanilla-extract `.css.ts`로 스타일을 쓰고, build 때 `dist/gallery/gallery-client.css`
+  하나로 나온다. plugin이 `/__vitrine/gallery.css`로 서빙하고 Gallery HTML이 `<link>`로 읽는다.
+  vanilla-extract는 devDependency라 배포 package의 runtime 의존성이 늘지 않는다.
+- 색, 간격, radius, 글자 크기는 `shared/theme/theme.css.ts`의 계약(`--vt-*` CSS 변수)만 쓴다.
+  다크 모드와 VS Code 테마는 같은 계약에 값만 바꿔 붙인다.
+- 보조 글자는 흰 배경과 사이드바 배경 모두에서 4.5:1 이상인 `textMuted` 하나로 쓰고, 위계는
+  크기와 굵기로 만든다.
+- 상태 스타일은 JS 조건 대신 `aria-pressed`, `aria-current`, `aria-checked` 같은 속성 selector로 쓴다.
+- 공용 스타일을 덧입힐 때는 TSX에서 class를 이어 붙이지 않고 `.css.ts`에서
+  `style([base, { ... }])`로 조합한다. 이어 붙이면 어느 규칙이 이길지 CSS 순서에 달린다.
+- 좁은 패널(VS Code)은 `shared/ui/layout.css.ts`의 gallery container query로 대응한다. 640px
+  이하에서는 사이드바가 서랍으로 바뀐다.
+- frame은 사용자 문서이므로 Gallery CSS를 넣지 않고 inline style만 쓴다.
 
 각 runtime project 내부는 다음 원칙으로 정리한다. 구체적인 디렉터리 이름은 이 원칙을 구현하는
 현재 선택이며 영구 규칙이 아니다.

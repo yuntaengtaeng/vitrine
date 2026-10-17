@@ -80,6 +80,13 @@ try {
   assert.match(galleryModule, /createRoot/);
   assert.ok(galleryModule.includes(contract.PREVIEWS_MODULE_ID));
 
+  const stylePath = galleryHtml.match(/<link rel="stylesheet" href="([^"]+)"/)?.[1];
+  assert.ok(stylePath, "Gallery HTML did not link its stylesheet");
+  const styleResponse = await request(new URL(stylePath, baseUrl));
+  assert.equal(styleResponse.status, 200);
+  assert.match(styleResponse.headers.get("content-type") ?? "", /^text\/css/);
+  assert.match(await styleResponse.text(), /--vt-color-surface/);
+
   const frameResponse = await request(`${baseUrl}${contract.FRAME_ROUTE}?id=src%2FSmoke.tsx%23Smoke`);
   assert.equal(frameResponse.status, 200);
   const frameHtml = await frameResponse.text();

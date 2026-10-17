@@ -1,22 +1,6 @@
-import type { CSSProperties } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
-import { FIELD_BORDER, FIELD_BORDER_RADIUS, FIELD_FOCUS, FIELD_HEIGHT } from "../../shared/ui/fieldStyle";
+import * as styles from "./controls.css";
 
 type Option = string | number;
-
-const Styled = {
-  width: "100%",
-  height: FIELD_HEIGHT,
-  padding: "0 0.6rem",
-  border: FIELD_BORDER,
-  borderRadius: FIELD_BORDER_RADIUS,
-  ...FIELD_FOCUS,
-  background: COLOR.surface,
-  color: COLOR.body,
-  fontFamily: "inherit",
-  fontSize: FONT_SIZE.secondary,
-} satisfies CSSProperties;
 
 export const SelectControl = (props: {
   label: string;
@@ -27,7 +11,7 @@ export const SelectControl = (props: {
 }) => (
   <select
     aria-label={props.label}
-    style={Styled}
+    className={styles.select}
     value={String(props.value ?? "")}
     onChange={(event) => {
       if (event.currentTarget.value === "" && props.optional) return props.onChange(undefined);

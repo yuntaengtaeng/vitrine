@@ -102,7 +102,12 @@ try {
   );
   const packResult = parsePackResult(packOutput);
   assert.ok(packResult, "pnpm pack did not return package metadata");
-  for (const filePath of [...PUBLIC_FILES, "dist/gallery/gallery-client.js", "dist/gallery/frame-client.js"]) {
+  for (const filePath of [
+    ...PUBLIC_FILES,
+    "dist/gallery/gallery-client.js",
+    "dist/gallery/gallery-client.css",
+    "dist/gallery/frame-client.js",
+  ]) {
     assert.ok(
       packResult.files.some((file) => file.path === filePath),
       `packed package is missing ${filePath}`,

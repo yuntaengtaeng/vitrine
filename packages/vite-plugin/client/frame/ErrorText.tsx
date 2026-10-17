@@ -1,10 +1,9 @@
+import { RED } from "@vitrine/brand";
 import type { CSSProperties, ReactNode } from "react";
-import { COLOR } from "../tokens/color";
-import { FONT_SIZE } from "../tokens/fontSize";
 
+// frame은 사용자 문서라 Gallery CSS를 넣지 않고 inline style만 사용
 const Styled = {
-  Text: { color: COLOR.error, whiteSpace: "pre-wrap", fontSize: FONT_SIZE.secondary } satisfies CSSProperties,
+  Text: { color: RED[600], whiteSpace: "pre-wrap", fontSize: "0.85rem" } satisfies CSSProperties,
 };
 
-/** 로드 실패, 렌더 에러 등 프리뷰 관련 에러 텍스트 표시, Canvas와 PreviewErrorBoundary가 공유 */
 export const ErrorText = (props: { children: ReactNode }) => <pre style={Styled.Text}>{props.children}</pre>;

@@ -38,7 +38,16 @@ export function buildSidebarTree(entries: GalleryPreviewEntry[]): SidebarNode[] 
     children.push({ type: "entry", entry });
   }
 
-  return roots;
+  return entriesBeforeGroups(roots);
+}
+
+// 파일과 폴더처럼 같은 단계에서 group 없는 entry를 먼저 모아 섞여 보이지 않게 함
+function entriesBeforeGroups(nodes: SidebarNode[]): SidebarNode[] {
+  const entries = nodes.filter((node) => node.type === "entry");
+  const groups = nodes
+    .filter((node) => node.type === "group")
+    .map((group) => ({ ...group, children: entriesBeforeGroups(group.children) }));
+  return [...entries, ...groups];
 }
 
 /** 검색어가 entry 이름이나 group 이름에 포함된 node만 남긴 트리 반환 (group 이름이 맞으면 하위 전체 유지) */

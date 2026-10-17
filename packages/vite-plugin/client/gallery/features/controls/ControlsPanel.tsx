@@ -1,38 +1,8 @@
 import type { FrameControl } from "@vitrine/protocol";
-import type { CSSProperties } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
-import { SECONDARY_BUTTON } from "../../shared/ui/buttonStyle";
 import { ControlField } from "./ControlField";
 import { ControlInput } from "./ControlInput";
+import * as styles from "./ControlsPanel.css";
 import { controlTypeLabel } from "./controlType";
-
-const Styled = {
-  Root: {
-    width: "100%",
-    maxHeight: 280,
-    flexShrink: 0,
-    padding: "0.85rem 1rem 1rem",
-    borderTop: `1px solid ${COLOR.border}`,
-    boxSizing: "border-box",
-    overflowY: "auto",
-    background: COLOR.surface,
-  } satisfies CSSProperties,
-  Header: { display: "flex", alignItems: "center", gap: 8, marginBottom: "0.6rem" } satisfies CSSProperties,
-  Heading: {
-    margin: 0,
-    color: COLOR.body,
-    fontSize: FONT_SIZE.secondary,
-    fontWeight: 650,
-  } satisfies CSSProperties,
-  Count: { color: COLOR.label, fontSize: FONT_SIZE.label } satisfies CSSProperties,
-  ResetAll: { ...SECONDARY_BUTTON, marginLeft: "auto", padding: "0.2rem 0.6rem" } satisfies CSSProperties,
-  Fields: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "0.9rem 1.5rem",
-  } satisfies CSSProperties,
-};
 
 export const ControlsPanel = (props: {
   controls: Record<string, FrameControl>;
@@ -47,17 +17,17 @@ export const ControlsPanel = (props: {
   if (entries.length === 0) return null;
 
   return (
-    <aside style={Styled.Root} aria-label="Props">
-      <div style={Styled.Header}>
-        <h2 style={Styled.Heading}>Props</h2>
-        <span style={Styled.Count}>{entries.length}</span>
+    <aside className={styles.root} aria-label="Props">
+      <div className={styles.header}>
+        <h2 className={styles.heading}>Props</h2>
+        <span className={styles.count}>{entries.length}</span>
         {props.changed.size > 0 && (
-          <button type="button" style={Styled.ResetAll} onClick={props.onResetAll}>
+          <button type="button" className={styles.resetAll} onClick={props.onResetAll}>
             Reset all
           </button>
         )}
       </div>
-      <div style={Styled.Fields}>
+      <div className={styles.fields}>
         {entries.map(([name, control]) => (
           <ControlField key={name}>
             <ControlField.Label name={name} type={controlTypeLabel(control)} optional={control.optional} />

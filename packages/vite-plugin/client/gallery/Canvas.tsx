@@ -1,6 +1,6 @@
 import type { GalleryViewport } from "@vitrine/protocol";
-import { useEffect, type CSSProperties } from "react";
-import { COLOR } from "../tokens/color";
+import { useEffect } from "react";
+import * as styles from "./Canvas.css";
 import { ControlsPanel } from "./features/controls/ControlsPanel";
 import { VariantPicker } from "./features/controls/VariantPicker";
 import { usePreviewSession } from "./features/previewSession/usePreviewSession";
@@ -11,25 +11,6 @@ import { PreviewStage } from "./features/stage/PreviewStage";
 import { StageToolbar } from "./features/stage/StageToolbar";
 import type { StageSettings } from "./features/stage/stageSettings";
 import { openInEditor } from "./shared/editorLink";
-
-const Styled = {
-  Root: {
-    display: "flex",
-    flexDirection: "column",
-    width: "100%",
-    height: "100%",
-  } satisfies CSSProperties,
-  Toolbar: {
-    display: "flex",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "0.6rem 1rem",
-    minHeight: 44,
-    padding: "0.35rem 1.25rem",
-    borderBottom: `1px solid ${COLOR.border}`,
-    boxSizing: "border-box",
-  } satisfies CSSProperties,
-};
 
 export const Canvas = (props: {
   entry: GalleryPreviewEntry;
@@ -46,9 +27,9 @@ export const Canvas = (props: {
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);
 
   return (
-    <div style={Styled.Root}>
+    <div className={styles.root}>
       <CanvasHeader entry={entry} canOpenInEditor={props.canOpenInEditor} />
-      <div style={Styled.Toolbar}>
+      <div className={styles.toolbar}>
         <VariantPicker
           variants={ready?.variants ?? []}
           activeKey={session.activeVariantKey}

@@ -57,6 +57,9 @@ export const MANIFEST_ROUTE = PROTOCOL_MANIFEST_ROUTE;
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const galleryClientPath = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
 const frameClientPath = path.join(packageRoot, "dist", "gallery", "frame-client.js");
+const galleryStylePath = path.join(packageRoot, "dist", "gallery", "gallery-client.css");
+// fs.allow 밖(pnpm store 등)에 있을 수 있는 package 파일을 /@fs로 import하지 않고 직접 서빙
+const GALLERY_STYLE_ROUTE = `${GALLERY_ROUTE}/gallery.css`;
 
 /** @preview export를 스캔해 갤러리 라우트로 제공하는 Vite 플러그인 */
 export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
@@ -156,6 +159,11 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         next();
       });
 
+      server.middlewares.use(GALLERY_STYLE_ROUTE, (_req, res) => {
+        res.setHeader("Content-Type", "text/css");
+        res.end(fs.readFileSync(galleryStylePath, "utf-8"));
+      });
+
       // Gallery 경로가 prefix로 가로채지 않도록 먼저 등록, 프리뷰 id query는 frame client가 읽음
       server.middlewares.use(FRAME_ROUTE, async (_req, res) => {
         const html = await server.transformIndexHtml(FRAME_ROUTE, FRAME_HTML);
@@ -232,7 +240,7 @@ const GALLERY_HTML = `<!doctype html>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>vitrine</title>
-    <style>body { margin: 0; }</style>
+    <link rel="stylesheet" href="${GALLERY_STYLE_ROUTE}" />
   </head>
   <body>
     <div id="vitrine-root"></div>

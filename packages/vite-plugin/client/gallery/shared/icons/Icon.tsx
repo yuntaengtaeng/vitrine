@@ -1,9 +1,10 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
+import * as styles from "./Icon.css";
 
 export interface IconProps {
   /** px */
   size?: number;
-  style?: CSSProperties;
+  className?: string;
 }
 
 /** 의미는 감싼 버튼의 이름이 전달하므로 스크린 리더에서 숨김 */
@@ -18,7 +19,7 @@ export const Icon = (props: IconProps & { children: ReactNode }) => (
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
-    style={{ flexShrink: 0, ...props.style }}
+    className={props.className ? `${styles.icon} ${props.className}` : styles.icon}
   >
     {props.children}
   </svg>

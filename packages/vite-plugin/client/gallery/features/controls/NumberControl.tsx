@@ -1,55 +1,21 @@
-import type { CSSProperties } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
-import { FIELD_BORDER, FIELD_BORDER_RADIUS, FIELD_HEIGHT } from "../../shared/ui/fieldStyle";
-
-const Styled = {
-  Root: {
-    display: "grid",
-    gridTemplateColumns: "32px minmax(60px, 1fr) 32px",
-    height: FIELD_HEIGHT,
-    overflow: "hidden",
-    border: FIELD_BORDER,
-    borderRadius: FIELD_BORDER_RADIUS,
-    background: COLOR.surface,
-  } satisfies CSSProperties,
-  Button: {
-    border: 0,
-    background: COLOR.surfaceSubtle,
-    color: COLOR.body,
-    fontSize: "1rem",
-    cursor: "pointer",
-  } satisfies CSSProperties,
-  Input: {
-    minWidth: 0,
-    padding: "0 0.4rem",
-    border: 0,
-    borderLeft: FIELD_BORDER,
-    borderRight: FIELD_BORDER,
-    outline: 0,
-    textAlign: "center",
-    color: COLOR.body,
-    fontFamily: "inherit",
-    fontSize: FONT_SIZE.secondary,
-  } satisfies CSSProperties,
-};
+import * as styles from "./controls.css";
 
 export const NumberControl = (props: { label: string; value: unknown; onChange: (value: number) => void }) => {
   const value = typeof props.value === "number" && Number.isFinite(props.value) ? props.value : 0;
   return (
-    <div style={Styled.Root}>
-      <button type="button" aria-label={`Decrease ${props.label}`} style={Styled.Button} onClick={() => props.onChange(value - 1)}>−</button>
+    <div className={styles.number}>
+      <button type="button" aria-label={`Decrease ${props.label}`} className={styles.numberStep} onClick={() => props.onChange(value - 1)}>−</button>
       <input
         aria-label={props.label}
         type="number"
-        style={Styled.Input}
+        className={styles.numberInput}
         value={value}
         onChange={(event) => {
           const nextValue = event.currentTarget.valueAsNumber;
           if (Number.isFinite(nextValue)) props.onChange(nextValue);
         }}
       />
-      <button type="button" aria-label={`Increase ${props.label}`} style={Styled.Button} onClick={() => props.onChange(value + 1)}>+</button>
+      <button type="button" aria-label={`Increase ${props.label}`} className={styles.numberStep} onClick={() => props.onChange(value + 1)}>+</button>
     </div>
   );
 };
