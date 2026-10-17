@@ -1,9 +1,12 @@
-import { renderPreviewsModule, type PreviewEntry } from "./scan.js";
+import { renderPreviewsModule } from "./previews-module.js";
+import type { PreviewEntry } from "./scan.js";
 
 /** 마지막 스캔 결과와 가상 모듈 변경 여부 추적기 */
 export interface PreviewTracker {
   /** 마지막으로 완료된 스캔 결과 조회 */
   getEntries(): PreviewEntry[];
+  /** 진행 중인 스캔이 있으면 끝난 뒤의 최신 결과 조회 */
+  getLatestEntries(): Promise<PreviewEntry[]>;
   /** 재스캔 후 가상 모듈 내용이 이전 스캔과 달라졌는지 판단, 첫 스캔은 항상 false */
   refresh(): Promise<boolean>;
 }
@@ -25,6 +28,7 @@ export function createPreviewTracker(scan: () => Promise<PreviewEntry[]>): Previ
 
   return {
     getEntries: () => entries,
+    getLatestEntries: () => pending.then(() => entries),
     refresh: () => {
       const run = pending.then(rescan);
       pending = run.catch(() => undefined);

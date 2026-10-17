@@ -1,8 +1,5 @@
 /** virtual:vitrine-previews가 넘기는 Gallery 프리뷰 entry */
-type GalleryPreviewEntry = Pick<
-  import("@vitrine/protocol").ManifestEntry,
-  "id" | "name" | "group" | "file" | "exportName" | "controls"
-> & {
+type GalleryPreviewEntry = import("@vitrine/protocol").GalleryEntryData & {
   load: () => Promise<Record<string, unknown>>;
 };
 

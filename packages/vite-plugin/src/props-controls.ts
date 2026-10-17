@@ -10,7 +10,8 @@ export interface TypeContext {
   checker: ts.TypeChecker;
 }
 
-function buildTypeContext(root: string): TypeContext {
+/** 루트의 tsconfig로 prop 타입 분석용 ts.Program 생성, tsconfig가 없으면 빈 Program */
+export function createTypeContext(root: string): TypeContext {
   const configPath = ts.findConfigFile(root, fs.existsSync, "tsconfig.json");
   if (!configPath) {
     const program = ts.createProgram([], { jsx: ts.JsxEmit.ReactJSX, allowJs: true });
@@ -23,24 +24,6 @@ function buildTypeContext(root: string): TypeContext {
   return { program, checker: program.getTypeChecker() };
 }
 
-// ts.createProgram()이 tsconfig 전체를 다시 읽어들이는 비용이 커서(예제 9개
-// 파일 기준 Babel 스캔의 17배), 루트별로 한 번 만든 프로그램을 재사용하고
-// invalidateTypeContext로 명시적으로 무효화될 때만 다시 만듦
-const typeContextCache = new Map<string, TypeContext>();
-
-/** 루트 기준 캐시된 ts.Program, 없으면 새로 만들어 캐시 */
-export function getTypeContext(root: string): TypeContext {
-  const cached = typeContextCache.get(root);
-  if (cached) return cached;
-  const context = buildTypeContext(root);
-  typeContextCache.set(root, context);
-  return context;
-}
-
-/** 루트의 캐시된 ts.Program 무효화, 다음 getTypeContext 호출에서 재생성 */
-export function invalidateTypeContext(root: string): void {
-  typeContextCache.delete(root);
-}
 
 export function getPropControls(file: string, exportName: string, context: TypeContext): PropControls {
   const source = context.program.getSourceFile(file);
@@ -96,10 +79,7 @@ function toControl(type: ts.Type, optional: boolean, checker: ts.TypeChecker): P
 
   const effective = members[0] ?? type;
   const literal = literalValue(effective);
-  if (typeof literal === "string") {
-    return { type: "select", options: [literal], optional, ...(!optional ? { defaultValue: literal } : {}) };
-  }
-  if (typeof literal === "number") {
+  if (literal !== undefined) {
     return { type: "select", options: [literal], optional, ...(!optional ? { defaultValue: literal } : {}) };
   }
   if (effective.flags & ts.TypeFlags.BooleanLike) {

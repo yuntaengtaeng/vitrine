@@ -10,8 +10,9 @@ import {
   PREVIEW_SETUP_RECOVER_EVENT,
 } from "@vitrine/protocol";
 import type { Logger, Plugin } from "vite";
-import { scanPreviews, renderPreviewsModule } from "./scan.js";
-import { createPreviewTracker } from "./preview-tracker.js";
+import { createPreviewScanner, type PreviewScanner } from "./scan.js";
+import { renderPreviewsModule } from "./previews-module.js";
+import { createPreviewTracker, type PreviewTracker } from "./preview-tracker.js";
 import { removePortFile, writePortFile } from "./port-file.js";
 import {
   getPreviewSetupModule,
@@ -19,7 +20,6 @@ import {
   resolvePreviewSetupPath,
   type PreviewSetupPath,
 } from "./preview-setup.js";
-import { invalidateTypeContext } from "./props-controls.js";
 import { toViteOpenInEditorUrl } from "./open-in-editor.js";
 
 export interface VitrinePluginOptions {
@@ -44,6 +44,9 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
   let root = process.cwd();
   let previewSetup: PreviewSetupPath | undefined;
   let logger: Logger | undefined;
+  // root가 정해지는 configResolved에서 만들고, Gallery 가상 모듈과 manifest가 같은 스캔 결과를 공유
+  let scanner!: PreviewScanner;
+  let tracker!: PreviewTracker;
   const isPreviewSetupFile = (file: string) =>
     previewSetup?.status === "valid" && path.resolve(file) === previewSetup.filePath;
 
@@ -58,6 +61,8 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       previewSetup = options.setupFile
         ? resolvePreviewSetupPath(root, options.setupFile)
         : undefined;
+      scanner = createPreviewScanner({ root, include: options.include });
+      tracker = createPreviewTracker(scanner.scan);
     },
 
     resolveId(id) {
@@ -68,7 +73,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
 
     async load(id) {
       if (id === RESOLVED_PREVIEWS_MODULE_ID) {
-        const entries = await scanPreviews({ root, include: options.include });
+        const entries = await tracker.getLatestEntries();
         const setupModule = previewSetup
           ? getPreviewSetupModule(previewSetup, root, isRegularFile(previewSetup))
           : undefined;
@@ -89,7 +94,6 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
     },
 
     configureServer(server) {
-      const tracker = createPreviewTracker(() => scanPreviews({ root, include: options.include }));
       const logScanError = (error: unknown) => {
         server.config.logger.error(`[vitrine] preview scan failed: ${String(error)}`);
       };
@@ -131,7 +135,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         if (!SCRIPT_EXTENSIONS.has(path.extname(file))) return;
 
         // 캐시된 ts.Program이 바뀐 파일을 반영하지 못하므로 재스캔 전에 무효화
-        invalidateTypeContext(root);
+        scanner.invalidateTypes();
         tracker
           .refresh()
           .then((changed) => {

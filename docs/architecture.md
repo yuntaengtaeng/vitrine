@@ -61,9 +61,20 @@ tests/
 `protocol`은 route, virtual module ID, manifest DTO, message, port-file schema를 소유하며 ESM과
 CJS entry를 함께 build한다. Node, React, Vite, VS Code API에는 의존하지 않는다.
 
-현재 `packages/vite-plugin/src/index.ts`는 Vite lifecycle과 HTTP/HMR orchestration을 맡고,
-`scan.ts`, `props-controls.ts`, `port-file.ts`가 세부 로직을 맡는다. Gallery는 별도 browser
-source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
+현재 `packages/vite-plugin/src/index.ts`는 Vite lifecycle과 HTTP/HMR orchestration을 맡는다.
+세부 로직은 다음 모듈이 맡는다.
+
+- `scan.ts`: `createPreviewScanner()`가 파일별 스캔 결과와 prop 타입 분석용 ts.Program 캐시를 소유
+- `props-controls.ts`: prop 타입에서 control 추론
+- `preview-tracker.ts`: 마지막 스캔 결과를 보관하고, Gallery 가상 모듈과 manifest가 같은 결과를 쓰게 함
+- `previews-module.ts`: Gallery 가상 모듈 생성. 줄 번호를 넣지 않아 export 위 코드가 밀려도 Gallery가
+  reload되지 않음
+- `open-in-editor.ts`: 브라우저 Gallery의 에디터 열기 요청을 Vite 내장 `/__open-in-editor`로 연결
+- `port-file.ts`: port file 기록
+
+Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
+Gallery 안에서는 프리뷰 판단 로직(`client/preview/`)과 React hook, component를 나누고, hook이 component
+폴더에 의존하지 않게 한다.
 
 각 runtime project 내부는 다음 원칙으로 정리한다. 구체적인 디렉터리 이름은 이 원칙을 구현하는
 현재 선택이며 영구 규칙이 아니다.

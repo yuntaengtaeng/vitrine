@@ -3,42 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import { isManifest } from "@vitrine/protocol";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { renderPreviewsModule, scanPreviews, scanSource } from "./scan.js";
+import { createPreviewScanner, scanSource } from "./scan.js";
 
 const scan = (code: string) => scanSource(code, "Button.tsx");
-
-describe("preview virtual module", () => {
-  const evaluate = (code: string) =>
-    import(`data:text/javascript,${encodeURIComponent(code)}`) as Promise<{
-      loadPreviewSetup: (() => Promise<unknown>) | undefined;
-    }>;
-
-  it("존재하는 setup file을 Vite가 분석하는 정적 경로로 지연 import", () => {
-    const moduleCode = renderPreviewsModule([], {
-      status: "found",
-      importPath: "/src/vitrine.preview.tsx",
-    });
-    expect(moduleCode).toContain('import("/src/vitrine.preview.tsx")');
-  });
-
-  it("누락된 setup file은 import 없이 안내 메시지로 reject", async () => {
-    const moduleCode = renderPreviewsModule([], {
-      status: "unavailable",
-      message: '[vitrine] setupFile not found\n  setupFile: "./src/setup.tsx"',
-    });
-    expect(moduleCode).not.toContain("import(");
-
-    const { loadPreviewSetup } = await evaluate(moduleCode);
-    await expect(loadPreviewSetup?.()).rejects.toThrow(
-      '[vitrine] setupFile not found\n  setupFile: "./src/setup.tsx"',
-    );
-  });
-
-  it("setupFile 옵션이 없으면 loader를 제공하지 않음", async () => {
-    const { loadPreviewSetup } = await evaluate(renderPreviewsModule([]));
-    expect(loadPreviewSetup).toBeUndefined();
-  });
-});
 
 describe("props controls", () => {
   let root: string;
@@ -78,7 +45,7 @@ describe("props controls", () => {
       ].join("\n"),
     );
 
-    const [entry] = await scanPreviews({ root });
+    const [entry] = await createPreviewScanner({ root }).scan();
 
     expect(entry.controls).toEqual({
       variant: { type: "select", options: ["primary", "danger"], optional: false, defaultValue: "primary" },
@@ -367,5 +334,39 @@ describe("name= group extraction", () => {
 
     expect(entries[0].group).toBeUndefined();
     expect(entries[0].name).toBe("PrimaryButton");
+  });
+});
+
+describe("createPreviewScanner", () => {
+  let root: string;
+  const writeButton = (propType: string) =>
+    fs.writeFileSync(
+      path.join(root, "src", "Button.tsx"),
+      `/** @preview */\nexport const Button = (props: { size: ${propType} }) => null;\n`,
+    );
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-scanner-test-"));
+    fs.mkdirSync(path.join(root, "src"));
+    fs.writeFileSync(
+      path.join(root, "tsconfig.json"),
+      JSON.stringify({ compilerOptions: { jsx: "react-jsx", strict: true }, include: ["src"] }),
+    );
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("타입 정보를 무효화하기 전까지 처음 만든 타입 분석 결과를 재사용", async () => {
+    writeButton("number");
+    const scanner = createPreviewScanner({ root });
+    expect((await scanner.scan())[0].controls.size.type).toBe("number");
+
+    writeButton("string");
+    expect((await scanner.scan())[0].controls.size.type).toBe("number");
+
+    scanner.invalidateTypes();
+    expect((await scanner.scan())[0].controls.size.type).toBe("text");
   });
 });

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getPropControls, getTypeContext, invalidateTypeContext } from "./props-controls.js";
+import { createTypeContext, getPropControls } from "./props-controls.js";
 
 describe("getPropControls", () => {
   let root: string;
@@ -17,7 +17,6 @@ describe("getPropControls", () => {
   });
 
   afterEach(() => {
-    invalidateTypeContext(root);
     fs.rmSync(root, { recursive: true, force: true });
   });
 
@@ -25,8 +24,7 @@ describe("getPropControls", () => {
   function controlsFor(propsType: string, preamble = "") {
     const file = path.join(root, "src", "Box.tsx");
     fs.writeFileSync(file, `${preamble}\nexport const Box = (props: ${propsType}) => null;\n`);
-    invalidateTypeContext(root);
-    return getPropControls(file, "Box", getTypeContext(root));
+    return getPropControls(file, "Box", createTypeContext(root));
   }
 
   it("단일 문자열 literal은 옵션 하나의 select로 추론", () => {
@@ -67,33 +65,12 @@ describe("getPropControls", () => {
   it("찾는 export가 없으면 빈 controls 반환", () => {
     controlsFor("{ label: string }");
     const file = path.join(root, "src", "Box.tsx");
-    expect(getPropControls(file, "Missing", getTypeContext(root))).toEqual({});
+    expect(getPropControls(file, "Missing", createTypeContext(root))).toEqual({});
   });
 
   it("tsconfig에 포함되지 않은 파일이면 빈 controls 반환", () => {
     const outside = path.join(root, "Outside.tsx");
     fs.writeFileSync(outside, "export const Box = (props: { label: string }) => null;\n");
-    expect(getPropControls(outside, "Box", getTypeContext(root))).toEqual({});
-  });
-});
-
-describe("getTypeContext", () => {
-  let root: string;
-
-  beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-type-context-"));
-  });
-
-  afterEach(() => {
-    invalidateTypeContext(root);
-    fs.rmSync(root, { recursive: true, force: true });
-  });
-
-  it("무효화 전까지 같은 root의 context 재사용", () => {
-    const first = getTypeContext(root);
-    expect(getTypeContext(root)).toBe(first);
-
-    invalidateTypeContext(root);
-    expect(getTypeContext(root)).not.toBe(first);
+    expect(getPropControls(outside, "Box", createTypeContext(root))).toEqual({});
   });
 });
