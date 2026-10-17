@@ -190,6 +190,8 @@ try {
     MANIFEST_ROUTE: protocol.MANIFEST_ROUTE,
     GALLERY_MODULE_ID: protocol.GALLERY_MODULE_ID,
     PREVIEWS_MODULE_ID: protocol.PREVIEWS_MODULE_ID,
+    FRAME_ROUTE: protocol.FRAME_ROUTE,
+    FRAME_MODULE_ID: protocol.FRAME_MODULE_ID,
   };
   execFileSync(process.execPath, ["test-package-consumer.mjs"], {
     cwd: consumerRoot,
