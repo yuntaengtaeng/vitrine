@@ -34,12 +34,13 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-export const NumberControl = (props: { value: unknown; onChange: (value: number) => void }) => {
+export const NumberControl = (props: { label: string; value: unknown; onChange: (value: number) => void }) => {
   const value = typeof props.value === "number" && Number.isFinite(props.value) ? props.value : 0;
   return (
     <div style={Styled.Root}>
-      <button type="button" aria-label="Decrease" style={Styled.Button} onClick={() => props.onChange(value - 1)}>−</button>
+      <button type="button" aria-label={`Decrease ${props.label}`} style={Styled.Button} onClick={() => props.onChange(value - 1)}>−</button>
       <input
+        aria-label={props.label}
         type="number"
         style={Styled.Input}
         value={value}
@@ -48,7 +49,7 @@ export const NumberControl = (props: { value: unknown; onChange: (value: number)
           if (Number.isFinite(nextValue)) props.onChange(nextValue);
         }}
       />
-      <button type="button" aria-label="Increase" style={Styled.Button} onClick={() => props.onChange(value + 1)}>+</button>
+      <button type="button" aria-label={`Increase ${props.label}`} style={Styled.Button} onClick={() => props.onChange(value + 1)}>+</button>
     </div>
   );
 };

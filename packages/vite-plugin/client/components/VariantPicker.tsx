@@ -31,16 +31,21 @@ export const VariantPicker = (props: {
   if (props.variants.length === 0) return null;
 
   return (
-    <div style={Styled.Root}>
-      {props.variants.map((variant) => (
-        <button
-          key={variant.key}
-          style={{ ...Styled.Tab.base, ...(variant.key === props.activeKey ? Styled.Tab.active : {}) }}
-          onClick={() => props.onSelect(variant.key)}
-        >
-          {variant.name}
-        </button>
-      ))}
+    <div style={Styled.Root} role="group" aria-label="Variants">
+      {props.variants.map((variant) => {
+        const active = variant.key === props.activeKey;
+        return (
+          <button
+            key={variant.key}
+            type="button"
+            aria-pressed={active}
+            style={{ ...Styled.Tab.base, ...(active ? Styled.Tab.active : {}) }}
+            onClick={() => props.onSelect(variant.key)}
+          >
+            {variant.name}
+          </button>
+        );
+      })}
     </div>
   );
 };

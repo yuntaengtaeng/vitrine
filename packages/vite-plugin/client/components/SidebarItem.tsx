@@ -37,6 +37,8 @@ export const SidebarItem = (props: {
 
   return (
     <button
+      type="button"
+      aria-current={isActive ? "true" : undefined}
       style={style}
       title={entry.file}
       onMouseEnter={() => setHover(true)}

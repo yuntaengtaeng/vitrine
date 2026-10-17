@@ -155,9 +155,10 @@ async function renderPanel(request: PanelRenderRequest, match: PortFileMatch | n
   currentMatch = match;
   lastSelectedPreviewId = null;
   selectionRequestSeq += 1;
+  const projectLabel = path.basename(match.root);
   request.panel.webview.html = reachable
-    ? renderIframeHtml(galleryUrl, path.basename(match.root))
-    : renderUnreachableHtml(galleryUrl);
+    ? renderIframeHtml(galleryUrl, projectLabel)
+    : renderUnreachableHtml(galleryUrl, projectLabel);
 }
 
 /** 커서 이동 시, 패널이 보여주는 프로젝트 안의 @preview 위라면 그 프리뷰로 전환 신호 전송 */
