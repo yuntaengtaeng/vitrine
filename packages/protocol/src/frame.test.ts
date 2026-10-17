@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { FRAME_PROTOCOL, isFrameToGalleryMessage, isGalleryToFrameMessage } from "./index.js";
+import { FRAME_PROTOCOL, isFrameToGalleryMessage, isGalleryToFrameMessage, resolveGlobals } from "./index.js";
 
-const render = { type: "frameRender", protocol: FRAME_PROTOCOL, variantKey: null, args: {}, layout: { kind: "single" } };
+const render = {
+  type: "frameRender",
+  protocol: FRAME_PROTOCOL,
+  variantKey: null,
+  args: {},
+  layout: { kind: "single" },
+  globals: { theme: "dark" },
+};
 const ready = {
   type: "frameReady",
   protocol: FRAME_PROTOCOL,
@@ -13,6 +20,9 @@ const ready = {
   componentName: "Button",
   defaultFrameOnlyArgs: [],
   variantFrameOnlyArgs: { primary: ["onClick"] },
+  globals: { theme: { label: "Theme", options: ["light", "dark"], defaultValue: "light" } },
+  defaultFixedGlobals: {},
+  variantFixedGlobals: { primary: { theme: "dark" } },
 };
 
 describe("isGalleryToFrameMessage", () => {
@@ -41,6 +51,7 @@ describe("isGalleryToFrameMessage", () => {
       isGalleryToFrameMessage({ ...render, layout: { kind: "grid", cells: [{ key: "", label: "", variantKey: null, args: {} }] } }),
     ).toBe(false);
     expect(isGalleryToFrameMessage({ ...render, variantKey: "" })).toBe(false);
+    expect(isGalleryToFrameMessage({ ...render, globals: { theme: 1 } })).toBe(false);
   });
 });
 
@@ -57,10 +68,32 @@ describe("isFrameToGalleryMessage", () => {
     expect(isFrameToGalleryMessage({ ...ready, variants: [{ key: "", name: "Empty" }] })).toBe(false);
     expect(isFrameToGalleryMessage({ ...ready, componentName: "" })).toBe(false);
     expect(isFrameToGalleryMessage({ ...ready, variantFrameOnlyArgs: { primary: [1] } })).toBe(false);
+    expect(
+      isFrameToGalleryMessage({ ...ready, globals: { theme: { label: "Theme", options: ["light"], defaultValue: "dark" } } }),
+    ).toBe(false);
+    expect(isFrameToGalleryMessage({ ...ready, globals: { theme: { label: "Theme", options: [], defaultValue: "" } } })).toBe(
+      false,
+    );
   });
 
   it("음수 높이와 모르는 type은 거부", () => {
     expect(isFrameToGalleryMessage({ type: "frameSize", height: -1 })).toBe(false);
     expect(isFrameToGalleryMessage({ type: "frameAction" })).toBe(false);
+  });
+});
+
+describe("resolveGlobals", () => {
+  const declared = {
+    theme: { label: "Theme", options: ["light", "dark"], defaultValue: "light" },
+    locale: { label: "Locale", options: ["en", "ko"], defaultValue: "ko" },
+  };
+
+  it("고정값, 고른 값, 기본값 순으로 이김", () => {
+    expect(resolveGlobals(declared, { theme: "dark", locale: "en" }, { locale: "ko" })).toEqual({ theme: "dark", locale: "ko" });
+    expect(resolveGlobals(declared, {}, {})).toEqual({ theme: "light", locale: "ko" });
+  });
+
+  it("선언에 없는 이름과 선택지 밖의 값은 버림", () => {
+    expect(resolveGlobals(declared, { theme: "sepia", density: "compact" }, {})).toEqual({ theme: "light", locale: "ko" });
   });
 });

@@ -42,6 +42,16 @@ export interface FrameVariant {
   name: string;
 }
 
+/** setup file이 선언한 global 하나 (ADR 009) */
+export interface FrameGlobal {
+  label: string;
+  options: string[];
+  defaultValue: string;
+}
+
+/** global 이름별 값 */
+export type FrameGlobalValues = Record<string, string>;
+
 /** 격자 보기의 칸 하나, 칸마다 variant와 바꾼 값을 따로 가짐 */
 export interface FrameGridCell {
   key: string;
@@ -62,6 +72,8 @@ export interface FrameRenderMessage {
   /** 사용자가 Gallery에서 바꾼 값만 */
   args: FrameArgs;
   layout: FrameLayout;
+  /** Gallery toolbar에서 고른 globals, preview()와 variant 고정값이 이김 */
+  globals: FrameGlobalValues;
 }
 
 /** Frame -> Gallery: 프리뷰를 그릴 준비가 되었고 Gallery가 보여줄 정보 */
@@ -81,6 +93,12 @@ export interface FrameReadyMessage {
   defaultFrameOnlyArgs: string[];
   /** variant별로 함수나 JSX라 Gallery로 보내지 못한 prop 이름 */
   variantFrameOnlyArgs: Record<string, string[]>;
+  /** setup file이 선언한 globals */
+  globals: Record<string, FrameGlobal>;
+  /** variant를 고르지 않았을 때 preview()가 고정한 globals */
+  defaultFixedGlobals: FrameGlobalValues;
+  /** variant별로 preview()와 variant가 고정한 globals */
+  variantFixedGlobals: Record<string, FrameGlobalValues>;
 }
 
 /** Frame -> Gallery: 렌더링된 내용 높이(px) */
@@ -114,7 +132,8 @@ export function isGalleryToFrameMessage(value: unknown): value is GalleryToFrame
     value.protocol === FRAME_PROTOCOL &&
     (value.variantKey === null || isNonEmptyString(value.variantKey)) &&
     isFrameArgs(value.args) &&
-    isFrameLayout(value.layout)
+    isFrameLayout(value.layout) &&
+    isGlobalValues(value.globals)
   );
 }
 
@@ -166,7 +185,12 @@ function isFrameReady(value: Record<string, unknown>): boolean {
     isNonEmptyString(value.componentName) &&
     isNameList(value.defaultFrameOnlyArgs) &&
     isRecord(value.variantFrameOnlyArgs) &&
-    Object.values(value.variantFrameOnlyArgs).every(isNameList)
+    Object.values(value.variantFrameOnlyArgs).every(isNameList) &&
+    isRecord(value.globals) &&
+    Object.values(value.globals).every(isFrameGlobal) &&
+    isGlobalValues(value.defaultFixedGlobals) &&
+    isRecord(value.variantFixedGlobals) &&
+    Object.values(value.variantFixedGlobals).every(isGlobalValues)
   );
 }
 
@@ -189,4 +213,39 @@ function isFrameArgs(value: unknown): value is FrameArgs {
 
 function isNameList(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((name) => typeof name === "string");
+}
+
+function isFrameGlobal(value: unknown): value is FrameGlobal {
+  return (
+    isRecord(value) &&
+    typeof value.label === "string" &&
+    isNameList(value.options) &&
+    value.options.length > 0 &&
+    typeof value.defaultValue === "string" &&
+    value.options.includes(value.defaultValue)
+  );
+}
+
+function isGlobalValues(value: unknown): value is FrameGlobalValues {
+  return isRecord(value) && Object.values(value).every((item) => typeof item === "string");
+}
+
+/**
+ * frame이 wrapper에 넘길 globals 계산, 선언 기본값, 고른 값, 고정값 순으로 덮어씀 (ADR 009)
+ * 선언에 없는 이름과 선택지 밖의 값은 버림
+ * @param declared setup file이 선언한 globals
+ * @param chosen Gallery toolbar에서 고른 값
+ * @param fixed preview()와 variant가 고정한 값
+ */
+export function resolveGlobals(
+  declared: Record<string, FrameGlobal>,
+  chosen: FrameGlobalValues,
+  fixed: FrameGlobalValues,
+): FrameGlobalValues {
+  return Object.fromEntries(
+    Object.entries(declared).map(([name, global]) => {
+      const pick = [fixed[name], chosen[name]].find((value) => value !== undefined && global.options.includes(value));
+      return [name, pick ?? global.defaultValue];
+    }),
+  );
 }

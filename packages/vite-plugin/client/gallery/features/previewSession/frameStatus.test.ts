@@ -22,6 +22,9 @@ const ready: FrameReadyMessage = {
   defaultArgs: { label: "Save", size: "sm" },
   variantArgs: { danger: { label: "Delete", size: "sm" } },
   componentName: "Button",
+  globals: {},
+  defaultFixedGlobals: {},
+  variantFixedGlobals: {},
   defaultFrameOnlyArgs: [],
   variantFrameOnlyArgs: { danger: [] },
 };

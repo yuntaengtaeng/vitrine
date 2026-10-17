@@ -134,6 +134,39 @@ vitrine({ setupFile: "./src/vitrine.preview.tsx" });
 상태도 유지됩니다. 다른 프리뷰를 선택하면 새로운 프리뷰 tree가 마운트됩니다. 한 컴포넌트에만
 provider가 필요하면 `preview(Component, { wrapper: ComponentWrapper })`를 사용합니다.
 
+## Globals
+
+Globals는 테마나 언어처럼 앱 전체의 provider가 정하는 값입니다. setup file에 선언해 두면 파일을
+고치지 않고 gallery toolbar에서 값을 바꿔 볼 수 있습니다.
+
+```tsx
+// src/vitrine.preview.tsx
+import type { PreviewGlobals, PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+
+export const globals = {
+  locale: { label: "Locale", options: ["en", "ko"], default: "en" },
+} as const satisfies PreviewGlobals;
+
+// prop 이름을 globals로 받으면 typeof globals가 자기 자신을 가리키므로 다른 이름으로 받음
+export default function PreviewSetup({ children, globals: selected }: PreviewWrapperProps<typeof globals>) {
+  return <LocaleProvider locale={selected.locale}>{children}</LocaleProvider>;
+}
+```
+
+선택지는 문자열이고, `default`가 없으면 첫 선택지를 씁니다. `preview(Component, { wrapper })`의
+wrapper도 같은 `globals` prop을 받습니다. 값을 바꾸면 wrapper를 새로 마운트하므로 처음 마운트할
+때만 값을 읽는 provider에도 새 값이 반영됩니다. 고른 값은 프리뷰를 바꾸거나 새로고침해도
+유지됩니다.
+
+프리뷰나 variant가 global을 고정할 수 있습니다. 고정한 값은 toolbar에 표시되고 바꿀 수 없습니다.
+
+```ts
+preview(Greeting, {
+  globals: { locale: "en" },
+  variants: { korean: { globals: { locale: "ko" } } },
+});
+```
+
 ## Plugin 옵션
 
 ```ts

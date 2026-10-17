@@ -135,6 +135,40 @@ The wrapper remains mounted while controls update the selected preview's props, 
 providers keep their state. Selecting another preview mounts a fresh preview tree. Use
 `preview(Component, { wrapper: ComponentWrapper })` when only one component needs a provider.
 
+## Globals
+
+Globals are values that a provider sets for the whole app, such as theme or locale. Declare them
+in the setup file and pick a value from the gallery toolbar instead of editing the file:
+
+```tsx
+// src/vitrine.preview.tsx
+import type { PreviewGlobals, PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+
+export const globals = {
+  locale: { label: "Locale", options: ["en", "ko"], default: "en" },
+} as const satisfies PreviewGlobals;
+
+// Name the prop something other than globals, or typeof globals refers to itself
+export default function PreviewSetup({ children, globals: selected }: PreviewWrapperProps<typeof globals>) {
+  return <LocaleProvider locale={selected.locale}>{children}</LocaleProvider>;
+}
+```
+
+Options are strings, and `default` falls back to the first option. The wrapper from
+`preview(Component, { wrapper })` receives the same `globals` prop. Changing a global remounts the
+wrappers, so providers that read their value only on mount pick up the new one. The gallery keeps
+your choice when you switch previews or reload.
+
+A preview or a variant can fix a global. The toolbar then shows that value and does not let you
+change it:
+
+```ts
+preview(Greeting, {
+  globals: { locale: "en" },
+  variants: { korean: { globals: { locale: "ko" } } },
+});
+```
+
 ## Plugin options
 
 ```ts

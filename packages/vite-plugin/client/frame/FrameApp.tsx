@@ -1,4 +1,9 @@
-import { FRAME_ERROR_MESSAGE_TYPE, FRAME_SIZE_MESSAGE_TYPE, type FrameRenderMessage } from "@vitrine/protocol";
+import {
+  FRAME_ERROR_MESSAGE_TYPE,
+  FRAME_SIZE_MESSAGE_TYPE,
+  resolveGlobals,
+  type FrameRenderMessage,
+} from "@vitrine/protocol";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ErrorText } from "./ErrorText";
 import { PreviewErrorBoundary } from "./preview/PreviewErrorBoundary";
@@ -7,6 +12,8 @@ import { PreviewRenderer } from "./preview/PreviewRenderer";
 import { usePreviewModule } from "./preview/usePreviewModule";
 import { usePreviewSetup, type PreviewSetupLoader } from "./preview/usePreviewSetup";
 import { resolveCanvasView } from "./preview/canvasView";
+import { getInitialVariantKey } from "./preview/previewConfig";
+import { fixedGlobals } from "./preview/previewGlobals";
 import { buildFrameReady, resolveFrameArgs } from "./bridge/frameMessages";
 import { sendToGallery, subscribeToGallery } from "./bridge/galleryBridge";
 import { useReportedHeight } from "./bridge/useReportedHeight";
@@ -53,9 +60,11 @@ export const FrameApp = (props: {
   });
 
   const readyPreview = view.kind === "ready" ? view.preview : null;
+  const declaredGlobals = setup.globals;
   useEffect(() => {
-    if (entry && readyPreview) sendToGallery(buildFrameReady(entry.controls, readyPreview.config, readyPreview.component));
-  }, [entry, readyPreview]);
+    if (!entry || !readyPreview) return;
+    sendToGallery(buildFrameReady(entry.controls, readyPreview.config, readyPreview.component, declaredGlobals));
+  }, [entry, readyPreview, declaredGlobals]);
 
   const failure = view.kind === "error" ? view.error : null;
   useEffect(() => {
@@ -71,8 +80,18 @@ export const FrameApp = (props: {
   const reportRendered = () => {
     if (!failedRef.current || !entry || !readyPreview) return;
     failedRef.current = false;
-    sendToGallery(buildFrameReady(entry.controls, readyPreview.config, readyPreview.component));
+    sendToGallery(buildFrameReady(entry.controls, readyPreview.config, readyPreview.component, declaredGlobals));
   };
+
+  // Gallery 메시지 전(단독으로 연 frame 포함)에는 args처럼 첫 variant 기준
+  const globalsFor = (variantKey: string | null | undefined) =>
+    readyPreview
+      ? resolveGlobals(
+          declaredGlobals,
+          render?.globals ?? {},
+          fixedGlobals(readyPreview.config, render ? (variantKey ?? undefined) : getInitialVariantKey(readyPreview.config)),
+        )
+      : {};
 
   return (
     <div ref={rootRef} style={Styled.Root} data-vitrine-frame={view.kind}>
@@ -88,6 +107,7 @@ export const FrameApp = (props: {
                 args={resolveFrameArgs(entry.controls, view.preview.config, cell)}
                 globalWrapper={setup.wrapper}
                 wrapper={view.preview.config.wrapper}
+                globals={globalsFor(cell.variantKey)}
               />
             </PreviewErrorBoundary>
           )}
@@ -100,6 +120,7 @@ export const FrameApp = (props: {
             args={resolveFrameArgs(entry.controls, view.preview.config, render)}
             globalWrapper={setup.wrapper}
             wrapper={view.preview.config.wrapper}
+            globals={globalsFor(render?.variantKey)}
           />
         </PreviewErrorBoundary>
       )}

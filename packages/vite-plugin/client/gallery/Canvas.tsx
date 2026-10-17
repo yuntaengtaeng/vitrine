@@ -11,6 +11,7 @@ import { PreviewStage } from "./features/stage/PreviewStage";
 import type { StageSettings } from "./features/stage/stageSettings";
 import { PanelTabs } from "./features/panel/PanelTabs";
 import { ViewSwitcher } from "./features/views/ViewSwitcher";
+import { useGlobalSelection } from "./useGlobalSelection";
 import { usePanelTab } from "./usePanelTab";
 import { openInEditor } from "./shared/editorLink";
 
@@ -29,7 +30,8 @@ export const Canvas = (props: {
     (state) => resolveView(VIEWS, viewId, state.variants).layout(state),
     [viewId],
   );
-  const session = usePreviewSession(layoutFor);
+  const [globals, chooseGlobal] = useGlobalSelection();
+  const session = usePreviewSession(layoutFor, globals);
   const [tabId, selectTab] = usePanelTab(PANEL_TABS[0].id);
   const activeTab = PANEL_TABS.find((tab) => tab.id === tabId) ?? PANEL_TABS[0];
   const ActivePanel = activeTab.Panel;
@@ -43,6 +45,8 @@ export const Canvas = (props: {
     stage: props.stage,
     viewports: props.viewports,
     onStageChange,
+    globals,
+    onGlobalChange: chooseGlobal,
   };
 
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);

@@ -2,6 +2,7 @@ import {
   FRAME_PROTOCOL,
   FRAME_READY_MESSAGE_TYPE,
   type FrameArgs,
+  type FrameGlobal,
   type FrameReadyMessage,
   type FrameRenderMessage,
 } from "@vitrine/protocol";
@@ -14,6 +15,7 @@ import {
   toVariantOptions,
   type Args,
 } from "../preview/previewConfig";
+import { fixedGlobals } from "../preview/previewGlobals";
 
 type InferredControls = Record<string, GalleryPropControl>;
 
@@ -50,6 +52,7 @@ export function buildFrameReady(
   inferred: InferredControls,
   config: PreviewConfig<ElementType>,
   component: ComponentType,
+  globals: Record<string, FrameGlobal>,
 ): FrameReadyMessage {
   const variants = toVariantOptions(config);
   const defaultArgs = resolveVariantArgs(inferred, config, undefined);
@@ -65,6 +68,9 @@ export function buildFrameReady(
     componentName: componentName(component),
     defaultFrameOnlyArgs: frameOnlyArgNames(defaultArgs),
     variantFrameOnlyArgs: Object.fromEntries(variantArgs.map(([key, args]) => [key, frameOnlyArgNames(args)])),
+    globals,
+    defaultFixedGlobals: fixedGlobals(config, undefined),
+    variantFixedGlobals: Object.fromEntries(variants.map((variant) => [variant.key, fixedGlobals(config, variant.key)])),
   };
 }
 

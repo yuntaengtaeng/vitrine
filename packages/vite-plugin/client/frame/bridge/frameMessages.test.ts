@@ -30,7 +30,7 @@ describe("toFrameArgs", () => {
 describe("buildFrameReady", () => {
   it("override를 반영한 control, variant, 직렬화 가능한 args로 계약에 맞는 메시지 생성", () => {
     const Button = () => null;
-    const ready = buildFrameReady(inferred, config, Button);
+    const ready = buildFrameReady(inferred, config, Button, {});
     expect(isFrameToGalleryMessage(ready)).toBe(true);
     expect(ready.controls.size.type).toBe("radio");
     expect(ready.variants).toEqual([

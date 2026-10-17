@@ -4,6 +4,7 @@ import {
   FRAME_RENDER_MESSAGE_TYPE,
   isFrameToGalleryMessage,
   type FrameArgs,
+  type FrameGlobalValues,
   type FrameLayout,
   type FrameRenderMessage,
   type FrameToGalleryMessage,
@@ -23,6 +24,7 @@ export type LayoutFor = (state: { variants: readonly FrameVariant[]; overrides: 
 /** Gallery가 frame에 그리게 할 상태 */
 export interface FrameRenderState extends FrameSelection {
   layout: FrameLayout;
+  globals: FrameGlobalValues;
 }
 
 /** Gallery 상태를 frame render 메시지로 변환 */
@@ -33,6 +35,7 @@ export function toRenderMessage(state: FrameRenderState): FrameRenderMessage {
     variantKey: state.variantKey,
     args: state.args,
     layout: state.layout,
+    globals: state.globals,
   };
 }
 

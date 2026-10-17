@@ -1,8 +1,9 @@
-import type { FrameVariant, GalleryViewport } from "@vitrine/protocol";
+import type { FrameGlobalValues, FrameVariant, GalleryViewport } from "@vitrine/protocol";
 import type { ComponentType } from "react";
 import { CodePanel } from "./features/code/CodePanel";
 import { ControlsPanel, ResetAllButton } from "./features/controls/ControlsPanel";
 import { VariantPicker } from "./features/controls/VariantPicker";
+import { GlobalsPicker } from "./features/globals/GlobalsPicker";
 import type { LayoutFor } from "./features/previewSession/frameLink";
 import type { usePreviewSession } from "./features/previewSession/usePreviewSession";
 import { BackgroundPicker } from "./features/stage/background/BackgroundPicker";
@@ -19,6 +20,9 @@ export interface ContributionProps {
   stage: StageSettings;
   viewports: readonly GalleryViewport[];
   onStageChange: (patch: Partial<StageSettings>) => void;
+  /** toolbar에서 고른 globals */
+  globals: FrameGlobalValues;
+  onGlobalChange: (name: string, value: string) => void;
 }
 
 export interface GalleryView {
@@ -60,6 +64,14 @@ const VariantItem = ({ session, viewId }: ContributionProps) =>
     />
   );
 
+const GlobalsItem = ({ session, globals, onGlobalChange }: ContributionProps) => {
+  const { ready } = session.status;
+  if (!ready) return null;
+  const variantKey = session.activeVariantKey;
+  const fixed = variantKey ? (ready.variantFixedGlobals[variantKey] ?? {}) : ready.defaultFixedGlobals;
+  return <GlobalsPicker declared={ready.globals} chosen={globals} fixed={fixed} onChange={onGlobalChange} />;
+};
+
 const BackgroundItem = ({ stage, onStageChange }: ContributionProps) => (
   <BackgroundPicker value={stage.background} onChange={(background) => onStageChange({ background })} />
 );
@@ -70,6 +82,7 @@ const ViewportItem = ({ stage, viewports, onStageChange }: ContributionProps) =>
 
 export const TOOLBAR_ITEMS: readonly GalleryToolbarItem[] = [
   { id: "variant", align: "start", Item: VariantItem },
+  { id: "globals", align: "end", Item: GlobalsItem },
   { id: "background", align: "end", Item: BackgroundItem },
   { id: "viewport", align: "end", Item: ViewportItem },
 ];

@@ -31,7 +31,7 @@ test("Gallery가 보낸 render 상태로 variant와 바꾼 값을 반영하고 r
             window.received.push(event.data);
             if (event.data.type === "frameReady") {
               event.source.postMessage(
-                { type: "frameRender", protocol: 1, variantKey: "danger", args: {}, layout: { kind: "single" } },
+                { type: "frameRender", protocol: 1, variantKey: "danger", args: {}, layout: { kind: "single" }, globals: {} },
                 location.origin,
               );
             }

@@ -1,15 +1,17 @@
 /// <reference types="vite/client" />
-import { PREVIEW_SETUP_RECOVER_EVENT } from "@vitrine/protocol";
+import { PREVIEW_SETUP_RECOVER_EVENT, type FrameGlobal } from "@vitrine/protocol";
 import { useEffect, useState } from "react";
 import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
 import { isPreviewComponent } from "./previewConfig";
+import { parseGlobals } from "./previewGlobals";
 
 /** previews virtual module의 setup file loader, setupFile 옵션이 없으면 undefined */
-export type PreviewSetupLoader = (() => Promise<{ default?: unknown }>) | undefined;
+export type PreviewSetupLoader = (() => Promise<{ default?: unknown; globals?: unknown }>) | undefined;
 
 /** setup file의 전역 wrapper 로드 상태 */
 export interface PreviewSetupState {
   wrapper: PreviewWrapper | undefined;
+  globals: Record<string, FrameGlobal>;
   error: Error | null;
   loading: boolean;
 }
@@ -43,6 +45,7 @@ export const reloadOnNextHotUpdate = (
 export const usePreviewSetup = (loadSetup: PreviewSetupLoader): PreviewSetupState => {
   const [state, setState] = useState<PreviewSetupState>({
     wrapper: undefined,
+    globals: {},
     error: null,
     loading: Boolean(loadSetup),
   });
@@ -57,12 +60,14 @@ export const usePreviewSetup = (loadSetup: PreviewSetupLoader): PreviewSetupStat
         if (!isPreviewComponent(module.default)) {
           throw new Error("Vitrine setupFile must default export a React wrapper component");
         }
-        setState({ wrapper: module.default as PreviewWrapper, error: null, loading: false });
+        const globals = parseGlobals(module.globals);
+        setState({ wrapper: module.default as PreviewWrapper, globals, error: null, loading: false });
       })
       .catch((error: unknown) => {
         if (cancelled) return;
         setState({
           wrapper: undefined,
+          globals: {},
           error: error instanceof Error ? error : new Error(String(error)),
           loading: false,
         });
