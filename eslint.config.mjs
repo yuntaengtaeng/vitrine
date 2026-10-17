@@ -24,6 +24,7 @@ export default defineConfig(
     files: [
       "*.config.{js,cjs,mjs,ts,cts,mts}",
       "scripts/**/*.{js,cjs,mjs,ts,cts,mts}",
+      "tests/e2e/**/*.{js,cjs,mjs,ts,cts,mts}",
       "apps/vscode-extension/**/*.{js,cjs,mjs,ts,cts,mts}",
       "packages/{protocol,vite-plugin}/src/**/*.{js,cjs,mjs,ts,cts,mts}",
       "packages/*/scripts/**/*.{js,cjs,mjs,ts,cts,mts}",

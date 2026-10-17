@@ -5,3 +5,5 @@ dist/
 *.vsix
 .react-router/
 apps/website/build/
+test-results/
+playwright-report/

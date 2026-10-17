@@ -22,6 +22,7 @@ catalogs:
     esbuild: ^0.28.2
   test:
     vitest: ^4.1.11
+    "@playwright/test": ^1.56.1
   lint:
     eslint: ^10.9.0
     "@eslint/js": ^10.0.1

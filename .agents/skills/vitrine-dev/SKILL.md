@@ -63,6 +63,7 @@ Generated asset은 직접 수정하지 않고 source와 build pipeline을 수정
 | `pnpm run test:package` | Plugin tarball 단독 설치 소비자의 Gallery, manifest, 공개 타입 경계 |
 | `pnpm run test:extension-package` | Extension self-contained bundle과 실제 VSIX 생성, 포함 파일 |
 | `pnpm run test:compat` | 고정된 React, Vite, TypeScript 조합의 plugin 통합 동작 |
+| `pnpm run test:e2e` | `examples/react-basic` dev server의 Gallery를 실제 Chromium으로 조작하는 Playwright 시나리오 |
 
 별도 root 통합 type-check script는 없다. Plugin과 Extension의 type-check는 각 build에 포함되고,
 example과 fixture는 각 package의 build script에서 type-check한다.
@@ -71,8 +72,9 @@ example과 fixture는 각 package의 build script에서 type-check한다.
 
 - Scanner와 props 분석: 관련 Vitest부터 실행하고 완료 시 `pnpm run test`, `pnpm run build` 실행
   Annotation fallback과 line range가 바뀌면 정상 case와 오탐 방지 case를 함께 확인
-- Gallery UI와 state: 관련 Vitest와 `pnpm run build` 실행. 배포 asset 경계를 바꾸지 않은 국소 UI
-  변경에는 `test:package`와 `test:compat`을 기본으로 요구하지 않음
+- Gallery UI와 state: 관련 Vitest, `pnpm run build`, `pnpm run test:e2e` 실행. 사용자가 보는 동작을
+  바꾸면 `tests/e2e/`에 시나리오를 추가하거나 고침. 배포 asset 경계를 바꾸지 않은 국소 UI 변경에는
+  `test:package`와 `test:compat`을 기본으로 요구하지 않음
 - Gallery build와 npm 배포: `pnpm run build`, `pnpm run test:package` 실행
 - Protocol: `pnpm run test`, `pnpm run build`, `pnpm run build:extension` 실행. 배포 dependency나
   bundle 포함 방식도 바뀌면 두 package smoke test 실행
