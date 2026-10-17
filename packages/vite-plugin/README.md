@@ -140,11 +140,19 @@ vitrine({
   include: ["src/**/*.{tsx,jsx}"],
   // Module whose default export wraps every preview
   setupFile: "./src/vitrine.preview.tsx",
+  // Edit the gallery's viewport presets (experimental)
+  viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
 });
 ```
 
 `include` defaults to `["src/**/*.{tsx,jsx}"]`. If the gallery says no previews were found
 while your components live outside `src/`, add their folders to `include`.
+
+Each preview renders in an iframe, so media queries follow the selected viewport width.
+The defaults are Mobile 375px, Tablet 768px and Desktop 1280px. `viewports` receives them and
+returns the list to show, so you can add, remove or replace presets. Responsive, which fills
+the stage, is always available. Names must be unique and widths must be positive integers;
+otherwise the plugin warns and keeps the defaults.
 
 ## VS Code
 

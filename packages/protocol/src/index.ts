@@ -19,6 +19,22 @@ export const OPEN_IN_EDITOR_ROUTE = "/__vitrine/open-in-editor";
 /** 프리뷰 목록 virtual module 식별자 */
 export const PREVIEWS_MODULE_ID = "virtual:vitrine-previews";
 
+/** Plugin 옵션을 반영한 Gallery 설정 virtual module 식별자 */
+export const GALLERY_CONFIG_MODULE_ID = "virtual:vitrine-gallery-config";
+
+/** 무대 iframe 너비 프리셋 */
+export interface GalleryViewport {
+  name: string;
+  /** px */
+  width: number;
+}
+
+/** Gallery 설정 virtual module의 default export */
+export interface GalleryConfig {
+  /** Responsive(무대 전체 너비) 외에 고를 수 있는 viewport, Gallery가 항상 Responsive를 앞에 둠 */
+  viewports: GalleryViewport[];
+}
+
 /** Gallery client virtual module 식별자 */
 export const GALLERY_MODULE_ID = "virtual:vitrine-preview-gallery";
 

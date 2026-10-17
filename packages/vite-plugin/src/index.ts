@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
   FRAME_MODULE_ID,
   FRAME_ROUTE,
+  GALLERY_CONFIG_MODULE_ID,
   GALLERY_MODULE_ID,
   GALLERY_ROUTE as PROTOCOL_GALLERY_ROUTE,
   MANIFEST_ROUTE as PROTOCOL_MANIFEST_ROUTE,
@@ -23,15 +24,30 @@ import {
   type PreviewSetupPath,
 } from "./preview-setup.js";
 import { toViteOpenInEditorUrl } from "./open-in-editor.js";
+import { renderGalleryConfigModule, resolveViewports } from "./gallery-config.js";
+
+// 공개 옵션 타입은 공개 entry에 둬야 배포 declaration이 내부 module을 참조하지 않음
+/** 무대 iframe 너비 프리셋 (Responsive는 항상 따로 제공) */
+export interface ViewportOption {
+  name: string;
+  /** px */
+  width: number;
+}
+
+/** 기본 viewport 목록을 받아 원하는 목록을 돌려주는 함수, 추가, 삭제, 교체 모두 가능 */
+export type ViewportsOption = (defaults: ViewportOption[]) => ViewportOption[];
 
 export interface VitrinePluginOptions {
   /** 프로젝트 루트 기준 @preview export 스캔 글롭 패턴 */
   include?: string[];
   /** Vite root 안의 전역 프리뷰 wrapper module 경로 (상대 경로는 Vite root 기준) */
   setupFile?: string;
+  /** Gallery viewport 목록 변경, 기본 목록을 받아 추가, 삭제, 교체한 목록 반환 (Responsive는 항상 유지, 실험 단계) */
+  viewports?: ViewportsOption;
 }
 
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
+const RESOLVED_GALLERY_CONFIG_MODULE_ID = "\0" + GALLERY_CONFIG_MODULE_ID;
 const SCRIPT_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 // re-export 대신 값으로 선언해야 공개 declaration에 private protocol 참조가 남지 않음
 export const GALLERY_ROUTE = PROTOCOL_GALLERY_ROUTE;
@@ -50,6 +66,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
   // root가 정해지는 configResolved에서 만들고, Gallery 가상 모듈과 manifest가 같은 스캔 결과를 공유
   let scanner!: PreviewScanner;
   let tracker!: PreviewTracker;
+  let galleryConfigModule = "";
   const isPreviewSetupFile = (file: string) =>
     previewSetup?.status === "valid" && path.resolve(file) === previewSetup.filePath;
 
@@ -66,10 +83,15 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         : undefined;
       scanner = createPreviewScanner({ root, include: options.include });
       tracker = createPreviewTracker(scanner.scan);
+      // 사용자 함수는 Node에서 한 번 실행하고 Gallery에는 결과만 데이터로 전달 (ADR 007)
+      const { viewports, warning } = resolveViewports(options.viewports);
+      if (warning) logger.warn(warning);
+      galleryConfigModule = renderGalleryConfigModule({ viewports });
     },
 
     resolveId(id) {
       if (id === PREVIEWS_MODULE_ID) return RESOLVED_PREVIEWS_MODULE_ID;
+      if (id === GALLERY_CONFIG_MODULE_ID) return RESOLVED_GALLERY_CONFIG_MODULE_ID;
       if (id === GALLERY_MODULE_ID) return GALLERY_MODULE_ID;
       if (id === FRAME_MODULE_ID) return FRAME_MODULE_ID;
       return null;
@@ -84,6 +106,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         if (setupModule?.status === "unavailable") logger?.warn(setupModule.message);
         return renderPreviewsModule(entries, setupModule);
       }
+      if (id === RESOLVED_GALLERY_CONFIG_MODULE_ID) return galleryConfigModule;
       if (id === GALLERY_MODULE_ID) {
         return fs.readFileSync(galleryClientPath, "utf-8");
       }

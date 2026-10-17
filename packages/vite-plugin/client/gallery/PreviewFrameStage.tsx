@@ -1,23 +1,17 @@
-import { FRAME_ROUTE } from "@vitrine/protocol";
-import { useState, type CSSProperties } from "react";
-import { Controls } from "./Controls";
-import { StageToolbar } from "./StageToolbar";
-import { VariantPicker } from "./VariantPicker";
-import { frameCssWidth, stageWidthLabel, type StageBackground, type StageSettings } from "./stageSettings";
+import { FRAME_ROUTE, type GalleryViewport } from "@vitrine/protocol";
+import { useRef, useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { FONT_SIZE } from "../tokens/fontSize";
+import { BACKGROUND_STYLE } from "./background/background";
+import { Controls } from "./Controls";
 import type { FrameRenderState } from "./frameLink";
 import { displayedArgs, toOverrideValue } from "./frameStatus";
+import { StageToolbar } from "./StageToolbar";
+import type { StageSettings } from "./stageSettings";
+import { useElementWidth } from "./useElementWidth";
 import { usePreviewFrame } from "./usePreviewFrame";
-
-const FRAME_BACKGROUND: Record<StageBackground, CSSProperties> = {
-  light: { background: COLOR.surface, borderColor: COLOR.frameBorder },
-  dark: { background: COLOR.frameDarkBg, borderColor: COLOR.frameDarkBorder },
-  transparent: {
-    background: `repeating-conic-gradient(${COLOR.checkerDark} 0 25%, ${COLOR.checkerLight} 0 50%) 0 0 / 14px 14px`,
-    borderColor: COLOR.frameBorder,
-  },
-};
+import { VariantPicker } from "./VariantPicker";
+import { findViewport } from "./viewport/viewport";
 
 // frame이 높이를 알리기 전 깜빡임을 줄이는 최소 높이
 const MIN_FRAME_HEIGHT = 80;
@@ -47,7 +41,7 @@ const Styled = {
     backgroundImage: `radial-gradient(${COLOR.stageDot} 1px, transparent 1px)`,
     backgroundSize: "14px 14px",
   } satisfies CSSProperties,
-  // 고정 px 너비는 무대보다 넓어도 줄어들지 않고 무대를 가로 스크롤
+  // 고정 너비는 무대보다 넓어도 줄어들지 않고 무대를 가로 스크롤
   FrameSlot: { position: "relative", flexShrink: 0 } satisfies CSSProperties,
   WidthLabel: {
     position: "absolute",
@@ -58,18 +52,22 @@ const Styled = {
     color: COLOR.label,
     fontVariantNumeric: "tabular-nums",
   } satisfies CSSProperties,
-  Frame: { border: "1px dashed", borderRadius: 8, overflow: "hidden" } satisfies CSSProperties,
+  // border는 iframe 너비를 줄여 breakpoint 판정이 어긋나므로 너비에 포함되지 않는 outline 사용
+  Frame: { outline: "1px dashed", outlineOffset: 0, borderRadius: 8, overflow: "hidden" } satisfies CSSProperties,
   Iframe: { display: "block", width: "100%", border: 0, background: "transparent" } satisfies CSSProperties,
 };
 
 /** 프리뷰 iframe과 그 상태를 조종하는 toolbar, 무대, Props 패널 */
 export const PreviewFrameStage = (props: {
   entry: GalleryPreviewEntry;
+  viewports: readonly GalleryViewport[];
   stage: StageSettings;
   onStageChange: (patch: Partial<StageSettings>) => void;
 }) => {
   const [selection, setSelection] = useState<FrameRenderState | null>(null);
   const { iframeRef, status } = usePreviewFrame(selection);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const frameWidth = useElementWidth(frameRef);
   const { ready } = status;
 
   // 첫 frameReady로 frame이 고른 초기 variant를 알게 되면 그때부터 Gallery가 상태를 소유
@@ -82,23 +80,29 @@ export const PreviewFrameStage = (props: {
     setSelection((current) => current && { ...current, args: { ...current.args, [name]: next } });
   };
 
-  const { width, background } = props.stage;
+  const viewport = findViewport(props.stage.viewport, props.viewports);
+  const { background } = props.stage;
   const src = `${FRAME_ROUTE}?id=${encodeURIComponent(props.entry.id)}`;
 
   return (
     <>
       <div style={Styled.Toolbar}>
         <VariantPicker variants={ready?.variants ?? []} activeKey={selection?.variantKey ?? undefined} onSelect={setVariant} />
-        <StageToolbar settings={props.stage} onChange={props.onStageChange} />
+        <StageToolbar settings={props.stage} viewports={props.viewports} onChange={props.onStageChange} />
       </div>
       <div style={Styled.Stage}>
-        <div style={{ ...Styled.FrameSlot, width: width === "fit" ? "100%" : frameCssWidth(width) }}>
-          {width !== "fit" && (
+        <div style={{ ...Styled.FrameSlot, width: viewport ? `${viewport.width}px` : "100%" }}>
+          {frameWidth !== null && (
             <span style={Styled.WidthLabel} data-stage-width-label>
-              {stageWidthLabel(width)}
+              {frameWidth}px
             </span>
           )}
-          <div style={{ ...Styled.Frame, ...FRAME_BACKGROUND[background] }} data-stage-frame data-background={background}>
+          <div
+            ref={frameRef}
+            style={{ ...Styled.Frame, ...BACKGROUND_STYLE[background].frame }}
+            data-stage-frame
+            data-background={background}
+          >
             <iframe
               ref={iframeRef}
               src={src}

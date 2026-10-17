@@ -6,6 +6,11 @@ type GalleryPreviewEntry = import("@vitrine/protocol").GalleryEntryData & {
 /** Gallery control component가 소비하는 prop control */
 type GalleryPropControl = import("@vitrine/protocol").PropControl;
 
+declare module "virtual:vitrine-gallery-config" {
+  const config: import("@vitrine/protocol").GalleryConfig;
+  export default config;
+}
+
 declare module "virtual:vitrine-previews" {
   const loadPreviewSetup:
     | (() => Promise<{ default?: unknown }>)

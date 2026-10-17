@@ -1,40 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_STAGE_SETTINGS, frameCssWidth, parseStageSettings, stageWidthLabel } from "./stageSettings";
+import { DEFAULT_STAGE_SETTINGS, parseStageSettings } from "./stageSettings";
+import { findViewport, viewportLabel } from "./viewport/viewport";
 
 describe("parseStageSettings", () => {
-  it("저장된 값이 없으면 기본값", () => {
+  it("저장된 값이 없거나 JSON이 깨졌으면 기본값", () => {
     expect(parseStageSettings(null)).toEqual(DEFAULT_STAGE_SETTINGS);
-  });
-
-  it("저장된 배경과 너비 복원", () => {
-    expect(parseStageSettings('{"background":"dark","width":375}')).toEqual({ background: "dark", width: 375 });
-  });
-
-  it("모르는 값은 그 항목만 기본값으로 대체", () => {
-    expect(parseStageSettings('{"background":"neon","width":"full"}')).toEqual({ background: "light", width: "full" });
-    expect(parseStageSettings('{"background":"transparent","width":1024}')).toEqual({
-      background: "transparent",
-      width: "fit",
-    });
-  });
-
-  it("JSON이 깨졌으면 기본값", () => {
     expect(parseStageSettings("{oops")).toEqual(DEFAULT_STAGE_SETTINGS);
   });
-});
 
-describe("frameCssWidth", () => {
-  it("프리셋을 프레임 CSS width로 변환", () => {
-    expect(frameCssWidth("fit")).toBe("auto");
-    expect(frameCssWidth(375)).toBe("375px");
-    expect(frameCssWidth("full")).toBe("100%");
+  it("저장된 배경과 viewport 이름 복원", () => {
+    expect(parseStageSettings('{"background":"dark","viewport":"Mobile"}')).toEqual({ background: "dark", viewport: "Mobile" });
+  });
+
+  it("모르는 배경과 이전 버전의 너비 설정은 기본값으로 대체", () => {
+    expect(parseStageSettings('{"background":"neon","width":"fit"}')).toEqual(DEFAULT_STAGE_SETTINGS);
   });
 });
 
-describe("stageWidthLabel", () => {
-  it("프리셋 표시 이름", () => {
-    expect(stageWidthLabel("fit")).toBe("Fit");
-    expect(stageWidthLabel(768)).toBe("768px");
-    expect(stageWidthLabel("full")).toBe("Full");
+describe("findViewport", () => {
+  const viewports = [{ name: "Mobile", width: 375 }];
+
+  it("이름으로 고정 너비 viewport 조회", () => {
+    expect(findViewport("Mobile", viewports)).toEqual({ name: "Mobile", width: 375 });
+  });
+
+  it("Responsive이거나 목록에서 사라진 이름은 null", () => {
+    expect(findViewport("Responsive", viewports)).toBeNull();
+    expect(findViewport("Tablet", viewports)).toBeNull();
+  });
+
+  it("선택 목록 이름에 너비 표시", () => {
+    expect(viewportLabel({ name: "Mobile", width: 375 })).toBe("Mobile 375px");
   });
 });

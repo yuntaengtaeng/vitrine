@@ -1,3 +1,4 @@
+import type { GalleryConfig } from "@vitrine/protocol";
 import { useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { usePreviewSelectionSync } from "./usePreviewSelectionSync";
@@ -21,7 +22,7 @@ const Styled = {
 };
 
 /** Gallery UI, 사용자 코드는 실행하지 않고 프리뷰 렌더링은 iframe frame에 맡김 (ADR 007) */
-export const App = (props: { entries: GalleryPreviewEntry[] }) => {
+export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConfig }) => {
   const { entries } = props;
   const [activeId, setActiveId] = usePreviewSelectionSync(entries);
   const activeEntry = entries.find((entry) => entry.id === activeId);
@@ -38,6 +39,7 @@ export const App = (props: { entries: GalleryPreviewEntry[] }) => {
           key={activeEntry?.id ?? "empty"}
           entry={activeEntry}
           canOpenInEditor={canOpenInEditor}
+          viewports={props.config.viewports}
           stage={stage}
           onStageChange={updateStage}
         />

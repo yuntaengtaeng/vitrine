@@ -140,11 +140,18 @@ vitrine({
   include: ["src/**/*.{tsx,jsx}"],
   // 모든 프리뷰를 감싸는 default export module
   setupFile: "./src/vitrine.preview.tsx",
+  // gallery viewport 프리셋 변경 (실험 단계)
+  viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
 });
 ```
 
 `include` 기본값은 `["src/**/*.{tsx,jsx}"]`입니다. 컴포넌트가 `src/` 밖에 있는데 gallery에
 프리뷰가 없다고 나오면 해당 폴더를 `include`에 추가합니다.
+
+프리뷰는 iframe 안에서 렌더링되므로 미디어 쿼리는 선택한 viewport 너비를 따릅니다. 기본
+프리셋은 Mobile 375px, Tablet 768px, Desktop 1280px입니다. `viewports`는 이 목록을 받아 보여줄
+목록을 돌려주므로 추가, 삭제, 교체가 모두 가능합니다. 무대를 채우는 Responsive는 항상
+제공됩니다. 이름이 겹치거나 너비가 양의 정수가 아니면 경고를 남기고 기본 목록을 씁니다.
 
 ## VS Code
 

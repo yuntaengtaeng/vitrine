@@ -1,3 +1,4 @@
+import type { GalleryViewport } from "@vitrine/protocol";
 import type { CSSProperties } from "react";
 import { PreviewFrameStage } from "./PreviewFrameStage";
 import type { StageSettings } from "./stageSettings";
@@ -15,6 +16,7 @@ const Styled = {
 export const Canvas = (props: {
   entry: GalleryPreviewEntry | undefined;
   canOpenInEditor: boolean;
+  viewports: readonly GalleryViewport[];
   stage: StageSettings;
   onStageChange: (patch: Partial<StageSettings>) => void;
 }) => {
@@ -24,7 +26,12 @@ export const Canvas = (props: {
   return (
     <div style={Styled.Root}>
       <CanvasHeader entry={entry} canOpenInEditor={props.canOpenInEditor} />
-      <PreviewFrameStage entry={entry} stage={props.stage} onStageChange={props.onStageChange} />
+      <PreviewFrameStage
+        entry={entry}
+        viewports={props.viewports}
+        stage={props.stage}
+        onStageChange={props.onStageChange}
+      />
     </div>
   );
 };

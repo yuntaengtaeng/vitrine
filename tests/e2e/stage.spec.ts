@@ -18,23 +18,37 @@ test("배경을 바꾸면 무대 프레임 배경이 바뀜", async ({ page }) =
   await expect(frame(page)).toHaveAttribute("data-background", "dark");
 });
 
-test("frame width 프리셋은 프레임 너비를 고정하고 크기를 표시", async ({ page }) => {
+test("viewport 프리셋은 iframe 너비를 고정하고 크기를 표시", async ({ page }) => {
   await openButtonPreview(page);
-  await page.getByLabel("Frame width").selectOption("375");
+  await page.getByLabel("Viewport").selectOption("Mobile");
 
   await expect(page.locator("[data-stage-width-label]")).toHaveText("375px");
-  await expect.poll(async () => (await frame(page).boundingBox())?.width).toBe(375);
+  await expect.poll(async () => (await page.locator("iframe[data-frame-state]").boundingBox())?.width).toBe(375);
+});
+
+test("프리뷰의 미디어 쿼리는 viewport 너비를 따름", async ({ page }) => {
+  await openPreview(page, "ResponsiveCard");
+  const preview = await previewFrame(page);
+
+  await page.getByLabel("Viewport").selectOption("Mobile");
+  await expect(preview.getByText("Stacked layout")).toBeVisible();
+  await expect(preview.getByText("Two-column layout")).toBeHidden();
+
+  // 사용자가 vitrine({ viewports })로 추가한 viewport
+  await page.getByLabel("Viewport").selectOption("Breakpoint");
+  await expect(page.locator("[data-stage-width-label]")).toHaveText("800px");
+  await expect(preview.getByText("Two-column layout")).toBeVisible();
 });
 
 test("무대 설정은 다른 프리뷰와 새로고침 뒤에도 유지", async ({ page }) => {
   await openButtonPreview(page);
   await page.getByRole("button", { name: "Transparent background" }).click();
-  await page.getByLabel("Frame width").selectOption("768");
+  await page.getByLabel("Viewport").selectOption("Tablet");
 
   await openPreview(page, "Badge");
   await expect(frame(page)).toHaveAttribute("data-background", "transparent");
 
   await page.reload();
   await expect(frame(page)).toHaveAttribute("data-background", "transparent");
-  await expect(page.getByLabel("Frame width")).toHaveValue("768");
+  await expect(page.getByLabel("Viewport")).toHaveValue("Tablet");
 });
