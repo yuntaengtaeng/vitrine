@@ -58,7 +58,11 @@ decisions are in [`docs/adr/`](docs/adr/).
 - Follow the [comment style rules](.agents/skills/comment-style/SKILL.md) for comments and JSDoc.
 - Known failures and pitfalls are recorded in [`docs/troubleshooting.md`](docs/troubleshooting.md).
 
-The documents under `docs/` are currently written in Korean.
+## Language
+
+Issues and pull requests can be written in English or Korean. Code comments, test names and the
+documents under `docs/` are written in Korean; a translation tool or AI assistant works well for
+reading them, and new comments follow the same comment style rules.
 
 ## Pull requests
 

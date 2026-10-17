@@ -60,6 +60,8 @@ through `.vitrine/port.json`, written by the plugin, and embeds the gallery page
 
 ## Development
 
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or a pull request.
+
 ```bash
 pnpm install
 pnpm run build            # build the plugin and gallery

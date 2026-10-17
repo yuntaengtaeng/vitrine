@@ -52,6 +52,11 @@ Package 수, 디렉터리, 생성 asset 경로는 이 원칙과 구분되는 현
 - 주석과 JSDoc은 [comment-style 규칙](.agents/skills/comment-style/SKILL.md)을 따릅니다.
 - 재현된 장애와 주의사항은 [`docs/troubleshooting.md`](docs/troubleshooting.md)에 있습니다.
 
+## 언어
+
+Issue와 pull request는 영어나 한국어로 작성합니다. 코드 주석, 테스트 이름, `docs/` 문서는
+한국어로 작성하며 새 주석도 같은 주석 규칙을 따릅니다.
+
 ## Pull request
 
 - 변경으로 생길 수 있는 회귀를 증명하는 가장 작은 검증을 실행합니다. 변경 유형별 검증 명령은

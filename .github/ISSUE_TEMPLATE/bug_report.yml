@@ -1,0 +1,56 @@
+name: Bug report / 버그 리포트
+description: Something does not work as documented / 문서와 다르게 동작하는 문제
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English or Korean. / 영어 또는 한국어로 작성해 주세요.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened / 무슨 문제인가요
+      description: What you expected and what happened instead. / 기대한 동작과 실제 동작
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce / 재현 방법
+      description: A minimal component, `vite.config` and steps. A repository link helps most. / 최소 재현 component, `vite.config`, 실행 순서. 저장소 링크가 가장 좋습니다.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where / 발생 위치
+      options:
+        - Browser gallery (/__vitrine) / 브라우저 Gallery
+        - VS Code extension / VS Code 확장
+        - Both / 둘 다
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 환경
+      description: Run `npx envinfo --system --binaries --npmPackages vite,react,vite-plugin-react-vitrine` or fill in by hand. / 위 명령 결과를 붙이거나 직접 입력해 주세요.
+      value: |
+        - vite-plugin-react-vitrine:
+        - VS Code extension (if used / 사용 시):
+        - Vite:
+        - React:
+        - Node:
+        - OS:
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / 로그
+      description: Terminal output, browser console or the VS Code Output panel. / 터미널, 브라우저 콘솔, VS Code Output 패널 출력
+      render: shell
