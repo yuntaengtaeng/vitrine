@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useFocusShortcut } from "./useFocusShortcut";
 import { COLOR } from "../../../tokens/color";
 import { FONT_SIZE } from "../../../tokens/fontSize";
@@ -67,10 +67,7 @@ const Styled = {
 
 export const Sidebar = (props: {
   entries: GalleryPreviewEntry[];
-  activeId: string | null;
-  /** 이번 세션에서 렌더해 보고 실패한 프리뷰 */
-  failedIds: ReadonlySet<string>;
-  onSelect: (id: string) => void;
+  renderEntry: (entry: GalleryPreviewEntry) => ReactNode;
 }) => {
   const [query, setQuery] = useState("");
   const [collapsedKeys, setCollapsedKeys] = useState<ReadonlySet<string>>(new Set());
@@ -127,9 +124,7 @@ export const Sidebar = (props: {
         )}
         <SidebarTree
           nodes={visibleTree}
-          activeId={props.activeId}
-          failedIds={props.failedIds}
-          onSelect={props.onSelect}
+          renderEntry={props.renderEntry}
           collapsedKeys={collapsedKeys}
           onToggleGroup={toggleGroup}
           forceExpanded={searching}

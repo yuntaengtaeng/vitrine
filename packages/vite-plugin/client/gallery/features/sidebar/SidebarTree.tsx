@@ -1,8 +1,7 @@
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { COLOR } from "../../../tokens/color";
 import { FONT_SIZE } from "../../../tokens/fontSize";
 import { ChevronDownIcon } from "../../shared/icons/ChevronDownIcon";
-import { SidebarItem } from "./SidebarItem";
 import { countSidebarEntries, type SidebarNode } from "./sidebarNodes";
 
 const Styled = {
@@ -29,9 +28,7 @@ const Styled = {
 
 export const SidebarTree = (props: {
   nodes: SidebarNode[];
-  activeId: string | null;
-  failedIds: ReadonlySet<string>;
-  onSelect: (id: string) => void;
+  renderEntry: (entry: GalleryPreviewEntry) => ReactNode;
   collapsedKeys: ReadonlySet<string>;
   onToggleGroup: (key: string) => void;
   /** 모든 group 강제 펼침 여부 (검색 결과가 접힌 group에 숨지 않게 함) */
@@ -40,15 +37,7 @@ export const SidebarTree = (props: {
   <>
     {props.nodes.map((node) => {
       if (node.type === "entry") {
-        return (
-          <SidebarItem
-            key={node.entry.id}
-            entry={node.entry}
-            isActive={node.entry.id === props.activeId}
-            failed={props.failedIds.has(node.entry.id)}
-            onSelect={props.onSelect}
-          />
-        );
+        return <Fragment key={node.entry.id}>{props.renderEntry(node.entry)}</Fragment>;
       }
       const expanded = props.forceExpanded || !props.collapsedKeys.has(node.key);
       return (

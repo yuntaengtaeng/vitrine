@@ -6,6 +6,7 @@ import { usePreviewSelectionSync } from "./usePreviewSelectionSync";
 import { useStageSettings } from "./features/stage/useStageSettings";
 import { useFailedPreviews } from "./useFailedPreviews";
 import { Sidebar } from "./features/sidebar/Sidebar";
+import { SidebarItem } from "./features/sidebar/SidebarItem";
 import { Canvas } from "./Canvas";
 import { isEmbeddedInFrame } from "./shared/editorLink";
 
@@ -36,7 +37,17 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
 
   return (
     <div style={Styled.Root}>
-      <Sidebar entries={entries} activeId={activeId} failedIds={failedIds} onSelect={setActiveId} />
+      <Sidebar
+        entries={entries}
+        renderEntry={(entry) => (
+          <SidebarItem
+            entry={entry}
+            isActive={entry.id === activeId}
+            failed={failedIds.has(entry.id)}
+            onSelect={setActiveId}
+          />
+        )}
+      />
       <div style={Styled.CanvasWrapper}>
         {activeEntry && (
           <Canvas
