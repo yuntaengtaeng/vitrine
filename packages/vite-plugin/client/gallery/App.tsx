@@ -8,6 +8,8 @@ import { Sidebar } from "./features/sidebar/Sidebar";
 import { SidebarItem } from "./features/sidebar/SidebarItem";
 import { Canvas } from "./Canvas";
 import { EmptyGallery } from "./features/emptyState/EmptyGallery";
+import { UpdateNotice } from "./features/hostNotice/UpdateNotice";
+import { useHostCapabilities } from "./useHostCapabilities";
 import { isEmbeddedInFrame } from "./shared/editorLink";
 import { MenuIcon } from "./shared/icons/MenuIcon";
 
@@ -16,8 +18,10 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
   const { entries } = props;
   const [activeId, setActiveId] = usePreviewSelectionSync(entries);
   const activeEntry = entries.find((entry) => entry.id === activeId);
+  const [embedded] = useState(() => isEmbeddedInFrame(window));
   // VS Code panel 안에서는 옆에 에디터가 있고, 바깥에서 에디터를 실행하면 새 창이 뜰 수 있어 숨김
-  const [canOpenInEditor] = useState(() => !isEmbeddedInFrame(window));
+  const canOpenInEditor = !embedded;
+  const host = useHostCapabilities(embedded);
   // 프리뷰를 바꿔도 같은 배경과 너비로 비교할 수 있게 Canvas 밖에서 보관
   const [stage, updateStage] = useStageSettings();
   const [failedIds, markFailed] = useFailedPreviews();
@@ -57,6 +61,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
       </div>
       <div className={styles.backdrop} hidden={!sidebarOpen} onClick={() => setSidebarOpen(false)} />
       <div className={styles.main}>
+        {host?.outdated && <UpdateNotice outdated={host.outdated} />}
         <div className={styles.narrowBar}>
           <button
             type="button"

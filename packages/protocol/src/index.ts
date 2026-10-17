@@ -6,6 +6,14 @@ import {
   isPositiveSafeInteger,
   isRecord,
 } from "./guards.js";
+import {
+  CAPABILITIES_REQUEST_MESSAGE_TYPE,
+  CAPABILITIES_RESPONSE_MESSAGE_TYPE,
+  isCapabilitiesRequestMessage,
+  isCapabilitiesResponseMessage,
+  type CapabilitiesRequestMessage,
+  type CapabilitiesResponseMessage,
+} from "./capabilities.js";
 
 /** Standalone Gallery HTTP 경로 */
 export const GALLERY_ROUTE = "/__vitrine";
@@ -119,13 +127,19 @@ export interface SelectPreviewMessage {
 }
 
 /** Webview에서 Extension으로 전달 가능한 message */
-export type WebviewToExtensionMessage = SwitchProjectMessage | PreviewSelectedMessage;
+export type WebviewToExtensionMessage = SwitchProjectMessage | GalleryToExtensionMessage;
 
 /** Extension에서 Gallery로 전달 가능한 message */
-export type ExtensionToGalleryMessage = SelectPreviewMessage;
+export type ExtensionToGalleryMessage = SelectPreviewMessage | CapabilitiesResponseMessage;
 
 /** Gallery에서 Extension으로 전달 가능한 message */
-export type GalleryToExtensionMessage = PreviewSelectedMessage;
+export type GalleryToExtensionMessage = PreviewSelectedMessage | CapabilitiesRequestMessage;
+
+/** webview relay가 Gallery에서 Extension으로 넘기는 type, 목록에 없으면 버림 */
+export const GALLERY_TO_EXTENSION_RELAY_TYPES = [PREVIEW_SELECTED_MESSAGE_TYPE, CAPABILITIES_REQUEST_MESSAGE_TYPE];
+
+/** webview relay가 Extension에서 Gallery로 넘기는 type, 목록에 없으면 버림 */
+export const EXTENSION_TO_GALLERY_RELAY_TYPES = [SELECT_PREVIEW_MESSAGE_TYPE, CAPABILITIES_RESPONSE_MESSAGE_TYPE];
 
 /**
  * 외부 값의 프리뷰 manifest 계약 일치 판단
@@ -153,6 +167,7 @@ export function isWebviewToExtensionMessage(
 ): value is WebviewToExtensionMessage {
   if (!isRecord(value)) return false;
   if (value.type === SWITCH_PROJECT_MESSAGE_TYPE) return true;
+  if (isCapabilitiesRequestMessage(value)) return true;
   return value.type === PREVIEW_SELECTED_MESSAGE_TYPE && isNonEmptyString(value.id);
 }
 
@@ -163,6 +178,7 @@ export function isWebviewToExtensionMessage(
 export function isExtensionToGalleryMessage(
   value: unknown,
 ): value is ExtensionToGalleryMessage {
+  if (isCapabilitiesResponseMessage(value)) return true;
   return (
     isRecord(value) &&
     value.type === SELECT_PREVIEW_MESSAGE_TYPE &&
@@ -201,3 +217,4 @@ function isPropControl(value: unknown): value is PropControl {
 }
 
 export * from "./frame.js";
+export * from "./capabilities.js";

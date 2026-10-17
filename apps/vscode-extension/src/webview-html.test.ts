@@ -22,6 +22,12 @@ describe("renderIframeHtml", () => {
     expect(renderIframeHtml(galleryUrl, "app")).toContain('const galleryOrigin = "http://localhost:5173";');
   });
 
+  it("relays only the message types the protocol allows in each direction", () => {
+    const html = renderIframeHtml(galleryUrl, "app");
+    expect(html).toContain('const galleryToExtensionTypes = ["previewSelected","capabilitiesRequest"];');
+    expect(html).toContain('const extensionToGalleryTypes = ["selectPreview","capabilitiesResponse"];');
+  });
+
   it("escapes the project label taken from the folder name", () => {
     const html = renderIframeHtml(galleryUrl, "<b>app</b>");
     expect(html).toContain("&lt;b&gt;app&lt;/b&gt;");

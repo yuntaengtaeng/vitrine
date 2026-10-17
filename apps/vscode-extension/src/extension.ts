@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import path from "node:path";
 import {
+  CAPABILITIES_REQUEST_MESSAGE_TYPE,
   GALLERY_ROUTE,
   MANIFEST_ROUTE,
   PREVIEW_SELECTED_MESSAGE_TYPE,
@@ -18,6 +19,7 @@ import {
   type PortFileMatch,
 } from "./port-discovery.js";
 import { resolveCursorPreviewId, toProjectRelativeFile } from "./preview-lookup.js";
+import { capabilitiesResponse } from "./capabilities.js";
 import { renderIframeHtml, renderNotFoundHtml, renderUnreachableHtml } from "./webview-html.js";
 
 const SELECTION_DEBOUNCE_MS = 200;
@@ -70,6 +72,7 @@ async function openPreviewPanel(context: vscode.ExtensionContext) {
       if (message.type === SWITCH_PROJECT_MESSAGE_TYPE) void switchProject();
       // 갤러리에서 직접 고른 프리뷰도 기록해야 커서가 돌아왔을 때 다시 동기화됨
       if (message.type === PREVIEW_SELECTED_MESSAGE_TYPE) lastSelectedPreviewId = message.id;
+      if (message.type === CAPABILITIES_REQUEST_MESSAGE_TYPE) void currentPanel?.webview.postMessage(capabilitiesResponse());
     }, null, context.subscriptions);
   }
 

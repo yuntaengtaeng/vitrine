@@ -1,5 +1,6 @@
 import {
   PREVIEW_SELECTED_MESSAGE_TYPE,
+  SELECT_PREVIEW_MESSAGE_TYPE,
   isExtensionToGalleryMessage,
   type GalleryToExtensionMessage,
 } from "@vitrine/protocol";
@@ -25,7 +26,7 @@ export const usePreviewSelectionSync = (entries: GalleryPreviewEntry[]): [string
     const handleMessage = (event: MessageEvent) => {
       if (event.source !== window.parent) return;
       const data: unknown = event.data;
-      if (!isExtensionToGalleryMessage(data)) return;
+      if (!isExtensionToGalleryMessage(data) || data.type !== SELECT_PREVIEW_MESSAGE_TYPE) return;
       if (entries.some((entry) => entry.id === data.id)) setActiveId(data.id);
     };
     window.addEventListener("message", handleMessage);
