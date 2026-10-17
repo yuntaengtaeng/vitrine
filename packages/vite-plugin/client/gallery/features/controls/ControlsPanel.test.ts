@@ -13,8 +13,13 @@ const controls: Record<string, FrameControl> = {
   tone: { type: "radio", options: ["info", "warning", "danger"], optional: false },
 };
 
-function renderControls(args: Record<string, unknown>, onChange = () => {}) {
-  return createElement(ControlsPanel, { controls, args, onChange });
+function renderControls(
+  args: Record<string, unknown>,
+  onChange = () => {},
+  changed: ReadonlySet<string> = new Set(),
+  onReset = () => {},
+) {
+  return createElement(ControlsPanel, { controls, args, changed, onChange, onReset, onResetAll: () => {} });
 }
 
 describe("ControlsPanel", () => {
@@ -43,5 +48,29 @@ describe("ControlsPanel", () => {
     });
 
     expect(onChange).toHaveBeenCalledWith("tone", "info");
+  });
+
+  it("prop 이름 아래 타입 표시", () => {
+    const markup = renderToStaticMarkup(renderControls({}));
+    expect(markup).toContain(">string</code>");
+    expect(markup).toContain('>&quot;sm&quot; | &quot;md&quot;</code>');
+  });
+
+  it("바꾼 prop에만 Reset 버튼, 하나라도 바꾸면 Reset all", () => {
+    expect(renderToStaticMarkup(renderControls({}))).not.toContain("Reset");
+
+    const markup = renderToStaticMarkup(renderControls({ label: "Hi" }, () => {}, new Set(["label"])));
+    expect(markup).toContain('aria-label="Reset label"');
+    expect(markup).not.toContain('aria-label="Reset size"');
+    expect(markup).toContain("Reset all");
+  });
+
+  it("Reset 버튼은 그 prop 이름으로 초기화 요청", () => {
+    const onReset = vi.fn();
+    const renderer = create(renderControls({ label: "Hi" }, () => {}, new Set(["label"]), onReset));
+    act(() => {
+      renderer.root.findByProps({ "aria-label": "Reset label" }).props.onClick();
+    });
+    expect(onReset).toHaveBeenCalledWith("label");
   });
 });

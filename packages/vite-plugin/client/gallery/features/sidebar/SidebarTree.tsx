@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { COLOR } from "../../../tokens/color";
 import { FONT_SIZE } from "../../../tokens/fontSize";
+import { ChevronDownIcon } from "../../shared/icons/ChevronDownIcon";
 import { SidebarItem } from "./SidebarItem";
 import { countSidebarEntries, type SidebarNode } from "./sidebarNodes";
 
@@ -21,12 +22,7 @@ const Styled = {
     color: COLOR.label,
     textAlign: "left",
   } satisfies CSSProperties,
-  Chevron: {
-    width: 10,
-    height: 10,
-    flexShrink: 0,
-    transition: "transform 120ms ease",
-  } satisfies CSSProperties,
+  Chevron: { transition: "transform 120ms ease" } satisfies CSSProperties,
   Count: { marginLeft: "auto", fontWeight: 500, fontVariantNumeric: "tabular-nums" } satisfies CSSProperties,
   GroupChildren: { marginLeft: 8 } satisfies CSSProperties,
 };
@@ -63,13 +59,7 @@ export const SidebarTree = (props: {
             style={Styled.GroupToggle}
             onClick={() => props.onToggleGroup(node.key)}
           >
-            <svg
-              viewBox="0 0 10 10"
-              aria-hidden="true"
-              style={{ ...Styled.Chevron, transform: expanded ? "none" : "rotate(-90deg)" }}
-            >
-              <path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-            </svg>
+            <ChevronDownIcon size={12} style={{ ...Styled.Chevron, transform: expanded ? "none" : "rotate(-90deg)" }} />
             {node.label}
             <span style={Styled.Count}>{countSidebarEntries(node.children)}</span>
           </button>

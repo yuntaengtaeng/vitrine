@@ -210,6 +210,26 @@ return (
 
 이렇게 하면 중요한 규칙을 React 렌더링 구조와 독립적으로 테스트할 수 있다.
 
+### 설정 props보다 조합
+
+컴포넌트가 무엇을 그릴지 boolean과 설정 props로 늘려 가지 않는다.
+작은 컴포넌트를 `children`이나 하위 컴포넌트로 조합한다.
+
+```tsx
+// Bad: 새 요구사항마다 props가 늘어남
+<ControlField name="label" typeLabel="string" optional showReset onReset={reset} />
+
+// Better: 필요한 조각만 조합
+<ControlField>
+  <ControlField.Label name="label" type="string" optional />
+  <ControlInput ... />
+  {changed && <ControlField.Reset name="label" onReset={reset} />}
+</ControlField>
+```
+
+틀은 배치와 공통 스타일만 맡고, 무엇을 넣을지는 쓰는 쪽이 정한다.
+아이콘도 같은 방식으로 공통 `Icon` 틀에 path만 넣어 `shared/icons/`에 모은다.
+
 ---
 
 ## 6. 테스트는 구현이 아니라 행동을 검증한다

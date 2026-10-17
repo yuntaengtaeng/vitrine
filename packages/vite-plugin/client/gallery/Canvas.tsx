@@ -72,7 +72,14 @@ export const Canvas = (props: {
         }
       />
       {ready && session.args && (
-        <ControlsPanel controls={ready.controls} args={session.args} onChange={session.changeArg} />
+        <ControlsPanel
+          controls={ready.controls}
+          args={session.args}
+          changed={session.changedArgs}
+          onChange={session.changeArg}
+          onReset={session.resetArg}
+          onResetAll={session.resetAllArgs}
+        />
       )}
     </div>
   );

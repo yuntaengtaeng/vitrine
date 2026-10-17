@@ -17,13 +17,23 @@ export const usePreviewSession = () => {
     if (next === undefined) return;
     setSelection((current) => current && { ...current, args: { ...current.args, [name]: next } });
   };
+  const resetArg = (name: string) =>
+    setSelection((current) => {
+      if (!current) return current;
+      const { [name]: _removed, ...args } = current.args;
+      return { ...current, args };
+    });
+  const resetAllArgs = () => setSelection((current) => current && { ...current, args: {} });
 
   return {
     iframeRef,
     status,
     activeVariantKey: selection?.variantKey ?? undefined,
     args: ready && selection ? displayedArgs(ready, selection.variantKey, selection.args) : null,
+    changedArgs: new Set(Object.keys(selection?.args ?? {})),
     selectVariant,
     changeArg,
+    resetArg,
+    resetAllArgs,
   };
 };
