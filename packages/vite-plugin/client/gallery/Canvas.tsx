@@ -1,13 +1,15 @@
 import type { GalleryViewport } from "@vitrine/protocol";
-import type { CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { ControlsPanel } from "./features/controls/ControlsPanel";
 import { VariantPicker } from "./features/controls/VariantPicker";
 import { usePreviewSession } from "./features/previewSession/usePreviewSession";
 import { CanvasHeader } from "./features/header/CanvasHeader";
+import { ErrorCard } from "./features/previewError/ErrorCard";
 import { PreviewStage } from "./features/stage/PreviewStage";
 import { StageToolbar } from "./features/stage/StageToolbar";
 import type { StageSettings } from "./features/stage/stageSettings";
+import { openInEditor } from "./shared/editorLink";
 
 const Styled = {
   Root: {
@@ -34,10 +36,13 @@ export const Canvas = (props: {
   viewports: readonly GalleryViewport[];
   stage: StageSettings;
   onStageChange: (patch: Partial<StageSettings>) => void;
+  onFailedChange: (previewId: string, failed: boolean) => void;
 }) => {
-  const { entry } = props;
+  const { entry, onFailedChange } = props;
   const session = usePreviewSession();
-  const { ready } = session.status;
+  const { ready, error } = session.status;
+
+  useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);
 
   return (
     <div style={Styled.Root}>
@@ -57,6 +62,14 @@ export const Canvas = (props: {
         contentHeight={session.status.height}
         settings={props.stage}
         viewports={props.viewports}
+        fallback={
+          error && (
+            <ErrorCard
+              failure={error}
+              onOpenInEditor={props.canOpenInEditor ? () => openInEditor(entry.id) : undefined}
+            />
+          )
+        }
       />
       {ready && session.args && (
         <ControlsPanel controls={ready.controls} args={session.args} onChange={session.changeArg} />

@@ -5,7 +5,9 @@ import { FONT_SIZE } from "../../../tokens/fontSize";
 const Styled = {
   Item: {
     base: {
-      display: "block",
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
       width: "100%",
       textAlign: "left",
       padding: "0.55rem 0.7rem",
@@ -21,11 +23,20 @@ const Styled = {
     active: { background: COLOR.sidebarActiveBg, color: COLOR.activeText, fontWeight: 600 } satisfies CSSProperties,
     hover: { background: COLOR.sidebarHoverBg } satisfies CSSProperties,
   },
+  FailedDot: {
+    width: 7,
+    height: 7,
+    marginLeft: "auto",
+    flexShrink: 0,
+    borderRadius: "50%",
+    background: COLOR.error,
+  } satisfies CSSProperties,
 };
 
 export const SidebarItem = (props: {
   entry: GalleryPreviewEntry;
   isActive: boolean;
+  failed: boolean;
   onSelect: (id: string) => void;
 }) => {
   const { entry, isActive, onSelect } = props;
@@ -40,12 +51,13 @@ export const SidebarItem = (props: {
       type="button"
       aria-current={isActive ? "true" : undefined}
       style={style}
-      title={entry.file}
+      title={props.failed ? `${entry.file}, failed to render` : entry.file}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onClick={() => onSelect(entry.id)}
     >
       {entry.name}
+      {props.failed && <span aria-hidden="true" style={Styled.FailedDot} data-preview-failed />}
     </button>
   );
 };

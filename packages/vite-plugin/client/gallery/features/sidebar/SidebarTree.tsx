@@ -34,6 +34,7 @@ const Styled = {
 export const SidebarTree = (props: {
   nodes: SidebarNode[];
   activeId: string | null;
+  failedIds: ReadonlySet<string>;
   onSelect: (id: string) => void;
   collapsedKeys: ReadonlySet<string>;
   onToggleGroup: (key: string) => void;
@@ -48,6 +49,7 @@ export const SidebarTree = (props: {
             key={node.entry.id}
             entry={node.entry}
             isActive={node.entry.id === props.activeId}
+            failed={props.failedIds.has(node.entry.id)}
             onSelect={props.onSelect}
           />
         );

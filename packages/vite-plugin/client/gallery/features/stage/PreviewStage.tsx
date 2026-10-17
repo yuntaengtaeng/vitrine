@@ -1,5 +1,5 @@
 import { FRAME_ROUTE, type GalleryViewport } from "@vitrine/protocol";
-import { useRef, type CSSProperties, type RefObject } from "react";
+import { useRef, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { COLOR } from "../../../tokens/color";
 import { FONT_SIZE } from "../../../tokens/fontSize";
 import { useElementWidth } from "../../shared/ui/useElementWidth";
@@ -49,6 +49,8 @@ export const PreviewStage = (props: {
   contentHeight: number | null;
   settings: StageSettings;
   viewports: readonly GalleryViewport[];
+  /** 프레임 대신 보여줄 내용, iframe은 숨기기만 해서 복구되면 frame이 다시 알릴 수 있음 */
+  fallback?: ReactNode;
 }) => {
   const { entry, iframeRef } = props;
   const frameRef = useRef<HTMLDivElement>(null);
@@ -58,7 +60,14 @@ export const PreviewStage = (props: {
 
   return (
     <div style={Styled.Root}>
-      <div style={{ ...Styled.FrameSlot, width: viewport ? `${viewport.width}px` : "100%" }}>
+      {props.fallback}
+      <div
+        style={{
+          ...Styled.FrameSlot,
+          width: viewport ? `${viewport.width}px` : "100%",
+          display: props.fallback ? "none" : undefined,
+        }}
+      >
         {frameWidth !== null && (
           <span style={Styled.WidthLabel} data-stage-width-label>
             {frameWidth}px

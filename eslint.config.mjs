@@ -5,17 +5,21 @@ import { defineConfig } from "eslint/config";
 import fs from "node:fs";
 
 const GALLERY_ROOT = "packages/vite-plugin/client/gallery";
-const GALLERY_FEATURES = fs
-  .readdirSync(new URL(`./${GALLERY_ROOT}/features`, import.meta.url), { withFileTypes: true })
+const galleryDir = (path) =>
+  fs.readdirSync(new URL(`./${GALLERY_ROOT}/${path}`, import.meta.url), { withFileTypes: true });
+const GALLERY_FEATURES = galleryDir("features")
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
+const GALLERY_COMPOSITION = galleryDir("")
+  .filter((entry) => entry.isFile() && /^[^.]+\.tsx?$/.test(entry.name))
+  .map((entry) => entry.name.replace(/\.tsx?$/, ""));
 
 const NO_FRAME_IMPORT = {
   regex: String.raw`^(\.\./)+frame/`,
   message: "Gallery는 frame 코드 대신 @vitrine/protocol 타입만 사용합니다.",
 };
 const NO_COMPOSITION_IMPORT = {
-  regex: String.raw`^(\.\./)+(App|Canvas|usePreviewSelectionSync)$`,
+  regex: String.raw`^(\.\./)+(${GALLERY_COMPOSITION.join("|")})$`,
   message: "기능은 조합 module을 import하지 않습니다.",
 };
 

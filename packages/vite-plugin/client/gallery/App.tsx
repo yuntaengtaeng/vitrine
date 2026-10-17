@@ -1,17 +1,19 @@
 import type { GalleryConfig } from "@vitrine/protocol";
 import { useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
+import { FONT_FAMILY } from "../tokens/fontFamily";
 import { usePreviewSelectionSync } from "./usePreviewSelectionSync";
 import { useStageSettings } from "./features/stage/useStageSettings";
+import { useFailedPreviews } from "./useFailedPreviews";
 import { Sidebar } from "./features/sidebar/Sidebar";
 import { Canvas } from "./Canvas";
-import { isEmbeddedInFrame } from "./features/header/editorLink";
+import { isEmbeddedInFrame } from "./shared/editorLink";
 
 const Styled = {
   Root: {
     display: "flex",
     height: "100vh",
-    fontFamily: "system-ui, sans-serif",
+    fontFamily: FONT_FAMILY.ui,
     background: COLOR.surface,
   } satisfies CSSProperties,
   CanvasWrapper: {
@@ -30,10 +32,11 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
   const [canOpenInEditor] = useState(() => !isEmbeddedInFrame(window));
   // 프리뷰를 바꿔도 같은 배경과 너비로 비교할 수 있게 Canvas 밖에서 보관
   const [stage, updateStage] = useStageSettings();
+  const [failedIds, markFailed] = useFailedPreviews();
 
   return (
     <div style={Styled.Root}>
-      <Sidebar entries={entries} activeId={activeId} onSelect={setActiveId} />
+      <Sidebar entries={entries} activeId={activeId} failedIds={failedIds} onSelect={setActiveId} />
       <div style={Styled.CanvasWrapper}>
         {activeEntry && (
           <Canvas
@@ -43,6 +46,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
             viewports={props.config.viewports}
             stage={stage}
             onStageChange={updateStage}
+            onFailedChange={markFailed}
           />
         )}
       </div>

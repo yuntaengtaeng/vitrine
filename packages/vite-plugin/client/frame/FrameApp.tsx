@@ -59,11 +59,23 @@ export const FrameApp = (props: {
     if (failure) reportError(failure);
   }, [failure]);
 
+  // 실패 뒤 첫 성공은 ready로 알려야 Gallery가 복구로 봄 (ADR 007)
+  const failedRef = useRef(false);
+  const reportRenderError = (error: Error) => {
+    failedRef.current = true;
+    reportError(error);
+  };
+  const reportRendered = () => {
+    if (!failedRef.current || !entry || !readyPreview) return;
+    failedRef.current = false;
+    sendToGallery(buildFrameReady(entry.controls, readyPreview.config));
+  };
+
   return (
     <div ref={rootRef} style={Styled.Root} data-vitrine-frame={view.kind}>
       {view.kind === "error" && <ErrorText>{String(view.error.stack ?? view.error.message)}</ErrorText>}
       {view.kind === "ready" && entry && (
-        <PreviewErrorBoundary onError={reportError}>
+        <PreviewErrorBoundary resetKey={JSON.stringify(render)} onError={reportRenderError} onRendered={reportRendered}>
           <PreviewRenderer
             component={view.preview.component}
             args={resolveFrameArgs(entry.controls, view.preview.config, render)}

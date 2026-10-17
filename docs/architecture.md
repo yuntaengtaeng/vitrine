@@ -79,10 +79,11 @@ Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 wo
   로드, 렌더링, 에러 경계를, `bridge/`는 Gallery와 주고받는 message와 높이 보고를 맡음
 - `gallery/`: 사용자 코드를 import하지 않고 `@vitrine/protocol` data만 사용.
   [code-philosophy 8장](code-philosophy.md#8-폴더는-기능-단위로-나눈다)의 기능 단위 구조를 따름
-  - `App`, `Canvas`, `usePreviewSelectionSync`: feature를 조합하는 최상위
+  - 최상위 module: feature를 조합하고 여러 feature에 걸친 앱 상태(선택, 실패한 프리뷰)를 소유
   - `features/`: `sidebar/`, `header/`, `previewSession/`(iframe 연결과 variant, 바꾼 값),
-    `stage/`(배경, viewport, iframe 무대), `controls/`(Props 패널과 variant 선택)
-  - `shared/`: 여러 feature가 쓰는 `ui/`와 `previewGroup`
+    `stage/`(배경, viewport, iframe 무대), `controls/`(Props 패널과 variant 선택),
+    `previewError/`(에러 카드)
+  - `shared/`: 여러 feature가 쓰는 UI 스타일과 helper
 - `tokens/`: 두 bundle이 공유하는 색, 글자 크기, 패턴
 
 `gallery/`는 `frame/`을 import하지 않는다. feature끼리 import하지 않고, `shared/`는 feature를

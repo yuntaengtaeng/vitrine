@@ -68,6 +68,8 @@ const Styled = {
 export const Sidebar = (props: {
   entries: GalleryPreviewEntry[];
   activeId: string | null;
+  /** 이번 세션에서 렌더해 보고 실패한 프리뷰 */
+  failedIds: ReadonlySet<string>;
   onSelect: (id: string) => void;
 }) => {
   const [query, setQuery] = useState("");
@@ -126,6 +128,7 @@ export const Sidebar = (props: {
         <SidebarTree
           nodes={visibleTree}
           activeId={props.activeId}
+          failedIds={props.failedIds}
           onSelect={props.onSelect}
           collapsedKeys={collapsedKeys}
           onToggleGroup={toggleGroup}

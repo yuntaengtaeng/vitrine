@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
 import { COLOR } from "../../../tokens/color";
+import { FONT_FAMILY } from "../../../tokens/fontFamily";
 import { FONT_SIZE } from "../../../tokens/fontSize";
-import { FIELD_BORDER, FIELD_BORDER_RADIUS } from "../../shared/ui/fieldStyle";
-import { openInEditor } from "./editorLink";
+import { SECONDARY_BUTTON } from "../../shared/ui/buttonStyle";
+import { openInEditor } from "../../shared/editorLink";
 import { groupSegments } from "../../shared/previewGroup";
 
 const Styled = {
@@ -21,20 +22,9 @@ const Styled = {
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    fontFamily: FONT_FAMILY.mono,
     fontSize: FONT_SIZE.label,
     color: COLOR.muted,
-  } satisfies CSSProperties,
-  Button: {
-    flexShrink: 0,
-    padding: "0.3rem 0.7rem",
-    border: FIELD_BORDER,
-    borderRadius: FIELD_BORDER_RADIUS,
-    background: COLOR.surface,
-    color: COLOR.body,
-    fontFamily: "inherit",
-    fontSize: FONT_SIZE.label,
-    cursor: "pointer",
   } satisfies CSSProperties,
 };
 
@@ -52,7 +42,7 @@ export const CanvasHeader = (props: { entry: GalleryPreviewEntry; canOpenInEdito
           {entry.file}
         </code>
         {props.canOpenInEditor && (
-          <button type="button" style={Styled.Button} onClick={() => openInEditor(entry.id)}>
+          <button type="button" style={SECONDARY_BUTTON} onClick={() => openInEditor(entry.id)}>
             Open in editor
           </button>
         )}

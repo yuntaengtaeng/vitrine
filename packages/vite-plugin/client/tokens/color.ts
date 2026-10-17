@@ -9,6 +9,8 @@ export const COLOR = {
   body: NEUTRAL[800],
   muted: NEUTRAL[500],
   error: RED[600],
+  errorBg: RED[50],
+  errorBorder: RED[200],
   activeBg: BRAND[50],
   activeText: BRAND[600],
   hoverBg: NEUTRAL[100],

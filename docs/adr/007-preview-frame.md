@@ -42,6 +42,9 @@ camelCase를 쓰고, 정수 `protocol` 값으로 형식이 깨지는 변경을 �
 | Frame -> Gallery | `frameSize` | 렌더링된 내용 높이 |
 | Frame -> Gallery | `frameError` | 로드나 렌더 실패의 message와 stack |
 
+- `frameError` 뒤 다시 렌더에 성공하면 frame은 `frameReady`를 다시 보내고, Gallery는 이를 복구로
+  본다. 렌더 에러는 `frameRender` 상태가 바뀌거나 Fast Refresh가 다시 마운트할 때 재시도한다.
+
 - `frameRender`는 명령이 아니라 상태다. 새 기능은 이 상태에 필드를 더하는 방식으로 붙인다.
 - 배치는 데이터로 표현한다. `layout`은 `{ kind: "single" }` 또는 `{ kind: "grid", cells }`이고,
   Variants 보기와 Prop matrix는 cells만 다르게 보낸다.

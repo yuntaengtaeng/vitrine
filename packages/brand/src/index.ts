@@ -26,6 +26,8 @@ export const NEUTRAL = {
 
 /** 오류 상태 색 */
 export const RED = {
+  50: "#fff1f2",
+  200: "#fecdd3",
   600: "#e11d48",
 } as const;
 
