@@ -52,5 +52,9 @@ export function resolveFrameArgs(
   render: Pick<FrameRenderMessage, "variantKey" | "args"> | null,
 ): Args {
   if (!render) return resolveVariantArgs(inferred, config, getInitialVariantKey(config));
-  return { ...resolveVariantArgs(inferred, config, render.variantKey ?? undefined), ...render.args };
+  // null은 Gallery에서 선택 prop을 비운 값이라 컴포넌트에는 undefined로 전달
+  const overrides = Object.fromEntries(
+    Object.entries(render.args).map(([name, value]) => [name, value === null ? undefined : value]),
+  );
+  return { ...resolveVariantArgs(inferred, config, render.variantKey ?? undefined), ...overrides };
 }

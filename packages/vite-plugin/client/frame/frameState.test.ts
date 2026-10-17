@@ -51,6 +51,11 @@ describe("resolveFrameArgs", () => {
     expect(args).toEqual({ label: "Delete", size: "md", onClick });
   });
 
+  it("Gallery에서 비운 선택 prop(null)은 undefined로 전달", () => {
+    const args = resolveFrameArgs(inferred, config, { variantKey: null, args: { size: null } });
+    expect(args).toEqual({ label: "Save", size: undefined, onClick });
+  });
+
   it("variant를 고르지 않으면 preview() args 기준", () => {
     expect(resolveFrameArgs(inferred, config, { variantKey: null, args: {} })).toEqual({
       label: "Save",

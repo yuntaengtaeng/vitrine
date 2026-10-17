@@ -16,6 +16,7 @@ describe("isGalleryToFrameMessage", () => {
   it("render 상태 전체를 담은 메시지 허용", () => {
     expect(isGalleryToFrameMessage(render)).toBe(true);
     expect(isGalleryToFrameMessage({ ...render, variantKey: "danger", args: { label: "Delete", count: 3 } })).toBe(true);
+    expect(isGalleryToFrameMessage({ ...render, args: { size: null } })).toBe(true);
   });
 
   it("다른 protocol 버전, 직렬화할 수 없는 args, 모르는 layout은 거부", () => {

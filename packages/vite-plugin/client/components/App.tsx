@@ -1,7 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { usePreviewSelectionSync } from "../hooks/usePreviewSelectionSync";
-import { usePreviewSetup } from "../hooks/usePreviewSetup";
 import { useStageSettings } from "../hooks/useStageSettings";
 import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
@@ -21,12 +20,9 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-export const App = (props: {
-  entries: GalleryPreviewEntry[];
-  loadPreviewSetup: (() => Promise<{ default?: unknown }>) | undefined;
-}) => {
-  const { entries, loadPreviewSetup } = props;
-  const previewSetup = usePreviewSetup(loadPreviewSetup);
+/** Gallery UI, 사용자 코드는 실행하지 않고 프리뷰 렌더링은 iframe frame에 맡김 (ADR 007) */
+export const App = (props: { entries: GalleryPreviewEntry[] }) => {
+  const { entries } = props;
   const [activeId, setActiveId] = usePreviewSelectionSync(entries);
   const activeEntry = entries.find((entry) => entry.id === activeId);
   // VS Code panel 안에서는 옆에 에디터가 있고, 바깥에서 에디터를 실행하면 새 창이 뜰 수 있어 숨김
@@ -41,7 +37,6 @@ export const App = (props: {
         <Canvas
           key={activeEntry?.id ?? "empty"}
           entry={activeEntry}
-          previewSetup={previewSetup}
           canOpenInEditor={canOpenInEditor}
           stage={stage}
           onStageChange={updateStage}

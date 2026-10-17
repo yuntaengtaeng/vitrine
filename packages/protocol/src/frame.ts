@@ -22,8 +22,8 @@ export const FRAME_SIZE_MESSAGE_TYPE = "frameSize";
 /** Frame이 로드나 렌더 실패를 알리는 message type */
 export const FRAME_ERROR_MESSAGE_TYPE = "frameError";
 
-/** Frame과 주고받을 수 있는 prop 값 (control로 편집 가능한 값만) */
-export type FrameArgValue = string | number | boolean;
+/** Frame과 주고받을 수 있는 prop 값 (control로 편집 가능한 값만), null은 선택 prop을 비운 상태 */
+export type FrameArgValue = string | number | boolean | null;
 
 /** Prop 이름별 frame 전송 값 */
 export type FrameArgs = Record<string, FrameArgValue>;
@@ -33,7 +33,7 @@ export interface FrameControl {
   type: PropControl["type"] | "radio";
   options?: ControlOption[];
   optional: boolean;
-  defaultValue?: FrameArgValue;
+  defaultValue?: string | number | boolean;
 }
 
 /** Gallery에서 고를 수 있는 variant */
@@ -151,5 +151,5 @@ function isFrameVariant(value: unknown): value is FrameVariant {
 }
 
 function isFrameArgs(value: unknown): value is FrameArgs {
-  return isRecord(value) && Object.values(value).every(isDefaultValue);
+  return isRecord(value) && Object.values(value).every((arg) => arg === null || isDefaultValue(arg));
 }
