@@ -2,10 +2,10 @@ import type { GalleryConfig } from "@vitrine/protocol";
 import { useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { usePreviewSelectionSync } from "./usePreviewSelectionSync";
-import { useStageSettings } from "./stage/useStageSettings";
-import { Sidebar } from "./sidebar/Sidebar";
+import { useStageSettings } from "./features/stage/useStageSettings";
+import { Sidebar } from "./features/sidebar/Sidebar";
 import { Canvas } from "./Canvas";
-import { isEmbeddedInFrame } from "./header/editorLink";
+import { isEmbeddedInFrame } from "./features/header/editorLink";
 
 const Styled = {
   Root: {

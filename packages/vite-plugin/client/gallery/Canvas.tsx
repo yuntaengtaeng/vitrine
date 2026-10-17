@@ -1,13 +1,13 @@
 import type { GalleryViewport } from "@vitrine/protocol";
 import type { CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
-import { ControlsPanel } from "./controls/ControlsPanel";
-import { VariantPicker } from "./controls/VariantPicker";
-import { usePreviewSession } from "./frameLink/usePreviewSession";
-import { CanvasHeader } from "./header/CanvasHeader";
-import { PreviewStage } from "./stage/PreviewStage";
-import { StageToolbar } from "./stage/StageToolbar";
-import type { StageSettings } from "./stage/stageSettings";
+import { ControlsPanel } from "./features/controls/ControlsPanel";
+import { VariantPicker } from "./features/controls/VariantPicker";
+import { usePreviewSession } from "./features/previewSession/usePreviewSession";
+import { CanvasHeader } from "./features/header/CanvasHeader";
+import { PreviewStage } from "./features/stage/PreviewStage";
+import { StageToolbar } from "./features/stage/StageToolbar";
+import type { StageSettings } from "./features/stage/stageSettings";
 
 const Styled = {
   Root: {

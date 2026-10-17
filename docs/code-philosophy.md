@@ -270,6 +270,51 @@ Wrapper
 
 ---
 
+## 8. 폴더는 기능 단위로 나눈다
+
+폴더는 파일 종류가 아니라 **함께 바뀌는 기능** 기준으로 나눈다.
+한 기능을 고칠 때 여러 폴더를 오가야 한다면 경계가 잘못 그어진 것이다.
+
+```text
+// Bad: viewport 하나를 고치려면 세 폴더를 오감
+components/ViewportPicker.tsx
+hooks/useStageSettings.ts
+utils/viewport.ts
+
+// Better: 함께 바뀌는 파일이 한 폴더에 있음
+features/stage/viewport/ViewportPicker.tsx
+features/stage/viewport/viewport.ts
+features/stage/useStageSettings.ts
+```
+
+UI 앱은 다음 세 영역으로 나눈다.
+
+* **조합**: 앱 최상위의 컴포넌트가 feature를 가져와 화면을 구성한다.
+  feature를 import할 수 있는 곳은 여기뿐이다.
+* **`features/<기능>/`**: 하나의 변경 이유를 가진 기능. 다른 feature를 import하지 않는다.
+* **`shared/`**: 두 개 이상의 feature가 쓰는 코드. feature를 import하지 않는다.
+
+두 feature가 같은 코드를 필요로 하면 한쪽에서 가져다 쓰지 않고 `shared/`로 옮긴다.
+이 경계는 문서가 아니라 lint(`no-restricted-imports`)로 강제한다.
+
+### 파일 종류는 이름으로 구분한다
+
+`components/`, `hooks/`, `utils/` 같은 종류별 폴더는 만들지 않는다.
+
+* `PascalCase.tsx`: 컴포넌트
+* `useXxx.ts`: hook
+* `camelCase.ts`: 순수 로직, 테스트 대상
+
+### 언제 더 나누는가
+
+feature 폴더 안의 파일이 많아지거나 독립적으로 바뀌는 하위 기능이 생기면
+그 feature 안에서 하위 기능 폴더로 나눈다 (예: `stage/viewport/`).
+파일 한두 개를 위한 폴더는 만들지 않는다.
+
+현재 runtime별 폴더 구성은 [`architecture.md`](architecture.md)가 기록한다.
+
+---
+
 # Agent Decision Rule
 
 코드를 작성하거나 수정하기 전에 다음 순서로 판단한다.

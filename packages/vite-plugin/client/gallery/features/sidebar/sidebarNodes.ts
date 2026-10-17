@@ -1,4 +1,4 @@
-import { groupSegments } from "../previewGroup";
+import { groupSegments } from "../../shared/previewGroup";
 
 export interface SidebarGroupNode {
   type: "group";

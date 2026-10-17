@@ -1,8 +1,8 @@
 import { FRAME_ROUTE, type GalleryViewport } from "@vitrine/protocol";
 import { useRef, type CSSProperties, type RefObject } from "react";
-import { COLOR } from "../../tokens/color";
-import { FONT_SIZE } from "../../tokens/fontSize";
-import { useElementWidth } from "../ui/useElementWidth";
+import { COLOR } from "../../../tokens/color";
+import { FONT_SIZE } from "../../../tokens/fontSize";
+import { useElementWidth } from "../../shared/ui/useElementWidth";
 import { BACKGROUND_STYLE } from "./background/background";
 import type { StageSettings } from "./stageSettings";
 import { findViewport } from "./viewport/viewport";

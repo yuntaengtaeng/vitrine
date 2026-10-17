@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
-import { COLOR } from "../../tokens/color";
-import { FONT_SIZE } from "../../tokens/fontSize";
+import { COLOR } from "../../../tokens/color";
+import { FONT_SIZE } from "../../../tokens/fontSize";
 
 const Styled = {
   Button: {

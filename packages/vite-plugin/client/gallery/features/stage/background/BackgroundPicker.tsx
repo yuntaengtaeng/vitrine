@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
-import { FIELD_BORDER } from "../../ui/fieldStyle";
+import { COLOR } from "../../../../tokens/color";
+import { FONT_SIZE } from "../../../../tokens/fontSize";
+import { FIELD_BORDER } from "../../../shared/ui/fieldStyle";
 import { BACKGROUND_STYLE, STAGE_BACKGROUNDS, type StageBackground } from "./background";
 
 const Styled = {

@@ -1,8 +1,8 @@
 import type { GalleryViewport } from "@vitrine/protocol";
 import type { CSSProperties } from "react";
-import { COLOR } from "../../../tokens/color";
-import { FONT_SIZE } from "../../../tokens/fontSize";
-import { FIELD_BORDER, FIELD_BORDER_RADIUS } from "../../ui/fieldStyle";
+import { COLOR } from "../../../../tokens/color";
+import { FONT_SIZE } from "../../../../tokens/fontSize";
+import { FIELD_BORDER, FIELD_BORDER_RADIUS } from "../../../shared/ui/fieldStyle";
 import { RESPONSIVE_VIEWPORT, findViewport, viewportLabel } from "./viewport";
 
 const Styled = {

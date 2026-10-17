@@ -77,13 +77,17 @@ Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 wo
 
 - `frame/`: iframe 안에서 사용자 module을 불러 렌더링. `preview/`는 프리뷰 module과 setup file
   로드, 렌더링, 에러 경계를, `bridge/`는 Gallery와 주고받는 message와 높이 보고를 맡음
-- `gallery/`: 사용자 코드를 import하지 않고 `@vitrine/protocol` data만 사용. `sidebar/`, `header/`,
-  `frameLink/`(iframe 연결과 variant, 바꾼 값), `stage/`(배경, viewport, iframe 무대),
-  `controls/`(Props 패널과 variant 선택), 여러 기능이 쓰는 `ui/`로 나누고 `Canvas`가 조합
+- `gallery/`: 사용자 코드를 import하지 않고 `@vitrine/protocol` data만 사용.
+  [code-philosophy 8장](code-philosophy.md#8-폴더는-기능-단위로-나눈다)의 기능 단위 구조를 따름
+  - `App`, `Canvas`, `usePreviewSelectionSync`: feature를 조합하는 최상위
+  - `features/`: `sidebar/`, `header/`, `previewSession/`(iframe 연결과 variant, 바꾼 값),
+    `stage/`(배경, viewport, iframe 무대), `controls/`(Props 패널과 variant 선택)
+  - `shared/`: 여러 feature가 쓰는 `ui/`와 `previewGroup`
 - `tokens/`: 두 bundle이 공유하는 색, 글자 크기, 패턴
 
-`gallery/`는 `frame/`을 import하지 않고, 기능 폴더끼리는 `ui/`와 gallery 최상위 공용 module만
-공유한다.
+`gallery/`는 `frame/`을 import하지 않는다. feature끼리 import하지 않고, `shared/`는 feature를
+import하지 않는다. 이 경계는 루트 `eslint.config.mjs`의 `no-restricted-imports`가 강제하며,
+`features/` 아래 새 폴더는 자동으로 같은 규칙을 받는다.
 
 각 runtime project 내부는 다음 원칙으로 정리한다. 구체적인 디렉터리 이름은 이 원칙을 구현하는
 현재 선택이며 영구 규칙이 아니다.
