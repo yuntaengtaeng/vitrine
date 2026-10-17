@@ -1,6 +1,6 @@
 # ADR 002: Runtime 계약은 private protocol package, 공개 설치 단위는 plugin 하나
 
-- 상태: 채택
+- 상태: 채택, 선택 기능 package는 ADR 005로 보완
 - 날짜: 2026-08-22
 
 ## 맥락
@@ -31,7 +31,8 @@ Plugin의 JavaScript와 declaration 배포물에 protocol 참조를 남기지 �
 
 - Runtime 간 변경이 하나의 type과 validator를 중심으로 이뤄지고, 외부 입력을 `as` cast 대신
   경계에서 검증한다.
-- 사용자는 plugin 하나만 설치하며 VS Code extension은 선택 사항이다.
+- 기본 사용은 plugin 하나만 설치하며 VS Code extension은 선택 사항이다. 선택 기능은
+  [ADR 005](./005-plugin-architecture.md)에 따라 공식 plugin package를 추가로 설치한다.
 - Plugin build는 declaration까지 self-contained여야 하고, package smoke test가 plugin tarball
   단독 설치로 이를 검증한다.
 

@@ -13,15 +13,19 @@ Vitrine은 React component export에 `/** @preview */`를 붙여, 편집 중인 
 선언은 별도 stories 파일이 아니라 대상 export 가까이에 둡니다.
 
 TypeScript prop 분석 기반 controls, `preview()`의 args/control override와 variants를 지원합니다.
-다만 범용 문서 플랫폼, 시각적 회귀 테스트, addon 생태계를 제공하는 Storybook 대체 제품을
-목표로 하지는 않습니다.
+다만 범용 문서 플랫폼이나 시각적 회귀 테스트를 제공하는 Storybook 대체 제품을 목표로 하지는
+않습니다.
 
 현재 하지 않는 것은 다음과 같습니다.
 
 - Vite dev server 자동 기동
 - Vue, Svelte 등 멀티 프레임워크 지원
 - `@preview` 없는 component 자동 탐색
-- Storybook 수준의 문서화, 시각적 회귀, addon 플랫폼
+- Storybook 수준의 문서화, 시각적 회귀
+
+일부 사용자만 필요한 기능은 코어를 키우는 대신 Vitrine plugin으로 제공하며, 누구나 자기 plugin을
+만들 수 있습니다. 자세한 결정은 [`docs/adr/005-plugin-architecture.md`](docs/adr/005-plugin-architecture.md)에
+있습니다. Plugin API는 Vitrine이 `0.x`인 동안 실험 단계입니다.
 
 이 범위를 바꾸는 기능은 구현보다 제품 결정이 먼저입니다. PR 전에 issue로 먼저 논의해 주세요.
 

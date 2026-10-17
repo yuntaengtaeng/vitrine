@@ -14,15 +14,19 @@ main interface, and previews are declared next to the export instead of in separ
 files.
 
 It supports controls based on TypeScript prop analysis, and args, control overrides and variants
-through `preview()`. It does not aim to replace Storybook as a documentation platform, visual
-regression tool or addon ecosystem.
+through `preview()`. It does not aim to replace Storybook as a documentation platform or visual
+regression tool.
 
 Out of scope for now:
 
 - Starting the Vite dev server automatically
 - Frameworks other than React, such as Vue or Svelte
 - Discovering components that have no `@preview`
-- Storybook-level documentation, visual regression or addons
+- Storybook-level documentation or visual regression
+
+Features only some users need ship as Vitrine plugins instead of growing the core, and anyone can
+write their own plugin. See [`docs/adr/005-plugin-architecture.md`](docs/adr/005-plugin-architecture.md).
+The plugin API is experimental while Vitrine is on `0.x`.
 
 Changing this scope is a product decision before it is an implementation. Please open an issue
 to discuss it before sending a pull request.

@@ -1,6 +1,6 @@
 # ADR 001: Vite를 component rendering runtime으로 사용
 
-- 상태: 채택
+- 상태: 채택, 정적 Gallery 빌드 예외는 ADR 005
 - 날짜: 2026-08-22
 
 ## 맥락
@@ -20,6 +20,8 @@ server를 찾고 webview iframe을 연결하며 editor state를 전달하는 ada
 - Extension에는 React/TypeScript parsing이나 bundling 책임을 두지 않는다.
 - Extension과 gallery가 통신하는 wire contract는 별도로 명시해야 한다.
 - Vite dev server는 사용자가 직접 실행한다.
+- 배포용 정적 Gallery는 [ADR 005](./005-plugin-architecture.md)의 선택 plugin이 `vite build`로
+  만든다. 렌더링 책임은 계속 Vite에 있다.
 
 ## 재검토 조건
 
