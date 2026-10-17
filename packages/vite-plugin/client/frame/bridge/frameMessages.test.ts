@@ -1,6 +1,6 @@
 import { isFrameToGalleryMessage } from "@vitrine/protocol";
 import { describe, expect, it } from "vitest";
-import { buildFrameReady, resolveFrameArgs, toFrameArgs } from "./frameState";
+import { buildFrameReady, resolveFrameArgs, toFrameArgs } from "./frameMessages";
 
 const inferred = {
   label: { type: "text" as const, optional: false, defaultValue: "" },

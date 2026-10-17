@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
-import { COLOR } from "../tokens/color";
-import { FONT_SIZE } from "../tokens/fontSize";
-import type { PreviewVariantOption } from "../preview/previewConfig";
+import { COLOR } from "../../tokens/color";
+import { FONT_SIZE } from "../../tokens/fontSize";
+import type { FrameVariant } from "@vitrine/protocol";
 
 const Styled = {
   Root: { display: "flex", gap: "0.4rem", flexWrap: "wrap" } satisfies CSSProperties,
@@ -24,7 +24,7 @@ const Styled = {
 };
 
 export const VariantPicker = (props: {
-  variants: PreviewVariantOption[];
+  variants: FrameVariant[];
   activeKey: string | undefined;
   onSelect: (key: string) => void;
 }) => {

@@ -1,9 +1,9 @@
 import type { CSSProperties } from "react";
-import { COLOR } from "../tokens/color";
-import { FONT_SIZE } from "../tokens/fontSize";
-import { FIELD_BORDER, FIELD_BORDER_RADIUS } from "./controls/fieldStyle";
+import { COLOR } from "../../tokens/color";
+import { FONT_SIZE } from "../../tokens/fontSize";
+import { FIELD_BORDER, FIELD_BORDER_RADIUS } from "../ui/fieldStyle";
 import { openInEditor } from "./editorLink";
-import { groupSegments } from "./sidebarGroups";
+import { groupSegments } from "../previewGroup";
 
 const Styled = {
   Root: {

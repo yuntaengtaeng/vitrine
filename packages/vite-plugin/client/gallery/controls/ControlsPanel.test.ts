@@ -2,10 +2,10 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { act, create } from "react-test-renderer";
 import { describe, expect, it, vi } from "vitest";
-import { Controls } from "./Controls";
-import type { ControlsMap } from "../preview/previewConfig";
+import { ControlsPanel } from "./ControlsPanel";
+import type { FrameControl } from "@vitrine/protocol";
 
-const controls: ControlsMap = {
+const controls: Record<string, FrameControl> = {
   label: { type: "text", optional: false },
   size: { type: "select", options: ["sm", "md"], optional: false },
   count: { type: "number", optional: false },
@@ -14,10 +14,10 @@ const controls: ControlsMap = {
 };
 
 function renderControls(args: Record<string, unknown>, onChange = () => {}) {
-  return createElement(Controls, { controls, args, onChange });
+  return createElement(ControlsPanel, { controls, args, onChange });
 }
 
-describe("Controls", () => {
+describe("ControlsPanel", () => {
   it("모든 입력에 prop 이름을 접근 가능한 이름으로 연결", () => {
     const markup = renderToStaticMarkup(renderControls({}));
     expect(markup).toContain('<input aria-label="label"');

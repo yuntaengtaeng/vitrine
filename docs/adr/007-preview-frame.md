@@ -57,7 +57,8 @@ camelCase를 쓰고, 정수 `protocol` 값으로 형식이 깨지는 변경을 �
 
 ### 코드 구조
 
-- `client/gallery/`, `client/frame/`, 둘이 공유하는 순수 로직 `client/preview/`로 나눈다.
+- `client/gallery/`와 `client/frame/`으로 나누고, Gallery는 frame 코드 대신 protocol 타입만 쓴다.
+  현재 세부 구조는 `docs/architecture.md`를 따른다.
 - Gallery와 frame은 각각 별도 bundle로 build하고 plugin이 virtual module로 제공한다.
 
 ### 테스트

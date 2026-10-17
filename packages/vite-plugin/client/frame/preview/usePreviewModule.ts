@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getPreviewConfig } from "vite-plugin-react-vitrine/preview";
-import { pickPreviewComponent, type LoadedPreview } from "../preview/previewConfig";
+import { pickPreviewComponent, type LoadedPreview } from "./previewConfig";
 
 /** entry 모듈을 로드해 컴포넌트와 preview() 설정 제공, entry가 바뀌면 이전 로드 결과는 버림 */
 export const usePreviewModule = (

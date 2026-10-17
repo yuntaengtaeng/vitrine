@@ -1,13 +1,13 @@
 import type { CSSProperties } from "react";
-import { COLOR } from "../tokens/color";
-import { FONT_SIZE } from "../tokens/fontSize";
-import { BooleanControl } from "./controls/BooleanControl";
-import { ControlField } from "./controls/ControlField";
-import { NumberControl } from "./controls/NumberControl";
-import { RadioControl } from "./controls/RadioControl";
-import { SelectControl } from "./controls/SelectControl";
-import { TextControl } from "./controls/TextControl";
-import type { ControlsMap } from "../preview/previewConfig";
+import { COLOR } from "../../tokens/color";
+import { FONT_SIZE } from "../../tokens/fontSize";
+import { BooleanControl } from "./BooleanControl";
+import { ControlField } from "./ControlField";
+import { NumberControl } from "./NumberControl";
+import { RadioControl } from "./RadioControl";
+import { SelectControl } from "./SelectControl";
+import { TextControl } from "./TextControl";
+import type { FrameControl } from "@vitrine/protocol";
 
 const Styled = {
   Root: {
@@ -35,8 +35,9 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-export const Controls = (props: {
-  controls: ControlsMap;
+/** 프리뷰 props를 바꾸는 패널, frame이 알려준 control 목록만 사용 */
+export const ControlsPanel = (props: {
+  controls: Record<string, FrameControl>;
   args: Record<string, unknown>;
   onChange: (name: string, value: unknown) => void;
 }) => {

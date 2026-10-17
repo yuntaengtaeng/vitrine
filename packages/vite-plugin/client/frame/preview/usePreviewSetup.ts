@@ -2,7 +2,7 @@
 import { PREVIEW_SETUP_RECOVER_EVENT } from "@vitrine/protocol";
 import { useEffect, useState } from "react";
 import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
-import { isPreviewComponent } from "../preview/previewConfig";
+import { isPreviewComponent } from "./previewConfig";
 
 /** previews virtual module의 setup file loader, setupFile 옵션이 없으면 undefined */
 export type PreviewSetupLoader = (() => Promise<{ default?: unknown }>) | undefined;

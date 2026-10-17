@@ -73,8 +73,17 @@ CJS entry를 함께 build한다. Node, React, Vite, VS Code API에는 의존하�
 - `port-file.ts`: port file 기록
 
 Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
-Gallery 안에서는 프리뷰 판단 로직(`client/preview/`)과 React hook, component를 나누고, hook이 component
-폴더에 의존하지 않게 한다.
+`client/`는 두 bundle과 공유 token으로 나눈다.
+
+- `frame/`: iframe 안에서 사용자 module을 불러 렌더링. `preview/`는 프리뷰 module과 setup file
+  로드, 렌더링, 에러 경계를, `bridge/`는 Gallery와 주고받는 message와 높이 보고를 맡음
+- `gallery/`: 사용자 코드를 import하지 않고 `@vitrine/protocol` data만 사용. `sidebar/`, `header/`,
+  `frameLink/`(iframe 연결과 variant, 바꾼 값), `stage/`(배경, viewport, iframe 무대),
+  `controls/`(Props 패널과 variant 선택), 여러 기능이 쓰는 `ui/`로 나누고 `Canvas`가 조합
+- `tokens/`: 두 bundle이 공유하는 색, 글자 크기, 패턴
+
+`gallery/`는 `frame/`을 import하지 않고, 기능 폴더끼리는 `ui/`와 gallery 최상위 공용 module만
+공유한다.
 
 각 runtime project 내부는 다음 원칙으로 정리한다. 구체적인 디렉터리 이름은 이 원칙을 구현하는
 현재 선택이며 영구 규칙이 아니다.

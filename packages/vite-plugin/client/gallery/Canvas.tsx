@@ -1,8 +1,13 @@
 import type { GalleryViewport } from "@vitrine/protocol";
 import type { CSSProperties } from "react";
-import { PreviewFrameStage } from "./PreviewFrameStage";
-import type { StageSettings } from "./stageSettings";
-import { CanvasHeader } from "./CanvasHeader";
+import { COLOR } from "../tokens/color";
+import { ControlsPanel } from "./controls/ControlsPanel";
+import { VariantPicker } from "./controls/VariantPicker";
+import { usePreviewSession } from "./frameLink/usePreviewSession";
+import { CanvasHeader } from "./header/CanvasHeader";
+import { PreviewStage } from "./stage/PreviewStage";
+import { StageToolbar } from "./stage/StageToolbar";
+import type { StageSettings } from "./stage/stageSettings";
 
 const Styled = {
   Root: {
@@ -11,27 +16,52 @@ const Styled = {
     width: "100%",
     height: "100%",
   } satisfies CSSProperties,
+  Toolbar: {
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "0.6rem 1rem",
+    minHeight: 44,
+    padding: "0.35rem 1.25rem",
+    borderBottom: `1px solid ${COLOR.border}`,
+    boxSizing: "border-box",
+  } satisfies CSSProperties,
 };
 
+/** 선택한 프리뷰 한 개의 머리말, toolbar, 무대, Props 패널 */
 export const Canvas = (props: {
-  entry: GalleryPreviewEntry | undefined;
+  entry: GalleryPreviewEntry;
   canOpenInEditor: boolean;
   viewports: readonly GalleryViewport[];
   stage: StageSettings;
   onStageChange: (patch: Partial<StageSettings>) => void;
 }) => {
   const { entry } = props;
-  if (!entry) return null;
+  const session = usePreviewSession();
+  const { ready } = session.status;
 
   return (
     <div style={Styled.Root}>
       <CanvasHeader entry={entry} canOpenInEditor={props.canOpenInEditor} />
-      <PreviewFrameStage
+      <div style={Styled.Toolbar}>
+        <VariantPicker
+          variants={ready?.variants ?? []}
+          activeKey={session.activeVariantKey}
+          onSelect={session.selectVariant}
+        />
+        <StageToolbar settings={props.stage} viewports={props.viewports} onChange={props.onStageChange} />
+      </div>
+      <PreviewStage
         entry={entry}
+        iframeRef={session.iframeRef}
+        framePhase={session.status.phase}
+        contentHeight={session.status.height}
+        settings={props.stage}
         viewports={props.viewports}
-        stage={props.stage}
-        onStageChange={props.onStageChange}
       />
+      {ready && session.args && (
+        <ControlsPanel controls={ready.controls} args={session.args} onChange={session.changeArg} />
+      )}
     </div>
   );
 };

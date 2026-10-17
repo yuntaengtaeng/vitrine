@@ -1,4 +1,4 @@
-import type { LoadedPreview } from "../preview/previewConfig";
+import type { LoadedPreview } from "./previewConfig";
 
 export type CanvasView =
   | { kind: "error"; error: Error }

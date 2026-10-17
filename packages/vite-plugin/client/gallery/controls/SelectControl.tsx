@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { COLOR } from "../../tokens/color";
 import { FONT_SIZE } from "../../tokens/fontSize";
-import { FIELD_BORDER, FIELD_BORDER_RADIUS, FIELD_FOCUS, FIELD_HEIGHT } from "./fieldStyle";
+import { FIELD_BORDER, FIELD_BORDER_RADIUS, FIELD_FOCUS, FIELD_HEIGHT } from "../ui/fieldStyle";
 
 type Option = string | number;
 

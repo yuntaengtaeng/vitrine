@@ -1,3 +1,5 @@
+import { groupSegments } from "../previewGroup";
+
 export interface SidebarGroupNode {
   type: "group";
   key: string;
@@ -11,11 +13,6 @@ export interface SidebarEntryNode {
 }
 
 export type SidebarNode = SidebarGroupNode | SidebarEntryNode;
-
-/** entry.group의 / 경로를 빈 구간 없이 group 이름 목록으로 분리 */
-export function groupSegments(group: string | undefined): string[] {
-  return group ? group.split("/").filter((segment) => segment.length > 0) : [];
-}
 
 /** entry.group의 / 경로를 따라 중첩 그룹 트리 구성, group 없는 entry는 최상위에 그대로 남음 */
 export function buildSidebarTree(entries: GalleryPreviewEntry[]): SidebarNode[] {

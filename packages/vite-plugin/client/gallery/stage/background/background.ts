@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
-import { COLOR } from "../../tokens/color";
-import { checkerboard } from "../../tokens/pattern";
+import { COLOR } from "../../../tokens/color";
+import { checkerboard } from "../../../tokens/pattern";
 
 /** 무대 프레임 배경 */
 export type StageBackground = "light" | "dark" | "transparent";

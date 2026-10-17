@@ -1,14 +1,14 @@
 import { FRAME_ERROR_MESSAGE_TYPE, FRAME_SIZE_MESSAGE_TYPE, type FrameRenderMessage } from "@vitrine/protocol";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ErrorText } from "./ErrorText";
-import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
-import { PreviewRenderer } from "./PreviewRenderer";
-import { usePreviewModule } from "./usePreviewModule";
-import { usePreviewSetup, type PreviewSetupLoader } from "./usePreviewSetup";
-import { resolveCanvasView } from "./canvasView";
-import { buildFrameReady, resolveFrameArgs } from "./frameState";
-import { sendToGallery, subscribeToGallery } from "./galleryBridge";
-import { useReportedHeight } from "./useReportedHeight";
+import { PreviewErrorBoundary } from "./preview/PreviewErrorBoundary";
+import { PreviewRenderer } from "./preview/PreviewRenderer";
+import { usePreviewModule } from "./preview/usePreviewModule";
+import { usePreviewSetup, type PreviewSetupLoader } from "./preview/usePreviewSetup";
+import { resolveCanvasView } from "./preview/canvasView";
+import { buildFrameReady, resolveFrameArgs } from "./bridge/frameMessages";
+import { sendToGallery, subscribeToGallery } from "./bridge/galleryBridge";
+import { useReportedHeight } from "./bridge/useReportedHeight";
 
 const Styled = {
   // 작은 컴포넌트는 무대 가운데에 보이고, 너비 100% 컴포넌트는 frame 너비를 채움

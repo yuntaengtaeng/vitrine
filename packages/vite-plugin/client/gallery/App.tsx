@@ -2,10 +2,10 @@ import type { GalleryConfig } from "@vitrine/protocol";
 import { useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { usePreviewSelectionSync } from "./usePreviewSelectionSync";
-import { useStageSettings } from "./useStageSettings";
-import { Sidebar } from "./Sidebar";
+import { useStageSettings } from "./stage/useStageSettings";
+import { Sidebar } from "./sidebar/Sidebar";
 import { Canvas } from "./Canvas";
-import { isEmbeddedInFrame } from "./editorLink";
+import { isEmbeddedInFrame } from "./header/editorLink";
 
 const Styled = {
   Root: {
@@ -35,14 +35,17 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
     <div style={Styled.Root}>
       <Sidebar entries={entries} activeId={activeId} onSelect={setActiveId} />
       <div style={Styled.CanvasWrapper}>
-        <Canvas
-          key={activeEntry?.id ?? "empty"}
-          entry={activeEntry}
-          canOpenInEditor={canOpenInEditor}
-          viewports={props.config.viewports}
-          stage={stage}
-          onStageChange={updateStage}
-        />
+        {activeEntry && (
+          // 프리뷰마다 frame 연결과 variant, 바꾼 값을 새로 시작
+          <Canvas
+            key={activeEntry.id}
+            entry={activeEntry}
+            canOpenInEditor={canOpenInEditor}
+            viewports={props.config.viewports}
+            stage={stage}
+            onStageChange={updateStage}
+          />
+        )}
       </div>
     </div>
   );

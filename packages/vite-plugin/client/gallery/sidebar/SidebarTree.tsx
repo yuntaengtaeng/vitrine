@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
-import { COLOR } from "../tokens/color";
-import { FONT_SIZE } from "../tokens/fontSize";
+import { COLOR } from "../../tokens/color";
+import { FONT_SIZE } from "../../tokens/fontSize";
 import { SidebarItem } from "./SidebarItem";
-import { countSidebarEntries, type SidebarNode } from "./sidebarGroups";
+import { countSidebarEntries, type SidebarNode } from "./sidebarNodes";
 
 const Styled = {
   GroupToggle: {

@@ -1,7 +1,7 @@
 import { useRef, type CSSProperties, type KeyboardEvent } from "react";
 import { COLOR } from "../../tokens/color";
 import { FONT_SIZE } from "../../tokens/fontSize";
-import { FIELD_BORDER_RADIUS } from "./fieldStyle";
+import { FIELD_BORDER_RADIUS } from "../ui/fieldStyle";
 import { focusableRadioIndex, nextRadioIndex } from "./radioKeyboard";
 
 type Option = string | number;

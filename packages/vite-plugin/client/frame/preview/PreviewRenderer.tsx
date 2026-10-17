@@ -1,6 +1,6 @@
 import { createElement, type ComponentType } from "react";
 import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
-import type { Args } from "../preview/previewConfig";
+import type { Args } from "./previewConfig";
 
 interface PreviewRendererProps {
   component: ComponentType;
