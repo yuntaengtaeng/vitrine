@@ -1,6 +1,6 @@
 import { FRAME_PROTOCOL, type FrameReadyMessage } from "@vitrine/protocol";
 import { describe, expect, it } from "vitest";
-import { INITIAL_FRAME_STATUS, displayedArgs, reduceFrameStatus, toOverrideValue } from "./frameStatus";
+import { INITIAL_FRAME_STATUS, displayedArgs, reduceFrameStatus, startingSelection, toOverrideValue } from "./frameStatus";
 
 describe("toOverrideValue", () => {
   it("비운 값은 null, 보낼 수 없는 값은 undefined", () => {
@@ -53,5 +53,25 @@ describe("displayedArgs", () => {
 
   it("variant가 없으면 기본 args, 비운 값은 undefined", () => {
     expect(displayedArgs(ready, null, { size: null })).toEqual({ label: "Save", size: undefined });
+  });
+});
+
+describe("startingSelection", () => {
+  it("요청이 없으면 frame이 고른 초기 variant와 빈 값", () => {
+    expect(startingSelection(ready, undefined)).toEqual({ variantKey: "danger", args: {} });
+  });
+
+  it("링크로 요청한 variant와 값으로 시작", () => {
+    expect(startingSelection(ready, { variantKey: "danger", args: { label: "Go" } })).toEqual({
+      variantKey: "danger",
+      args: { label: "Go" },
+    });
+  });
+
+  it("이 프리뷰에 없는 variant는 초기 variant로 바꾸고 값은 유지", () => {
+    expect(startingSelection(ready, { variantKey: "ghost", args: { label: "Go" } })).toEqual({
+      variantKey: "danger",
+      args: { label: "Go" },
+    });
   });
 });

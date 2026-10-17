@@ -37,3 +37,5 @@ export const file = style({
   whiteSpace: "nowrap",
   "@container": { [NARROW]: { display: "none" } },
 });
+
+export const status = style({ color: vars.color.textMuted, fontSize: vars.fontSize.label, whiteSpace: "nowrap" });

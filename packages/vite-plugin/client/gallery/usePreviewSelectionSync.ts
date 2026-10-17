@@ -7,8 +7,14 @@ import {
 import { useEffect, useState } from "react";
 
 /** 선택된 프리뷰 id를 웹뷰 래퍼와 postMessage로 양방향 동기화 */
-export const usePreviewSelectionSync = (entries: GalleryPreviewEntry[]): [string | null, (id: string) => void] => {
-  const [activeId, setActiveId] = useState<string | null>(entries[0]?.id ?? null);
+export const usePreviewSelectionSync = (
+  entries: GalleryPreviewEntry[],
+  /** 상태 링크로 연 프리뷰, 목록에 없으면 첫 프리뷰 */
+  initialId?: string,
+): [string | null, (id: string) => void] => {
+  const [activeId, setActiveId] = useState<string | null>(
+    () => entries.find((entry) => entry.id === initialId)?.id ?? entries[0]?.id ?? null,
+  );
 
   // 수동 클릭과 커서 동기화로 인한 프로그램적 선택 모두 여기로 모임, 부모(webview 래퍼)에
   // 알려서 익스텐션의 커서 추적 상태가 실제 표시 중인 프리뷰와 어긋나지 않게 함

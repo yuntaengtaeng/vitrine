@@ -25,7 +25,9 @@ test("/ 키로 검색창에 focus", async ({ page }) => {
 
 test("검색 결과가 없으면 안내 표시", async ({ page }) => {
   await page.getByRole("searchbox", { name: "Search previews" }).fill("no-such-preview");
-  await expect(page.getByRole("status")).toHaveText("No previews match “no-such-preview”");
+  await expect(page.getByRole("navigation", { name: "Previews" }).getByRole("status")).toHaveText(
+    "No previews match “no-such-preview”",
+  );
 });
 
 test("group을 접고 펼치기", async ({ page }) => {

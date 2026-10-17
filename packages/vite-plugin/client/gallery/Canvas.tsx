@@ -13,6 +13,7 @@ import { PanelTabs } from "./features/panel/PanelTabs";
 import { ViewSwitcher } from "./features/views/ViewSwitcher";
 import { useGlobalSelection } from "./useGlobalSelection";
 import { usePanelTab } from "./usePanelTab";
+import { encodeStateLink, type StateLink } from "./stateLink";
 import { openInEditor } from "./shared/editorLink";
 
 export const Canvas = (props: {
@@ -22,6 +23,8 @@ export const Canvas = (props: {
   stage: StageSettings;
   onStageChange: (patch: Partial<StageSettings>) => void;
   onFailedChange: (previewId: string, failed: boolean) => void;
+  /** 이 프리뷰를 상태 링크로 연 경우 그 상태 */
+  link?: StateLink;
 }) => {
   const { entry, onFailedChange, onStageChange } = props;
   const viewId = props.stage.view;
@@ -30,8 +33,8 @@ export const Canvas = (props: {
     (state) => resolveView(VIEWS, viewId, state.variants).layout(state),
     [viewId],
   );
-  const [globals, chooseGlobal] = useGlobalSelection();
-  const session = usePreviewSession(layoutFor, globals);
+  const [globals, chooseGlobal] = useGlobalSelection(props.link?.globals);
+  const session = usePreviewSession(layoutFor, globals, props.link);
   const [tabId, selectTab] = usePanelTab(PANEL_TABS[0].id);
   const activeTab = PANEL_TABS.find((tab) => tab.id === tabId) ?? PANEL_TABS[0];
   const ActivePanel = activeTab.Panel;
@@ -50,6 +53,17 @@ export const Canvas = (props: {
   };
 
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);
+
+  // 주소가 늘 지금 상태를 가리켜 새로고침과 Copy link가 같은 화면을 엶, 방문 기록은 쌓지 않음
+  // frame 준비 전에 쓰면 링크로 연 variant와 값을 복원하기 전에 지워짐
+  const started = ready !== null;
+  const variantKey = session.activeVariantKey ?? null;
+  const { overrides } = session;
+  useEffect(() => {
+    if (!started) return;
+    const hash = encodeStateLink({ previewId: entry.id, variantKey, args: overrides, globals });
+    window.history.replaceState(null, "", hash);
+  }, [started, entry.id, variantKey, overrides, globals]);
 
   return (
     <div className={styles.root}>

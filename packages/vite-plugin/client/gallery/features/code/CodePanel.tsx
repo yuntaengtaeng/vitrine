@@ -1,6 +1,6 @@
 import { useState } from "react";
 import * as styles from "./CodePanel.css";
-import { copyText } from "./copyText";
+import { copyText } from "../../shared/copyText";
 import { jsxSnippet } from "./jsxSnippet";
 
 type CopyStatus = "idle" | "copied" | "failed";

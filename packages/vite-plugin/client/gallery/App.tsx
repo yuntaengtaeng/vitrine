@@ -11,13 +11,16 @@ import { EmptyGallery } from "./features/emptyState/EmptyGallery";
 import { UpdateNotice } from "./features/hostNotice/UpdateNotice";
 import { useColorTheme } from "./useColorTheme";
 import { useHostCapabilities } from "./useHostCapabilities";
+import { decodeStateLink } from "./stateLink";
 import { isEmbeddedInFrame } from "./shared/editorLink";
 import { MenuIcon } from "./shared/icons/MenuIcon";
 
 /** Gallery UI, 사용자 코드는 실행하지 않고 프리뷰 렌더링은 iframe frame에 맡김 (ADR 007) */
 export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConfig }) => {
   const { entries } = props;
-  const [activeId, setActiveId] = usePreviewSelectionSync(entries);
+  // 처음 연 URL의 상태 링크는 그 프리뷰를 처음 보여줄 때 한 번만 적용
+  const [pendingLink, setPendingLink] = useState(() => decodeStateLink(window.location.hash));
+  const [activeId, setActiveId] = usePreviewSelectionSync(entries, pendingLink?.previewId);
   const activeEntry = entries.find((entry) => entry.id === activeId);
   const [embedded] = useState(() => isEmbeddedInFrame(window));
   // VS Code panel 안에서는 옆에 에디터가 있고, 바깥에서 에디터를 실행하면 새 창이 뜰 수 있어 숨김
@@ -36,6 +39,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
   }, [sidebarOpen]);
   const selectPreview = (id: string) => {
     setActiveId(id);
+    setPendingLink(null);
     setSidebarOpen(false);
   };
 
@@ -86,6 +90,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
             stage={stage}
             onStageChange={updateStage}
             onFailedChange={markFailed}
+            link={pendingLink?.previewId === activeEntry.id ? pendingLink : undefined}
           />
         )}
         </div>

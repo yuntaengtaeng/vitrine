@@ -17,8 +17,15 @@ export function parseGlobalSelection(raw: string | null): FrameGlobalValues {
 }
 
 /** toolbar에서 고른 globals, 프리뷰를 바꾸거나 reload해도 유지 */
-export const useGlobalSelection = (): [FrameGlobalValues, (name: string, value: string) => void] => {
-  const [chosen, setChosen] = useState(() => parseGlobalSelection(readStored(STORAGE_KEY)));
+/** `linked`는 상태 링크에 담긴 값, 저장된 값보다 우선하고 저장도 함 */
+export const useGlobalSelection = (linked?: FrameGlobalValues): [FrameGlobalValues, (name: string, value: string) => void] => {
+  const [chosen, setChosen] = useState(() => {
+    const stored = parseGlobalSelection(readStored(STORAGE_KEY));
+    if (!linked) return stored;
+    const merged = { ...stored, ...linked };
+    writeStored(STORAGE_KEY, JSON.stringify(merged));
+    return merged;
+  });
   const choose = (name: string, value: string) =>
     setChosen((current) => {
       const next = { ...current, [name]: value };

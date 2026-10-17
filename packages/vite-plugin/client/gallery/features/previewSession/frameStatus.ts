@@ -52,3 +52,13 @@ export function displayedArgs(
   }
   return merged;
 }
+
+/** 링크로 요청한 variant가 이 프리뷰에 없으면 frame이 고른 초기 variant로 시작 */
+export function startingSelection(
+  ready: FrameReadyMessage,
+  requested: { variantKey: string | null; args: FrameArgs } | undefined,
+): { variantKey: string | null; args: FrameArgs } {
+  if (!requested) return { variantKey: ready.initialVariantKey, args: {} };
+  const known = requested.variantKey !== null && ready.variants.some((variant) => variant.key === requested.variantKey);
+  return { variantKey: known ? requested.variantKey : ready.initialVariantKey, args: requested.args };
+}
