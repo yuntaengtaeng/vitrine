@@ -6,6 +6,7 @@ import { VariantPicker } from "./features/controls/VariantPicker";
 import { usePreviewSession } from "./features/previewSession/usePreviewSession";
 import { CanvasHeader } from "./features/header/CanvasHeader";
 import { ErrorCard } from "./features/previewError/ErrorCard";
+import { LoadingOverlay } from "./features/stage/LoadingOverlay";
 import { PreviewStage } from "./features/stage/PreviewStage";
 import { StageToolbar } from "./features/stage/StageToolbar";
 import type { StageSettings } from "./features/stage/stageSettings";
@@ -62,6 +63,7 @@ export const Canvas = (props: {
         contentHeight={session.status.height}
         settings={props.stage}
         viewports={props.viewports}
+        overlay={session.status.phase === "loading" && <LoadingOverlay />}
         fallback={
           error && (
             <ErrorCard

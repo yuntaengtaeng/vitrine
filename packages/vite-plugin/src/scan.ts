@@ -36,8 +36,10 @@ export interface PreviewScanner {
 type FileCache = Map<string, { mtimeMs: number; size: number; entries: PreviewEntry[] }>;
 
 /** 파일별 스캔 결과와 prop 타입 분석용 ts.Program을 캐시하는 스캐너 생성 */
+export const DEFAULT_INCLUDE = ["src/**/*.{tsx,jsx}"];
+
 export function createPreviewScanner(options: ScanOptions): PreviewScanner {
-  const { root, include = ["src/**/*.{tsx,jsx}"] } = options;
+  const { root, include = DEFAULT_INCLUDE } = options;
   const fileCache: FileCache = new Map();
   // ts.createProgram()이 tsconfig 전체를 다시 읽어들이는 비용이 커서(예제 9개
   // 파일 기준 Babel 스캔의 17배), 무효화될 때까지 한 번 만든 Program을 재사용

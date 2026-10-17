@@ -33,6 +33,8 @@ export interface GalleryViewport {
 export interface GalleryConfig {
   /** Responsive(무대 전체 너비) 외에 고를 수 있는 viewport */
   viewports: GalleryViewport[];
+  /** 스캔에 실제로 쓰는 glob 패턴, Vite root 기준 */
+  include: string[];
 }
 
 /** Gallery client virtual module 식별자 */

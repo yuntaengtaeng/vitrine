@@ -113,9 +113,7 @@ export const Sidebar = (props: {
       )}
       <div style={Styled.Tree}>
         {props.entries.length === 0 && (
-          <p style={Styled.Message}>
-            No @preview exports found yet. Add a `/** @preview */` comment above an export.
-          </p>
+          <p style={Styled.Message}>No previews yet</p>
         )}
         {searching && countSidebarEntries(visibleTree) === 0 && (
           <p style={Styled.Message} role="status">

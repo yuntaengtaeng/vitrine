@@ -8,6 +8,7 @@ import { useFailedPreviews } from "./useFailedPreviews";
 import { Sidebar } from "./features/sidebar/Sidebar";
 import { SidebarItem } from "./features/sidebar/SidebarItem";
 import { Canvas } from "./Canvas";
+import { EmptyGallery } from "./features/emptyState/EmptyGallery";
 import { isEmbeddedInFrame } from "./shared/editorLink";
 
 const Styled = {
@@ -49,6 +50,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
         )}
       />
       <div style={Styled.CanvasWrapper}>
+        {entries.length === 0 && <EmptyGallery include={props.config.include} />}
         {activeEntry && (
           <Canvas
             key={activeEntry.id}

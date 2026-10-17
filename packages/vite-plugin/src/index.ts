@@ -13,7 +13,7 @@ import {
   PREVIEW_SETUP_RECOVER_EVENT,
 } from "@vitrine/protocol";
 import type { Logger, Plugin } from "vite";
-import { createPreviewScanner, type PreviewScanner } from "./scan.js";
+import { DEFAULT_INCLUDE, createPreviewScanner, type PreviewScanner } from "./scan.js";
 import { renderPreviewsModule } from "./previews-module.js";
 import { createPreviewTracker, type PreviewTracker } from "./preview-tracker.js";
 import { removePortFile, writePortFile } from "./port-file.js";
@@ -81,12 +81,13 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       previewSetup = options.setupFile
         ? resolvePreviewSetupPath(root, options.setupFile)
         : undefined;
-      scanner = createPreviewScanner({ root, include: options.include });
+      const include = options.include ?? DEFAULT_INCLUDE;
+      scanner = createPreviewScanner({ root, include });
       tracker = createPreviewTracker(scanner.scan);
       // 사용자 함수는 Node에서 한 번 실행하고 Gallery에는 결과만 데이터로 전달 (ADR 007)
       const { viewports, warning } = resolveViewports(options.viewports);
       if (warning) logger.warn(warning);
-      galleryConfigModule = renderGalleryConfigModule({ viewports });
+      galleryConfigModule = renderGalleryConfigModule({ viewports, include });
     },
 
     resolveId(id) {

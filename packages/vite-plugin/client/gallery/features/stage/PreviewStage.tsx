@@ -37,7 +37,13 @@ const Styled = {
     fontVariantNumeric: "tabular-nums",
   } satisfies CSSProperties,
   // border는 iframe 너비를 줄여 breakpoint 판정이 어긋나므로 너비에 포함되지 않는 outline 사용
-  Frame: { outline: "1px dashed", outlineOffset: 0, borderRadius: 8, overflow: "hidden" } satisfies CSSProperties,
+  Frame: {
+    position: "relative",
+    outline: "1px dashed",
+    outlineOffset: 0,
+    borderRadius: 8,
+    overflow: "hidden",
+  } satisfies CSSProperties,
   Iframe: { display: "block", width: "100%", border: 0, background: "transparent" } satisfies CSSProperties,
 };
 
@@ -51,6 +57,8 @@ export const PreviewStage = (props: {
   viewports: readonly GalleryViewport[];
   /** 프레임 대신 보여줄 내용, iframe은 숨기기만 해서 복구되면 frame이 다시 알릴 수 있음 */
   fallback?: ReactNode;
+  /** 프레임 위에 겹쳐 보여줄 내용, iframe은 그대로 보임 */
+  overlay?: ReactNode;
 }) => {
   const { entry, iframeRef } = props;
   const frameRef = useRef<HTMLDivElement>(null);
@@ -86,6 +94,7 @@ export const PreviewStage = (props: {
             style={{ ...Styled.Iframe, height: Math.max(props.contentHeight ?? 0, MIN_FRAME_HEIGHT) }}
             data-frame-state={props.framePhase}
           />
+          {props.overlay}
         </div>
       </div>
     </div>

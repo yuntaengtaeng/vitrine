@@ -52,3 +52,15 @@ test("무대 설정은 다른 프리뷰와 새로고침 뒤에도 유지", async
   await expect(frame(page)).toHaveAttribute("data-background", "transparent");
   await expect(page.getByLabel("Viewport")).toHaveValue("Tablet");
 });
+
+test("frame이 늦게 뜨면 로딩 표시 후 프리뷰로 바뀜", async ({ page }) => {
+  await page.route("**/__vitrine/frame?**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await route.continue();
+  });
+  await openPreview(page, "Badge");
+
+  await expect(page.getByRole("status").filter({ hasText: "Loading preview" })).toBeVisible();
+  await expect((await previewFrame(page)).getByText("New", { exact: true })).toBeVisible();
+  await expect(page.getByText("Loading preview")).toHaveCount(0);
+});
