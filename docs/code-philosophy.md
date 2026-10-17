@@ -1,7 +1,7 @@
 # Readable & Testable Code Philosophy
 
 이 문서는 Vitrine 코드를 작성하거나 수정할 때 가장 우선하는 판단 기준을 관리한다.
-[`agent-guidelines.md`](./agent-guidelines.md)의 제품 범위와 runtime invariant 안에서, 코드 구조를
+[`CONTRIBUTING.md`](../CONTRIBUTING.md)의 제품 범위와 runtime invariant 안에서, 코드 구조를
 결정할 때는 이 문서를 특정 아키텍처나 디자인 패턴보다 먼저 적용한다.
 
 코드를 작성하거나 수정할 때 다음 질문을 가장 먼저 확인한다.

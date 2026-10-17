@@ -10,11 +10,11 @@ description: Vitrine의 제품 코드, build, package, test를 구현하거나 �
 
 ## 먼저 읽기
 
-코드를 쓰기 전에 [`code-philosophy.md`](../../../ai-docs/code-philosophy.md)를 전부 읽고 적용한다.
+코드를 쓰기 전에 [`code-philosophy.md`](../../../docs/code-philosophy.md)를 전부 읽고 적용한다.
 이 프로젝트의 코드 구조 판단 기준이며 아래 절차보다 우선한다. 그 밖에
-[`architecture.md`](../../../ai-docs/architecture.md), 변경과 관련된
-[`adr/`](../../../ai-docs/adr/), 재현된 실패가 관련되면
-[`troubleshooting.md`](../../../ai-docs/troubleshooting.md)를 확인한다.
+[`architecture.md`](../../../docs/architecture.md), 변경과 관련된
+[`adr/`](../../../docs/adr/), 재현된 실패가 관련되면
+[`troubleshooting.md`](../../../docs/troubleshooting.md)를 확인한다.
 
 공통 architecture나 과거 버그를 skill에 복사하지 않는다. 코드와 문서가 다르면 코드를 확인한
 뒤 책임을 가진 canonical 문서를 갱신한다.
@@ -37,7 +37,7 @@ Generated asset은 직접 수정하지 않고 source와 build pipeline을 수정
 ## 코드 구조 판단
 
 위치를 정한 뒤 함수, component, module의 구조는
-[`code-philosophy.md`](../../../ai-docs/code-philosophy.md)의 Agent Decision Rule 순서로 판단한다. 테스트 작성이
+[`code-philosophy.md`](../../../docs/code-philosophy.md)의 Agent Decision Rule 순서로 판단한다. 테스트 작성이
 어렵다면 mock이나 setup을 늘리기 전에 순수 판단 로직과 side effect의 경계를 먼저 검토한다.
 완료 전에는 같은 문서의 최종 체크로 가독성과 행동 테스트 용이성을 확인한다.
 
