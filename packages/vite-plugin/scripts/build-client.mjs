@@ -7,8 +7,6 @@ import { GALLERY_CONFIG_MODULE_ID, PREVIEWS_MODULE_ID } from "@vitrine/protocol"
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-// Gallery UI와 iframe 안 frame renderer는 package files에 포함되는 dist 아래 각각 단일 bundle로 생성
-// React와 virtual module은 사용자의 Vite runtime이 해석하므로 external로 유지
 const outdir = path.join(packageRoot, "dist", "gallery");
 
 // vanilla-extract가 class마다 source를 담은 주석을 남겨 CSS 크기가 몇 배가 되므로 CSS만 압축
@@ -24,6 +22,8 @@ const minifyGalleryStyles = {
   },
 };
 
+// Gallery UI와 iframe 안 frame renderer는 package files에 포함되는 dist 아래 각각 단일 bundle로 생성
+// React와 virtual module은 사용자의 Vite runtime이 해석하므로 external로 유지
 const options = {
   entryPoints: {
     "gallery-client": path.join(packageRoot, "client", "gallery-client.tsx"),
