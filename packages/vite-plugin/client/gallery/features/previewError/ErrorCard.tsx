@@ -37,10 +37,11 @@ const Styled = {
     color: COLOR.muted,
     whiteSpace: "pre",
   } satisfies CSSProperties,
+  LibraryFrame: { opacity: 0.55 } satisfies CSSProperties,
 };
 
 export const ErrorCard = (props: { failure: PreviewFailure; onOpenInEditor?: () => void }) => {
-  const frames = stackFrames(props.failure);
+  const frames = stackFrames(props.failure, window.location.origin);
   return (
     <section role="alert" aria-label="Preview error" style={Styled.Root}>
       <div style={Styled.Header}>
@@ -54,10 +55,16 @@ export const ErrorCard = (props: { failure: PreviewFailure; onOpenInEditor?: () 
           </button>
         )}
       </div>
-      {frames && (
+      {frames.length > 0 && (
         <details style={Styled.Details}>
           <summary style={Styled.Summary}>Stack trace</summary>
-          <pre style={Styled.Stack}>{frames}</pre>
+          <pre style={Styled.Stack}>
+            {frames.map((frame, index) => (
+              <div key={index} style={frame.library ? Styled.LibraryFrame : undefined}>
+                {frame.text}
+              </div>
+            ))}
+          </pre>
         </details>
       )}
     </section>

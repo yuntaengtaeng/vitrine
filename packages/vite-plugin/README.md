@@ -102,15 +102,18 @@ preview(Button, {
 
 The wrapper only affects the preview. It does not change the exported component.
 
-## Providers and context
+## Providers, context and global CSS
 
-The gallery has its own React root, so it cannot inherit context from providers mounted by
-your application. Add a setup file when every preview needs the same providers:
+Each preview renders in its own frame, so it does not inherit providers or global CSS from your
+application. Fonts, CSS resets and Tailwind styles imported in `main.tsx` do not reach previews,
+and text falls back to the browser's default font. Add a setup file when every preview needs the
+same providers or stylesheets:
 
 ```tsx
 // src/vitrine.preview.tsx
 import type { PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
 import { DarkModeProvider } from "./DarkModeProvider";
+import "./index.css";
 
 export default function PreviewSetup({ children }: PreviewWrapperProps) {
   return <DarkModeProvider>{children}</DarkModeProvider>;

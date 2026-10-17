@@ -102,15 +102,17 @@ preview(Button, {
 
 Wrapper는 프리뷰에만 적용되며 export한 컴포넌트는 바꾸지 않습니다.
 
-## Provider와 context
+## Provider, context와 전역 CSS
 
-갤러리는 별도의 React root를 사용하므로 앱에 마운트된 provider의 context를 상속할 수 없습니다.
-모든 프리뷰에 같은 provider가 필요하면 setup file을 추가합니다.
+프리뷰는 각자 별도 frame에서 렌더링되므로 앱의 provider와 전역 CSS를 상속하지 않습니다.
+`main.tsx`에서 import한 폰트, CSS reset, Tailwind 스타일은 프리뷰에 적용되지 않고 글자는 브라우저
+기본 폰트로 보입니다. 모든 프리뷰에 같은 provider나 stylesheet가 필요하면 setup file을 추가합니다.
 
 ```tsx
 // src/vitrine.preview.tsx
 import type { PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
 import { DarkModeProvider } from "./DarkModeProvider";
+import "./index.css";
 
 export default function PreviewSetup({ children }: PreviewWrapperProps) {
   return <DarkModeProvider>{children}</DarkModeProvider>;

@@ -230,7 +230,7 @@ props를 줄이는 판단은 다음 순서를 따른다.
 // Better: 필요한 조각만 조합
 <ControlField>
   <ControlField.Label name="label" type="string" optional />
-  <ControlInput ... />
+  <ControlField.Input><ControlInput ... /></ControlField.Input>
   {changed && <ControlField.Reset name="label" onReset={reset} />}
 </ControlField>
 ```

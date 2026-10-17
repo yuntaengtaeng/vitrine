@@ -29,8 +29,8 @@ const Styled = {
   ResetAll: { ...SECONDARY_BUTTON, marginLeft: "auto", padding: "0.2rem 0.6rem" } satisfies CSSProperties,
   Fields: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "0.35rem 1.5rem",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "0.9rem 1.5rem",
   } satisfies CSSProperties,
 };
 
@@ -61,12 +61,14 @@ export const ControlsPanel = (props: {
         {entries.map(([name, control]) => (
           <ControlField key={name}>
             <ControlField.Label name={name} type={controlTypeLabel(control)} optional={control.optional} />
-            <ControlInput
-              name={name}
-              control={control}
-              value={props.args[name]}
-              onChange={(next) => props.onChange(name, next)}
-            />
+            <ControlField.Input>
+              <ControlInput
+                name={name}
+                control={control}
+                value={props.args[name]}
+                onChange={(next) => props.onChange(name, next)}
+              />
+            </ControlField.Input>
             {props.changed.has(name) && <ControlField.Reset name={name} onReset={() => props.onReset(name)} />}
           </ControlField>
         ))}
