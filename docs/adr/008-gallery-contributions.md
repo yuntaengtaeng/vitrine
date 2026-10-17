@@ -37,6 +37,8 @@ interface GalleryPanelTab {
   id: string;
   label: string;
   Panel: ComponentType<ContributionProps>;
+  /** 이 프리뷰에서 탭을 보일지, 없으면 항상 (Actions는 action prop이 있을 때만) */
+  available?: (entry: GalleryPreviewEntry) => boolean;
   /** 탭 줄 오른쪽에 두는 버튼(Props의 Reset all 등), 내용 위에 두면 값을 바꿀 때 내용이 밀림 */
   Actions?: ComponentType<ContributionProps>;
 }

@@ -7,7 +7,7 @@ import { usePreviewFrame } from "./usePreviewFrame";
 /** `requested`는 상태 링크로 연 경우 시작할 variant와 값 */
 export const usePreviewSession = (layoutFor: LayoutFor, globals: FrameGlobalValues, requested?: FrameSelection) => {
   const [selection, setSelection] = useState<FrameSelection | null>(null);
-  const { iframeRef, status } = usePreviewFrame(selection, layoutFor, globals);
+  const { iframeRef, status, clearActions } = usePreviewFrame(selection, layoutFor, globals);
   const { ready } = status;
 
   // 첫 frameReady로 frame이 고른 초기 variant를 알게 되면 그때부터 Gallery가 상태를 소유
@@ -38,5 +38,6 @@ export const usePreviewSession = (layoutFor: LayoutFor, globals: FrameGlobalValu
     changeArg,
     resetArg,
     resetAllArgs,
+    clearActions,
   };
 };

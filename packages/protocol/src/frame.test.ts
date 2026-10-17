@@ -60,6 +60,8 @@ describe("isFrameToGalleryMessage", () => {
     expect(isFrameToGalleryMessage(ready)).toBe(true);
     expect(isFrameToGalleryMessage({ type: "frameSize", height: 120 })).toBe(true);
     expect(isFrameToGalleryMessage({ type: "frameError", message: "boom", stack: "at Button" })).toBe(true);
+    expect(isFrameToGalleryMessage({ type: "frameAction", name: "onClick", args: ["[event click]"], at: 1 })).toBe(true);
+    expect(isFrameToGalleryMessage({ type: "frameAction", name: "", args: [], at: 1 })).toBe(false);
   });
 
   it("control 형식이 틀리거나 variant args에 객체가 있으면 거부", () => {

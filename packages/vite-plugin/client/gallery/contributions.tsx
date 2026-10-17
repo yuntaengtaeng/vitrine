@@ -1,5 +1,6 @@
 import type { FrameGlobalValues, FrameVariant, GalleryViewport } from "@vitrine/protocol";
 import type { ComponentType } from "react";
+import { ActionsLog, ClearActionsButton } from "./features/actions/ActionsLog";
 import { CodePanel } from "./features/code/CodePanel";
 import { ControlsPanel, ResetAllButton } from "./features/controls/ControlsPanel";
 import { VariantPicker } from "./features/controls/VariantPicker";
@@ -14,6 +15,7 @@ import { singleLayout, variantsLayout } from "./features/views/viewLayouts";
 // 기능 폴더는 등록을 모르는 컴포넌트와 순수 함수만 내보내고, 화면 자리 배치는 여기서만 정함 (ADR 008)
 
 export interface ContributionProps {
+  entry: GalleryPreviewEntry;
   session: ReturnType<typeof usePreviewSession>;
   /** 지금 프리뷰에서 실제로 보이는 보기 */
   viewId: string;
@@ -42,6 +44,8 @@ export interface GalleryPanelTab {
   id: string;
   label: string;
   Panel: ComponentType<ContributionProps>;
+  /** 없으면 모든 프리뷰에서 보임 */
+  available?: (entry: GalleryPreviewEntry) => boolean;
   Actions?: ComponentType<ContributionProps>;
 }
 
@@ -117,7 +121,21 @@ const CodeTab = ({ session }: ContributionProps) => {
   );
 };
 
+const ActionsTab = ({ entry, session }: ContributionProps) => (
+  <ActionsLog calls={session.status.actions} names={entry.actions ?? []} />
+);
+
+const ActionsTabActions = ({ session }: ContributionProps) =>
+  session.status.actions.length > 0 ? <ClearActionsButton onClear={session.clearActions} /> : null;
+
 export const PANEL_TABS: readonly GalleryPanelTab[] = [
   { id: "props", label: "Props", Panel: PropsPanel, Actions: PropsActions },
+  {
+    id: "actions",
+    label: "Actions",
+    Panel: ActionsTab,
+    available: (entry) => (entry.actions ?? []).length > 0,
+    Actions: ActionsTabActions,
+  },
   { id: "code", label: "Code", Panel: CodeTab },
 ];

@@ -4,7 +4,7 @@ import type { ManifestEntry } from "@vitrine/protocol";
 import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
-import { createTypeContext, getPropControls, type TypeContext } from "./props-controls.js";
+import { analyzeProps, createTypeContext, type TypeContext } from "./props-controls.js";
 
 // CJS/ESM interop에 따라 default export가 한 번 더 감싸여 오는 경우 보정
 const traverse = (
@@ -53,7 +53,7 @@ export function createPreviewScanner(options: ScanOptions): PreviewScanner {
       for (const file of files) {
         for (const entry of scanFile(file, root, fileCache)) {
           // scanFile 캐시 entry를 공유하므로 복사해서 확장
-          entries.push({ ...entry, controls: getPropControls(file, entry.exportName, context) });
+          entries.push({ ...entry, ...analyzeProps(file, entry.exportName, context) });
         }
       }
       return entries;

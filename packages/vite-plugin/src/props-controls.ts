@@ -25,40 +25,64 @@ export function createTypeContext(root: string): TypeContext {
 }
 
 
-export function getPropControls(file: string, exportName: string, context: TypeContext): PropControls {
+export interface PropAnalysis {
+  controls: PropControls;
+  /** Gallery가 호출을 기록할 함수 prop 이름 */
+  actions: string[];
+}
+
+const NO_PROPS: PropAnalysis = { controls: {}, actions: [] };
+
+// Storybook 기본 규칙과 같이 on으로 시작하는 함수만, ComponentType 같은 render prop은 호출 기록 대상이 아님
+const ACTION_NAME = /^on[A-Z]/;
+
+/** export된 컴포넌트의 props 타입에서 Gallery control과 action prop을 추론 */
+export function analyzeProps(file: string, exportName: string, context: TypeContext): PropAnalysis {
   const source = context.program.getSourceFile(file);
   const moduleSymbol = source && context.checker.getSymbolAtLocation(source);
-  if (!source || !moduleSymbol) return {};
+  if (!source || !moduleSymbol) return NO_PROPS;
 
   const exported = context.checker
     .getExportsOfModule(moduleSymbol)
     .find((symbol) => symbol.name === exportName);
-  if (!exported) return {};
+  if (!exported) return NO_PROPS;
 
   const symbol = exported.flags & ts.SymbolFlags.Alias
     ? context.checker.getAliasedSymbol(exported)
     : exported;
   const declaration = symbol.valueDeclaration ?? symbol.declarations?.[0];
-  if (!declaration) return {};
+  if (!declaration) return NO_PROPS;
 
   const componentType = context.checker.getTypeOfSymbolAtLocation(symbol, declaration);
   const signature = componentType.getCallSignatures()[0];
   const parameter = signature?.getParameters()[0];
-  if (!parameter) return {};
+  if (!parameter) return NO_PROPS;
 
   const parameterDeclaration = parameter.valueDeclaration ?? parameter.declarations?.[0] ?? declaration;
   const propsType = context.checker.getTypeOfSymbolAtLocation(parameter, parameterDeclaration);
   const controls: PropControls = {};
+  const actions: string[] = [];
 
   for (const prop of context.checker.getPropertiesOfType(propsType)) {
     const propDeclaration = prop.valueDeclaration ?? prop.declarations?.[0] ?? parameterDeclaration;
     const propType = context.checker.getTypeOfSymbolAtLocation(prop, propDeclaration);
+    if (ACTION_NAME.test(prop.name) && isFunctionType(propType)) {
+      actions.push(prop.name);
+      continue;
+    }
     const optional = Boolean(prop.flags & ts.SymbolFlags.Optional);
     const control = toControl(propType, optional, context.checker);
     if (control) controls[prop.name] = control;
   }
 
-  return controls;
+  return { controls, actions };
+}
+
+function isFunctionType(type: ts.Type): boolean {
+  const members = type.isUnion()
+    ? type.types.filter((member) => !(member.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null)))
+    : [type];
+  return members.length > 0 && members.every((member) => member.getCallSignatures().length > 0);
 }
 
 function toControl(type: ts.Type, optional: boolean, checker: ts.TypeChecker): PropControl | null {

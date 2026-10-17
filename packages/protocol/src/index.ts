@@ -84,13 +84,18 @@ export interface ManifestEntry {
   startLine: number;
   endLine: number;
   controls: PropControls;
+  /** 호출을 기록할 함수 prop 이름, 0.2 이전 plugin의 manifest에는 없음 */
+  actions?: string[];
 }
 
 /**
  * Plugin이 프리뷰 목록 virtual module로 Gallery에 넘기는 entry 필드
  * 줄 번호를 빼야 export 위 코드가 밀려도 module 내용이 그대로라 Gallery 전체 reload가 생기지 않음
  */
-export type GalleryEntryData = Pick<ManifestEntry, "id" | "name" | "group" | "file" | "exportName" | "controls">;
+export type GalleryEntryData = Pick<
+  ManifestEntry,
+  "id" | "name" | "group" | "file" | "exportName" | "controls" | "actions"
+>;
 
 /** Runtime 사이에 전송되는 프리뷰 manifest */
 export type Manifest = ManifestEntry[];
@@ -204,7 +209,9 @@ function isManifestEntry(value: unknown): value is ManifestEntry {
     !isPositiveSafeInteger(value.startLine) ||
     !isPositiveSafeInteger(value.endLine) ||
     value.startLine > value.endLine ||
-    !isRecord(value.controls)
+    !isRecord(value.controls) ||
+    (value.actions !== undefined &&
+      (!Array.isArray(value.actions) || !value.actions.every((name) => isNonEmptyString(name))))
   ) {
     return false;
   }

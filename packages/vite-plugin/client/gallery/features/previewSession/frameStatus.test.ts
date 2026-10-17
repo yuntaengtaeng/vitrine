@@ -1,6 +1,14 @@
 import { FRAME_PROTOCOL, type FrameReadyMessage } from "@vitrine/protocol";
 import { describe, expect, it } from "vitest";
-import { INITIAL_FRAME_STATUS, displayedArgs, reduceFrameStatus, startingSelection, toOverrideValue } from "./frameStatus";
+import {
+  CLEAR_ACTIONS,
+  INITIAL_FRAME_STATUS,
+  MAX_ACTIONS,
+  displayedArgs,
+  reduceFrameStatus,
+  startingSelection,
+  toOverrideValue,
+} from "./frameStatus";
 
 describe("toOverrideValue", () => {
   it("비운 값은 null, 보낼 수 없는 값은 undefined", () => {
@@ -73,5 +81,22 @@ describe("startingSelection", () => {
       variantKey: "danger",
       args: { label: "Go" },
     });
+  });
+});
+
+describe("actions log", () => {
+  const call = (index: number) => ({ type: "frameAction" as const, name: "onClick", args: [String(index)], at: index });
+
+  it("호출을 순서대로 쌓고 지우기로 비움", () => {
+    const logged = reduceFrameStatus(reduceFrameStatus(INITIAL_FRAME_STATUS, call(1)), call(2));
+    expect(logged.actions.map((action) => action.at)).toEqual([1, 2]);
+    expect(reduceFrameStatus(logged, CLEAR_ACTIONS).actions).toEqual([]);
+  });
+
+  it("최근 MAX_ACTIONS개만 보관", () => {
+    let status = INITIAL_FRAME_STATUS;
+    for (let index = 0; index < MAX_ACTIONS + 5; index += 1) status = reduceFrameStatus(status, call(index));
+    expect(status.actions).toHaveLength(MAX_ACTIONS);
+    expect(status.actions[0].at).toBe(5);
   });
 });

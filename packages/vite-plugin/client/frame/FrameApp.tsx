@@ -1,4 +1,5 @@
 import {
+  FRAME_ACTION_MESSAGE_TYPE,
   FRAME_ERROR_MESSAGE_TYPE,
   FRAME_SIZE_MESSAGE_TYPE,
   resolveGlobals,
@@ -17,6 +18,7 @@ import { fixedGlobals } from "./preview/previewGlobals";
 import { buildFrameReady, resolveFrameArgs } from "./bridge/frameMessages";
 import { sendToGallery, subscribeToGallery } from "./bridge/galleryBridge";
 import { useReportedHeight } from "./bridge/useReportedHeight";
+import { formatActionArg } from "./bridge/actionArgs";
 
 const Styled = {
   // 작은 컴포넌트는 무대 가운데에 보이고, 너비 100% 컴포넌트는 frame 너비를 채움
@@ -35,6 +37,11 @@ const reportError = (error: Error) =>
   sendToGallery({ type: FRAME_ERROR_MESSAGE_TYPE, message: error.message, stack: error.stack });
 
 const ignoreCellError = () => {};
+
+const reportAction = (name: string, values: unknown[]) =>
+  sendToGallery({ type: FRAME_ACTION_MESSAGE_TYPE, name, args: values.map(formatActionArg), at: Date.now() });
+
+const NO_ACTIONS: string[] = [];
 
 /** iframe 안에서 setup file과 프리뷰 하나를 로드하고 Gallery가 보낸 상태로 렌더링 */
 export const FrameApp = (props: {
@@ -108,6 +115,8 @@ export const FrameApp = (props: {
                 globalWrapper={setup.wrapper}
                 wrapper={view.preview.config.wrapper}
                 globals={globalsFor(cell.variantKey)}
+                actions={entry.actions ?? NO_ACTIONS}
+                onAction={reportAction}
               />
             </PreviewErrorBoundary>
           )}
@@ -121,6 +130,8 @@ export const FrameApp = (props: {
             globalWrapper={setup.wrapper}
             wrapper={view.preview.config.wrapper}
             globals={globalsFor(render?.variantKey)}
+            actions={entry.actions ?? NO_ACTIONS}
+            onAction={reportAction}
           />
         </PreviewErrorBoundary>
       )}

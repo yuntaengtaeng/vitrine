@@ -1,6 +1,9 @@
 import {
+  FRAME_ACTION_MESSAGE_TYPE,
   FRAME_ERROR_MESSAGE_TYPE,
   FRAME_READY_MESSAGE_TYPE,
+  FRAME_SIZE_MESSAGE_TYPE,
+  type FrameActionMessage,
   type FrameArgValue,
   type FrameArgs,
   type FrameReadyMessage,
@@ -15,19 +18,32 @@ export interface FrameStatus {
   error: { message: string; stack?: string } | null;
   /** frame이 보고한 내용 높이(px), 보고 전에는 null */
   height: number | null;
+  /** 오래된 것부터 최근 MAX_ACTIONS개 */
+  actions: Omit<FrameActionMessage, "type">[];
 }
 
-export const INITIAL_FRAME_STATUS: FrameStatus = { phase: "loading", ready: null, error: null, height: null };
+// 오래 켜 둔 프리뷰에서 기록이 끝없이 쌓이지 않도록 최근 것만 보관
+export const MAX_ACTIONS = 100;
 
-/** frame 메시지로 Gallery가 아는 frame 상태 갱신 */
-export function reduceFrameStatus(status: FrameStatus, message: FrameToGalleryMessage): FrameStatus {
+export const CLEAR_ACTIONS = { type: "clearActions" } as const;
+
+export const INITIAL_FRAME_STATUS: FrameStatus = { phase: "loading", ready: null, error: null, height: null, actions: [] };
+
+/** frame 메시지와 Actions 지우기로 Gallery가 아는 frame 상태 갱신 */
+export function reduceFrameStatus(status: FrameStatus, message: FrameToGalleryMessage | typeof CLEAR_ACTIONS): FrameStatus {
   switch (message.type) {
     case FRAME_READY_MESSAGE_TYPE:
       return { ...status, phase: "ready", ready: message, error: null };
     case FRAME_ERROR_MESSAGE_TYPE:
       return { ...status, phase: "error", error: { message: message.message, stack: message.stack } };
-    default:
+    case FRAME_SIZE_MESSAGE_TYPE:
       return { ...status, height: message.height };
+    case FRAME_ACTION_MESSAGE_TYPE: {
+      const call = { name: message.name, args: message.args, at: message.at };
+      return { ...status, actions: [...status.actions, call].slice(-MAX_ACTIONS) };
+    }
+    case CLEAR_ACTIONS.type:
+      return { ...status, actions: [] };
   }
 }
 

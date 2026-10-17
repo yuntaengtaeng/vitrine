@@ -21,6 +21,7 @@ export const FRAME_SIZE_MESSAGE_TYPE = "frameSize";
 
 /** Frame이 로드나 렌더 실패를 알리는 message type */
 export const FRAME_ERROR_MESSAGE_TYPE = "frameError";
+export const FRAME_ACTION_MESSAGE_TYPE = "frameAction";
 
 /** Frame과 주고받을 수 있는 prop 값 (control로 편집 가능한 값만), null은 선택 prop을 비운 상태 */
 export type FrameArgValue = string | number | boolean | null;
@@ -118,7 +119,17 @@ export interface FrameErrorMessage {
 export type GalleryToFrameMessage = FrameRenderMessage;
 
 /** Frame에서 Gallery로 보내는 message */
-export type FrameToGalleryMessage = FrameReadyMessage | FrameSizeMessage | FrameErrorMessage;
+/** Frame -> Gallery: 프리뷰가 action prop을 호출함 */
+export interface FrameActionMessage {
+  type: typeof FRAME_ACTION_MESSAGE_TYPE;
+  name: string;
+  /** 호출 인자를 읽을 수 있게 줄인 문자열, 원본 값은 frame에만 남음 */
+  args: string[];
+  /** 호출 시각(ms) */
+  at: number;
+}
+
+export type FrameToGalleryMessage = FrameReadyMessage | FrameSizeMessage | FrameErrorMessage | FrameActionMessage;
 
 const FRAME_CONTROL_TYPES = new Set<string>(["text", "number", "boolean", "select", "radio"]);
 
@@ -164,6 +175,8 @@ export function isFrameToGalleryMessage(value: unknown): value is FrameToGallery
       return isFrameReady(value);
     case FRAME_SIZE_MESSAGE_TYPE:
       return typeof value.height === "number" && Number.isFinite(value.height) && value.height >= 0;
+    case FRAME_ACTION_MESSAGE_TYPE:
+      return isNonEmptyString(value.name) && isNameList(value.args) && Number.isFinite(value.at);
     case FRAME_ERROR_MESSAGE_TYPE:
       return typeof value.message === "string" && (value.stack === undefined || typeof value.stack === "string");
     default:

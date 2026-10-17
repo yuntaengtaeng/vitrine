@@ -36,13 +36,15 @@ export const Canvas = (props: {
   const [globals, chooseGlobal] = useGlobalSelection(props.link?.globals);
   const session = usePreviewSession(layoutFor, globals, props.link);
   const [tabId, selectTab] = usePanelTab(PANEL_TABS[0].id);
-  const activeTab = PANEL_TABS.find((tab) => tab.id === tabId) ?? PANEL_TABS[0];
+  const tabs = PANEL_TABS.filter((tab) => tab.available?.(entry) ?? true);
+  const activeTab = tabs.find((tab) => tab.id === tabId) ?? tabs[0];
   const ActivePanel = activeTab.Panel;
   const ActiveActions = activeTab.Actions;
   const { ready, error } = session.status;
   const variants = ready?.variants ?? [];
   const availableViews = VIEWS.filter((view) => view.available(variants));
   const contribution: ContributionProps = {
+    entry,
     session,
     viewId: resolveView(VIEWS, viewId, variants).id,
     stage: props.stage,
@@ -100,7 +102,7 @@ export const Canvas = (props: {
       />
       {ready && (
         <PanelTabs
-          tabs={PANEL_TABS}
+          tabs={tabs}
           activeId={activeTab.id}
           onSelect={selectTab}
           actions={ActiveActions && <ActiveActions {...contribution} />}

@@ -1,7 +1,7 @@
 import type { FrameGlobalValues } from "@vitrine/protocol";
 import { useEffect, useReducer, useRef } from "react";
 import { createGalleryFrameLink, type FrameSelection, type GalleryFrameLink, type LayoutFor } from "./frameLink";
-import { INITIAL_FRAME_STATUS, reduceFrameStatus } from "./frameStatus";
+import { CLEAR_ACTIONS, INITIAL_FRAME_STATUS, reduceFrameStatus } from "./frameStatus";
 
 /**
  * 프리뷰 iframe과의 연결, 받은 메시지로 frame 상태를 갱신하고 그릴 상태를 frame 준비에 맞춰 전송
@@ -38,5 +38,5 @@ export const usePreviewFrame = (selection: FrameSelection | null, layoutFor: Lay
     linkRef.current?.render({ ...selection, layout, globals });
   }, [selection, variants, layoutFor, globals]);
 
-  return { iframeRef, status };
+  return { iframeRef, status, clearActions: () => dispatch(CLEAR_ACTIONS) };
 };

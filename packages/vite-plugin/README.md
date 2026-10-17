@@ -99,8 +99,14 @@ preview(Button, {
 | `variants` | Named sets of args, switchable from the gallery |
 | `defaultVariant` | Variant selected first. Defaults to the first key of `variants` |
 | `wrapper` | React wrapper for this component preview, such as a router or provider |
+| `globals` | Globals fixed for this preview, see [Globals](#globals) |
 
 The wrapper only affects the preview. It does not change the exported component.
+
+Function props whose names start with `on` and a capital letter, such as `onClick`, are
+recorded: each call shows up in the gallery's Actions tab with its arguments. A function you pass
+in `args` still runs and its return value is kept. Other function props, such as render props or
+component props, are left alone.
 
 ## Providers, context and global CSS
 

@@ -4,8 +4,8 @@ import type { PreviewEntry } from "./scan.js";
 
 /** 스캔 entry에서 Gallery로 넘길 필드만 추출 */
 export function toGalleryEntry(entry: PreviewEntry): GalleryEntryData {
-  const { id, name, group, file, exportName, controls } = entry;
-  return { id, name, group, file, exportName, controls };
+  const { id, name, group, file, exportName, controls, actions } = entry;
+  return { id, name, group, file, exportName, controls, actions };
 }
 
 /** 스캔된 프리뷰 목록과 setup module loader를 가상 모듈 JS 문자열로 직렬화 */
