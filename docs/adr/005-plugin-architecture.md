@@ -30,6 +30,10 @@ vitrine({ plugins: [vitrineStatic()] });
 - Plugin API는 `0.x` 동안 실험 단계다. Plugin API의 breaking change는 `0.x`에서는 minor, `1.0`
   이후에는 major 버전에서만 하고 changelog에 이전 방법을 적는다. Plugin은 지원하는 코어 버전
   범위를 `peerDependencies`로 선언한다.
+- Plugin package 이름은 공식과 제3자 모두 `vitrine-plugin-<name>`을 쓰고 npm keyword에
+  `vitrine-plugin`을 넣는다. eslint, prettier의 관례와 같다. `@vitrine` scope와 `vitrine` 단독
+  이름은 다른 소유자가 사용 중이라 쓸 수 없다. 공식 plugin은 이 저장소에서 개발하고 문서의 공식
+  목록으로 구분한다.
 - 확장 지점(manifest 보강, Gallery toolbar와 패널, 프리뷰 wrapper, 빌드)은 첫 공식 plugin을
   구현하며 정하고 별도 설계 문서에 기록한다. 쓰는 곳 없이 확장 지점을 미리 공개하지 않는다.
 
