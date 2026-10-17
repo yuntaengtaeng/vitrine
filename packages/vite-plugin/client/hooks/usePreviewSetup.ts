@@ -2,11 +2,12 @@
 import { PREVIEW_SETUP_RECOVER_EVENT } from "@vitrine/protocol";
 import { useEffect, useState } from "react";
 import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
-import { isPreviewComponent } from "../components/previewConfig";
+import { isPreviewComponent } from "../preview/previewConfig";
 
 type PreviewSetupLoader = (() => Promise<{ default?: unknown }>) | undefined;
 
-interface PreviewSetupState {
+/** setup file의 전역 wrapper 로드 상태 */
+export interface PreviewSetupState {
   wrapper: PreviewWrapper | undefined;
   error: Error | null;
   loading: boolean;

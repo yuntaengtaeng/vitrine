@@ -1,12 +1,10 @@
 import type { CSSProperties } from "react";
-import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
-import { usePreviewCanvas } from "../hooks/usePreviewCanvas";
+import { usePreviewModule } from "../hooks/usePreviewModule";
+import type { PreviewSetupState } from "../hooks/usePreviewSetup";
+import { resolveCanvasView } from "../preview/canvasView";
 import { CanvasHeader } from "./CanvasHeader";
 import { ErrorText } from "./ErrorText";
-import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
-import { Controls } from "./Controls";
-import { VariantPicker } from "./VariantPicker";
-import { PreviewRenderer } from "./PreviewRenderer";
+import { PreviewStage } from "./PreviewStage";
 
 const Styled = {
   Root: {
@@ -16,59 +14,39 @@ const Styled = {
     height: "100%",
   } satisfies CSSProperties,
   Message: { padding: "1rem 1.25rem" } satisfies CSSProperties,
-  Preview: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 0,
-    overflow: "auto",
-    padding: "2.5rem",
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    boxSizing: "border-box",
-  } satisfies CSSProperties,
-  PreviewBody: { padding: "2rem", minWidth: 200, minHeight: 80, boxSizing: "border-box" } satisfies CSSProperties,
 };
 
 export const Canvas = (props: {
   entry: GalleryPreviewEntry | undefined;
-  previewWrapper: PreviewWrapper | undefined;
-  setupError: Error | null;
-  setupLoading: boolean;
+  previewSetup: PreviewSetupState;
   canOpenInEditor: boolean;
 }) => {
-  const { Comp, config, error, controls, args, setArg, variants, variantKey, setVariant } =
-    usePreviewCanvas(props.entry);
-  if (!props.entry) return null;
+  const { entry, previewSetup } = props;
+  const previewModule = usePreviewModule(entry);
+  if (!entry) return null;
 
-  const displayError = props.setupError ?? error;
-  const body = displayError ? (
-    <div style={Styled.Message}>
-      <ErrorText>{String(displayError.stack ?? displayError.message ?? displayError)}</ErrorText>
-    </div>
-  ) : props.setupLoading || !Comp ? null : (
-    <>
-      <VariantPicker variants={variants} activeKey={variantKey} onSelect={setVariant} />
-      <div style={Styled.Preview}>
-        <div style={Styled.PreviewBody}>
-          <PreviewErrorBoundary>
-            <PreviewRenderer
-              component={Comp}
-              args={args}
-              globalWrapper={props.previewWrapper}
-              wrapper={config.wrapper}
-            />
-          </PreviewErrorBoundary>
-        </div>
-      </div>
-      <Controls controls={controls} args={args} onChange={setArg} />
-    </>
-  );
+  const view = resolveCanvasView({
+    setupError: previewSetup.error,
+    setupLoading: previewSetup.loading,
+    loadError: previewModule.error,
+    preview: previewModule.preview,
+  });
 
   return (
     <div style={Styled.Root}>
-      <CanvasHeader entry={props.entry} canOpenInEditor={props.canOpenInEditor} />
-      {body}
+      <CanvasHeader entry={entry} canOpenInEditor={props.canOpenInEditor} />
+      {view.kind === "error" && (
+        <div style={Styled.Message}>
+          <ErrorText>{String(view.error.stack ?? view.error.message ?? view.error)}</ErrorText>
+        </div>
+      )}
+      {view.kind === "ready" && (
+        <PreviewStage
+          preview={view.preview}
+          inferredControls={entry.controls}
+          globalWrapper={previewSetup.wrapper}
+        />
+      )}
     </div>
   );
 };

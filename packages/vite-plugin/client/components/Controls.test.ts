@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { act, create } from "react-test-renderer";
 import { describe, expect, it, vi } from "vitest";
 import { Controls } from "./Controls";
-import type { ControlsMap } from "./previewConfig";
+import type { ControlsMap } from "../preview/previewConfig";
 
 const controls: ControlsMap = {
   label: { type: "text", optional: false },

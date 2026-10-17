@@ -7,7 +7,7 @@ import { NumberControl } from "./controls/NumberControl";
 import { RadioControl } from "./controls/RadioControl";
 import { SelectControl } from "./controls/SelectControl";
 import { TextControl } from "./controls/TextControl";
-import type { ControlsMap } from "./previewConfig";
+import type { ControlsMap } from "../preview/previewConfig";
 
 const Styled = {
   Root: {

@@ -4,6 +4,7 @@ import {
   getInitialVariantKey,
   isPreviewComponent,
   mergeControls,
+  pickPreviewComponent,
   resolveInitialArgs,
   resolveVariantArgs,
   toVariantOptions,
@@ -103,5 +104,24 @@ describe("variant 선택", () => {
   it("선택한 variant args를 preview() args 위에 덮어씀", () => {
     expect(resolveVariantArgs({}, config, "danger")).toEqual({ label: "base", tone: "danger" });
     expect(resolveVariantArgs({}, config, undefined)).toEqual({ label: "base" });
+  });
+});
+
+describe("pickPreviewComponent", () => {
+  const entry = { exportName: "Button", file: "src/Button.tsx" };
+
+  it("exportName에 해당하는 컴포넌트 반환", () => {
+    const Button = () => null;
+    expect(pickPreviewComponent({ Button }, entry)).toBe(Button);
+  });
+
+  it("컴포넌트가 아닌 export는 파일과 타입을 담은 에러", () => {
+    expect(() => pickPreviewComponent({ Button: "text" }, entry)).toThrow(
+      '"Button" in src/Button.tsx is not a component (got string).',
+    );
+  });
+
+  it("export가 없으면 undefined 타입으로 안내", () => {
+    expect(() => pickPreviewComponent({}, entry)).toThrow("(got undefined)");
   });
 });

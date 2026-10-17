@@ -38,9 +38,7 @@ export const App = (props: {
         <Canvas
           key={activeEntry?.id ?? "empty"}
           entry={activeEntry}
-          previewWrapper={previewSetup.wrapper}
-          setupError={previewSetup.error}
-          setupLoading={previewSetup.loading}
+          previewSetup={previewSetup}
           canOpenInEditor={canOpenInEditor}
         />
       </div>

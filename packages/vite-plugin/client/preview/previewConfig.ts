@@ -10,10 +10,28 @@ export interface PreviewVariantOption {
   name: string;
 }
 
+/** 로드가 끝난 프리뷰 컴포넌트와 preview() 설정 */
+export interface LoadedPreview {
+  component: ComponentType;
+  config: PreviewConfig<ElementType>;
+}
+
 /** 모듈 export가 렌더링 가능한 컴포넌트인지 판단 (memo, forwardRef 객체 포함) */
 export function isPreviewComponent(value: unknown): value is ComponentType {
   if (typeof value === "function") return true;
   return typeof value === "object" && value !== null && "$$typeof" in value;
+}
+
+/** entry 모듈에서 프리뷰할 export를 골라 반환, 컴포넌트가 아니면 이유를 담은 Error throw */
+export function pickPreviewComponent(
+  mod: Record<string, unknown>,
+  entry: Pick<GalleryPreviewEntry, "exportName" | "file">,
+): ComponentType {
+  const component = mod[entry.exportName];
+  if (!isPreviewComponent(component)) {
+    throw new Error(`"${entry.exportName}" in ${entry.file} is not a component (got ${typeof component}).`);
+  }
+  return component;
 }
 
 /** 추론된 control 위에 preview() controls override를 병합 */
