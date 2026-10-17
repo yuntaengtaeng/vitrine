@@ -4,6 +4,9 @@ export const GALLERY_ROUTE = "/__vitrine";
 /** 프리뷰 manifest HTTP 경로 */
 export const MANIFEST_ROUTE = "/__vitrine/manifest";
 
+/** 프리뷰 id의 소스 위치를 에디터로 여는 HTTP 경로 (`?id=` query) */
+export const OPEN_IN_EDITOR_ROUTE = "/__vitrine/open-in-editor";
+
 /** 프리뷰 목록 virtual module 식별자 */
 export const PREVIEWS_MODULE_ID = "virtual:vitrine-previews";
 

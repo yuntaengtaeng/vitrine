@@ -1,9 +1,10 @@
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
 import { usePreviewSelectionSync } from "../hooks/usePreviewSelectionSync";
 import { usePreviewSetup } from "../hooks/usePreviewSetup";
 import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
+import { isEmbeddedInFrame } from "./editorLink";
 
 const Styled = {
   Root: {
@@ -27,6 +28,8 @@ export const App = (props: {
   const previewSetup = usePreviewSetup(loadPreviewSetup);
   const [activeId, setActiveId] = usePreviewSelectionSync(entries);
   const activeEntry = entries.find((entry) => entry.id === activeId);
+  // VS Code panel 안에서는 옆에 에디터가 있고, 바깥에서 에디터를 실행하면 새 창이 뜰 수 있어 숨김
+  const [canOpenInEditor] = useState(() => !isEmbeddedInFrame(window));
 
   return (
     <div style={Styled.Root}>
@@ -38,6 +41,7 @@ export const App = (props: {
           previewWrapper={previewSetup.wrapper}
           setupError={previewSetup.error}
           setupLoading={previewSetup.loading}
+          canOpenInEditor={canOpenInEditor}
         />
       </div>
     </div>

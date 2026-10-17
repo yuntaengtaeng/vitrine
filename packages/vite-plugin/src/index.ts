@@ -5,6 +5,7 @@ import {
   GALLERY_MODULE_ID,
   GALLERY_ROUTE as PROTOCOL_GALLERY_ROUTE,
   MANIFEST_ROUTE as PROTOCOL_MANIFEST_ROUTE,
+  OPEN_IN_EDITOR_ROUTE,
   PREVIEWS_MODULE_ID,
   PREVIEW_SETUP_RECOVER_EVENT,
 } from "@vitrine/protocol";
@@ -19,6 +20,7 @@ import {
   type PreviewSetupPath,
 } from "./preview-setup.js";
 import { invalidateTypeContext } from "./props-controls.js";
+import { toViteOpenInEditorUrl } from "./open-in-editor.js";
 
 export interface VitrinePluginOptions {
   /** 프로젝트 루트 기준 @preview export 스캔 글롭 패턴 */
@@ -104,6 +106,19 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         // 커서 이동마다 호출되므로 재스캔 없이 마지막 결과 제공
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(tracker.getEntries()));
+      });
+
+      // 경로를 붙여 등록하면 connect가 next() 때 prefix를 되붙여 바꾼 URL이 깨지므로 직접 비교
+      server.middlewares.use((req, res, next) => {
+        if (!req.url || req.url.split("?")[0] !== OPEN_IN_EDITOR_ROUTE) return next();
+        const viteUrl = toViteOpenInEditorUrl(req.url, tracker.getEntries(), root);
+        if (!viteUrl) {
+          res.statusCode = 404;
+          res.end();
+          return;
+        }
+        req.url = viteUrl;
+        next();
       });
 
       server.middlewares.use(GALLERY_ROUTE, async (_req, res) => {

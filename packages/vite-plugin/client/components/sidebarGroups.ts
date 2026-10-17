@@ -12,13 +12,18 @@ export interface SidebarEntryNode {
 
 export type SidebarNode = SidebarGroupNode | SidebarEntryNode;
 
+/** entry.group의 / 경로를 빈 구간 없이 group 이름 목록으로 분리 */
+export function groupSegments(group: string | undefined): string[] {
+  return group ? group.split("/").filter((segment) => segment.length > 0) : [];
+}
+
 /** entry.group의 / 경로를 따라 중첩 그룹 트리 구성, group 없는 entry는 최상위에 그대로 남음 */
 export function buildSidebarTree(entries: GalleryPreviewEntry[]): SidebarNode[] {
   const roots: SidebarNode[] = [];
   const groupsByPath = new Map<string, SidebarGroupNode>();
 
   for (const entry of entries) {
-    const segments = entry.group ? entry.group.split("/").filter((segment) => segment.length > 0) : [];
+    const segments = groupSegments(entry.group);
     let children = roots;
     let path = "";
 
