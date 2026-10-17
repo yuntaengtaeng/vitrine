@@ -19,12 +19,14 @@ const Styled = {
 } satisfies CSSProperties;
 
 export const SelectControl = (props: {
+  label: string;
   value: unknown;
   options: Option[];
   optional: boolean;
   onChange: (value: Option | undefined) => void;
 }) => (
   <select
+    aria-label={props.label}
     style={Styled}
     value={String(props.value ?? "")}
     onChange={(event) => {

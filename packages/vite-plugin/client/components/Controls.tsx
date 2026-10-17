@@ -56,15 +56,21 @@ export const Controls = (props: {
           return (
             <ControlField key={name} name={name} optional={control.optional}>
               {control.type === "boolean" ? (
-                <BooleanControl value={value} onChange={change} />
+                <BooleanControl label={name} value={value} onChange={change} />
               ) : control.type === "number" ? (
-                <NumberControl value={value} onChange={change} />
+                <NumberControl label={name} value={value} onChange={change} />
               ) : control.type === "radio" ? (
-                <RadioControl value={value} options={control.options ?? []} onChange={change} />
+                <RadioControl label={name} value={value} options={control.options ?? []} onChange={change} />
               ) : control.type === "select" ? (
-                <SelectControl value={value} options={control.options ?? []} optional={control.optional} onChange={change} />
+                <SelectControl
+                  label={name}
+                  value={value}
+                  options={control.options ?? []}
+                  optional={control.optional}
+                  onChange={change}
+                />
               ) : (
-                <TextControl value={value} onChange={change} />
+                <TextControl label={name} value={value} onChange={change} />
               )}
             </ControlField>
           );

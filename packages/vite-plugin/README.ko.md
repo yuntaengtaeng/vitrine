@@ -65,7 +65,13 @@ export default () => <Button variant="primary" />;
 ## Controls와 variants
 
 컴포넌트의 prop 타입으로 controls를 자동 생성합니다. 다른 파일에서 import한 타입도 해석합니다.
-지원하는 타입은 `string`, `number`, `boolean`, 그리고 문자열이나 숫자 리터럴 유니온입니다.
+지원하는 타입은 `string`, `number`, `boolean`, 문자열이나 숫자 리터럴 유니온, 문자열 enum입니다.
+객체, 함수, 배열, `ReactNode` 같은 다른 타입의 prop에는 control이 생기지 않으므로 `args`로 샘플
+값을 넘깁니다.
+
+필수 prop의 초기값은 빈 문자열, `0`, `false` 또는 유니온의 첫 리터럴이고 선택 prop은 값 없이
+시작합니다. Prop 타입은 `tsconfig.json`으로 읽으므로 그 `include` 밖의 컴포넌트 파일에는
+control이 생기지 않습니다.
 
 샘플 값, 다른 종류의 control, 이름 붙은 variant가 필요하면 `preview()`를 사용합니다.
 
@@ -136,6 +142,9 @@ vitrine({
   setupFile: "./src/vitrine.preview.tsx",
 });
 ```
+
+`include` 기본값은 `["src/**/*.{tsx,jsx}"]`입니다. 컴포넌트가 `src/` 밖에 있는데 gallery에
+프리뷰가 없다고 나오면 해당 폴더를 `include`에 추가합니다.
 
 ## VS Code
 

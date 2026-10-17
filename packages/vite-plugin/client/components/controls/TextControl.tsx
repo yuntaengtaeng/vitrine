@@ -17,8 +17,9 @@ const InputStyle = {
   fontSize: FONT_SIZE.secondary,
 } satisfies CSSProperties;
 
-export const TextControl = (props: { value: unknown; onChange: (value: string) => void }) => (
+export const TextControl = (props: { label: string; value: unknown; onChange: (value: string) => void }) => (
   <input
+    aria-label={props.label}
     style={InputStyle}
     type="text"
     value={String(props.value ?? "")}

@@ -35,12 +35,13 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-export const BooleanControl = (props: { value: unknown; onChange: (value: boolean) => void }) => {
+export const BooleanControl = (props: { label: string; value: unknown; onChange: (value: boolean) => void }) => {
   const checked = Boolean(props.value);
   return (
     <button
       type="button"
       role="switch"
+      aria-label={props.label}
       aria-checked={checked}
       style={Styled.Button}
       onClick={() => props.onChange(!checked)}

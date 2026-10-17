@@ -31,9 +31,9 @@ export function renderIframeHtml(galleryUrl: string, projectLabel: string): stri
 }
 
 /** dev server에 연결하지 못했을 때의 webview HTML 생성 */
-export function renderUnreachableHtml(galleryUrl: string): string {
+export function renderUnreachableHtml(galleryUrl: string, projectLabel: string): string {
   return renderShell({
-    projectLabel: null,
+    projectLabel,
     body: `
       <div class="vitrine-message">
         <h2>Vite dev server not reachable</h2>

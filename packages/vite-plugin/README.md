@@ -65,8 +65,13 @@ export default () => <Button variant="primary" />;
 ## Controls and variants
 
 Controls are generated from your component's prop types, including types imported
-from other files. Supported types are `string`, `number`, `boolean` and string or
-number literal unions.
+from other files. Supported types are `string`, `number`, `boolean`, string or
+number literal unions and string enums. Props of other types, such as objects, functions,
+arrays or `ReactNode`, get no control; pass sample values for them through `args`.
+
+Required props start with an empty string, `0`, `false` or the first literal of a union.
+Optional props start unset. Prop types are read through your `tsconfig.json`, so a component
+file outside its `include` gets no controls.
 
 Use `preview()` when you need sample values, a different control or named variants:
 
@@ -137,6 +142,9 @@ vitrine({
   setupFile: "./src/vitrine.preview.tsx",
 });
 ```
+
+`include` defaults to `["src/**/*.{tsx,jsx}"]`. If the gallery says no previews were found
+while your components live outside `src/`, add their folders to `include`.
 
 ## VS Code
 

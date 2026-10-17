@@ -42,9 +42,17 @@ describe("renderNotFoundHtml", () => {
   });
 });
 
+describe("renderUnreachableHtml", () => {
+  it("names the detected project while its dev server is down", () => {
+    const html = renderUnreachableHtml("http://localhost:5173/__vitrine", "<b>app</b>");
+    expect(html).toContain("&lt;b&gt;app&lt;/b&gt;");
+    expect(html).not.toContain("No project detected");
+  });
+});
+
 describe("fallback pages", () => {
   it("do not allow any frame source or relay target", () => {
-    for (const html of [renderNotFoundHtml(), renderUnreachableHtml("http://localhost:5173/__vitrine")]) {
+    for (const html of [renderNotFoundHtml(), renderUnreachableHtml("http://localhost:5173/__vitrine", "app")]) {
       expect(html).not.toContain("frame-src");
       expect(html).toContain("const galleryOrigin = null;");
     }
