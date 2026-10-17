@@ -38,3 +38,22 @@ export function buildSidebarTree(entries: GalleryPreviewEntry[]): SidebarNode[] 
 
   return roots;
 }
+
+/** 검색어가 entry 이름이나 group 이름에 포함된 node만 남긴 트리 반환 (group 이름이 맞으면 하위 전체 유지) */
+export function filterSidebarTree(nodes: SidebarNode[], query: string): SidebarNode[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return nodes;
+  const matches = (text: string) => text.toLowerCase().includes(needle);
+
+  return nodes.flatMap((node): SidebarNode[] => {
+    if (node.type === "entry") return matches(node.entry.name) ? [node] : [];
+    if (matches(node.label)) return [node];
+    const children = filterSidebarTree(node.children, needle);
+    return children.length > 0 ? [{ ...node, children }] : [];
+  });
+}
+
+/** 트리 안의 entry 수 */
+export function countSidebarEntries(nodes: SidebarNode[]): number {
+  return nodes.reduce((count, node) => count + (node.type === "entry" ? 1 : countSidebarEntries(node.children)), 0);
+}

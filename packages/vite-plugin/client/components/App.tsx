@@ -1,48 +1,21 @@
 import type { CSSProperties } from "react";
 import { COLOR } from "../tokens/color";
-import { FONT_SIZE } from "../tokens/fontSize";
 import { usePreviewSelectionSync } from "../hooks/usePreviewSelectionSync";
 import { usePreviewSetup } from "../hooks/usePreviewSetup";
-import { SidebarTree } from "./SidebarTree";
-import { buildSidebarTree } from "./sidebarGroups";
+import { Sidebar } from "./Sidebar";
 import { Canvas } from "./Canvas";
 
 const Styled = {
   Root: {
     display: "flex",
     height: "100vh",
-    margin: 0,
     fontFamily: "system-ui, sans-serif",
     background: COLOR.surface,
-  } satisfies CSSProperties,
-  Sidebar: {
-    width: 240,
-    flexShrink: 0,
-    overflowY: "auto",
-    // 스크롤은 유지하고 스크롤바만 숨김
-    scrollbarWidth: "none",
-    background: COLOR.surface,
-    borderRight: `1px solid ${COLOR.border}`,
-    padding: "0.75rem",
-    boxSizing: "border-box",
-  } satisfies CSSProperties,
-  SidebarLabel: {
-    fontSize: FONT_SIZE.label,
-    fontWeight: 700,
-    letterSpacing: "0.06em",
-    textTransform: "uppercase",
-    color: COLOR.label,
-    padding: "0.4rem 0.7rem 0.7rem",
   } satisfies CSSProperties,
   CanvasWrapper: {
     flex: 1,
     overflow: "auto",
     boxSizing: "border-box",
-  } satisfies CSSProperties,
-  EmptyState: {
-    color: COLOR.muted,
-    fontSize: FONT_SIZE.secondary,
-    padding: "0 0.7rem",
   } satisfies CSSProperties,
 };
 
@@ -54,19 +27,10 @@ export const App = (props: {
   const previewSetup = usePreviewSetup(loadPreviewSetup);
   const [activeId, setActiveId] = usePreviewSelectionSync(entries);
   const activeEntry = entries.find((entry) => entry.id === activeId);
-  const tree = buildSidebarTree(entries);
 
   return (
     <div style={Styled.Root}>
-      <div style={Styled.Sidebar}>
-        <div style={Styled.SidebarLabel}>Previews</div>
-        {entries.length === 0 && (
-          <p style={Styled.EmptyState}>
-            No @preview exports found yet. Add a `/** @preview */` comment above an export.
-          </p>
-        )}
-        <SidebarTree nodes={tree} activeId={activeId} onSelect={setActiveId} />
-      </div>
+      <Sidebar entries={entries} activeId={activeId} onSelect={setActiveId} />
       <div style={Styled.CanvasWrapper}>
         <Canvas
           key={activeEntry?.id ?? "empty"}

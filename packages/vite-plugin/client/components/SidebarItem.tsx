@@ -18,8 +18,8 @@ const Styled = {
       fontSize: FONT_SIZE.base,
       fontFamily: "inherit",
     } satisfies CSSProperties,
-    active: { background: COLOR.activeBg, color: COLOR.activeText, fontWeight: 600 } satisfies CSSProperties,
-    hover: { background: COLOR.hoverBg } satisfies CSSProperties,
+    active: { background: COLOR.sidebarActiveBg, color: COLOR.activeText, fontWeight: 600 } satisfies CSSProperties,
+    hover: { background: COLOR.sidebarHoverBg } satisfies CSSProperties,
   },
 };
 

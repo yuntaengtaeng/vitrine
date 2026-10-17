@@ -13,4 +13,7 @@ export const COLOR = {
   activeText: BRAND[600],
   hoverBg: NEUTRAL[100],
   switchOff: NEUTRAL[300],
+  sidebarBg: BRAND[50],
+  sidebarActiveBg: BRAND[100],
+  sidebarHoverBg: NEUTRAL[0],
 } as const;
