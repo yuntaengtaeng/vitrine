@@ -41,11 +41,9 @@ const Styled = {
   Iframe: { display: "block", width: "100%", border: 0, background: "transparent" } satisfies CSSProperties,
 };
 
-/** 선택한 viewport 너비와 배경으로 프리뷰 iframe을 놓는 무대 */
 export const PreviewStage = (props: {
   entry: GalleryPreviewEntry;
   iframeRef: RefObject<HTMLIFrameElement>;
-  /** e2e와 디버깅용으로 노출하는 frame 연결 단계 */
   framePhase: string;
   /** frame이 보고한 내용 높이(px), 보고 전에는 null */
   contentHeight: number | null;

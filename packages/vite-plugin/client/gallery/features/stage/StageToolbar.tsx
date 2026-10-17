@@ -8,7 +8,6 @@ const Styled = {
   Root: { display: "flex", alignItems: "center", gap: "0.9rem", marginLeft: "auto" } satisfies CSSProperties,
 };
 
-/** 무대 표시 설정 toolbar, 배경과 viewport는 각자 독립 모듈 */
 export const StageToolbar = (props: {
   settings: StageSettings;
   viewports: readonly GalleryViewport[];

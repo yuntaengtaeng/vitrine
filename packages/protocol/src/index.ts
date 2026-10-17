@@ -31,7 +31,7 @@ export interface GalleryViewport {
 
 /** Gallery 설정 virtual module의 default export */
 export interface GalleryConfig {
-  /** Responsive(무대 전체 너비) 외에 고를 수 있는 viewport, Gallery가 항상 Responsive를 앞에 둠 */
+  /** Responsive(무대 전체 너비) 외에 고를 수 있는 viewport */
   viewports: GalleryViewport[];
 }
 

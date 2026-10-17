@@ -11,7 +11,6 @@ const Styled = {
   Active: { outline: `2px solid ${COLOR.activeText}`, outlineOffset: 1 } satisfies CSSProperties,
 };
 
-/** 무대 프레임 배경 선택, 프리뷰가 자기 배경을 칠하면 그 배경이 보임 */
 export const BackgroundPicker = (props: { value: StageBackground; onChange: (background: StageBackground) => void }) => (
   <div
     style={Styled.Root}

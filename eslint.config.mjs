@@ -10,18 +10,15 @@ const GALLERY_FEATURES = fs
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
 
-// gallery는 사용자 코드를 실행하는 frame 코드를 가져오지 않음 (ADR 007)
 const NO_FRAME_IMPORT = {
   regex: String.raw`^(\.\./)+frame/`,
   message: "Gallery는 frame 코드 대신 @vitrine/protocol 타입만 사용합니다.",
 };
-// App과 Canvas만 기능을 조합
 const NO_COMPOSITION_IMPORT = {
   regex: String.raw`^(\.\./)+(App|Canvas|usePreviewSelectionSync)$`,
   message: "기능은 조합 module을 import하지 않습니다.",
 };
 
-/** feature는 shared와 tokens만 공유하고 다른 feature를 import하지 않음 */
 const galleryBoundaries = [
   ...GALLERY_FEATURES.map((feature) => ({
     name: `vitrine/gallery-feature-${feature}`,

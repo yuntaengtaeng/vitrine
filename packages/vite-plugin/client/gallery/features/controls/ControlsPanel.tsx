@@ -35,7 +35,6 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-/** 프리뷰 props를 바꾸는 패널, frame이 알려준 control 목록만 사용 */
 export const ControlsPanel = (props: {
   controls: Record<string, FrameControl>;
   args: Record<string, unknown>;

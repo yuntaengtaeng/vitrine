@@ -28,7 +28,6 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-/** 선택한 프리뷰 한 개의 머리말, toolbar, 무대, Props 패널 */
 export const Canvas = (props: {
   entry: GalleryPreviewEntry;
   canOpenInEditor: boolean;

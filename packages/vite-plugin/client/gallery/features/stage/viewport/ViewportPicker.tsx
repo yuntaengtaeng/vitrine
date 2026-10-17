@@ -19,13 +19,11 @@ const Styled = {
   } satisfies CSSProperties,
 };
 
-/** 프리뷰 iframe 너비 선택, 프리뷰의 미디어 쿼리는 이 너비를 기준으로 동작 */
 export const ViewportPicker = (props: {
   value: string;
   viewports: readonly GalleryViewport[];
   onChange: (viewport: string) => void;
 }) => {
-  // 사라진 viewport가 저장돼 있으면 Responsive로 보여줌
   const value = findViewport(props.value, props.viewports)?.name ?? RESPONSIVE_VIEWPORT;
   return (
     <label style={Styled.Root}>

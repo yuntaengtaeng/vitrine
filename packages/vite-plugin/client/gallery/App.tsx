@@ -36,7 +36,6 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
       <Sidebar entries={entries} activeId={activeId} onSelect={setActiveId} />
       <div style={Styled.CanvasWrapper}>
         {activeEntry && (
-          // 프리뷰마다 frame 연결과 variant, 바꾼 값을 새로 시작
           <Canvas
             key={activeEntry.id}
             entry={activeEntry}

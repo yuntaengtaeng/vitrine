@@ -3,7 +3,6 @@ import type { FrameRenderState } from "./frameLink";
 import { displayedArgs, toOverrideValue } from "./frameStatus";
 import { usePreviewFrame } from "./usePreviewFrame";
 
-/** 한 프리뷰를 보는 동안 Gallery가 소유하는 variant와 바꾼 값, 바뀔 때마다 frame에 전송 */
 export const usePreviewSession = () => {
   const [selection, setSelection] = useState<FrameRenderState | null>(null);
   const { iframeRef, status } = usePreviewFrame(selection);
@@ -23,7 +22,6 @@ export const usePreviewSession = () => {
     iframeRef,
     status,
     activeVariantKey: selection?.variantKey ?? undefined,
-    // frameReady 전에는 보여줄 control 값이 없음
     args: ready && selection ? displayedArgs(ready, selection.variantKey, selection.args) : null,
     selectVariant,
     changeArg,
