@@ -1,3 +1,12 @@
+import {
+  isControlOption,
+  isDefaultValue,
+  isNonEmptyString,
+  isPort,
+  isPositiveSafeInteger,
+  isRecord,
+} from "./guards.js";
+
 /** Standalone Gallery HTTP 경로 */
 export const GALLERY_ROUTE = "/__vitrine";
 
@@ -173,26 +182,4 @@ function isPropControl(value: unknown): value is PropControl {
   return value.defaultValue === undefined || isDefaultValue(value.defaultValue);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0;
-}
-
-function isPositiveSafeInteger(value: unknown): value is number {
-  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
-}
-
-function isPort(value: unknown): value is number {
-  return isPositiveSafeInteger(value) && value <= 65_535;
-}
-
-function isControlOption(value: unknown): value is ControlOption {
-  return typeof value === "string" || (typeof value === "number" && Number.isFinite(value));
-}
-
-function isDefaultValue(value: unknown): value is string | number | boolean {
-  return typeof value === "string" || typeof value === "boolean" || isControlOption(value);
-}
+export * from "./frame.js";

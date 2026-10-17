@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
 import { isPreviewComponent } from "../preview/previewConfig";
 
-type PreviewSetupLoader = (() => Promise<{ default?: unknown }>) | undefined;
+/** previews virtual module의 setup file loader, setupFile 옵션이 없으면 undefined */
+export type PreviewSetupLoader = (() => Promise<{ default?: unknown }>) | undefined;
 
 /** setup file의 전역 wrapper 로드 상태 */
 export interface PreviewSetupState {

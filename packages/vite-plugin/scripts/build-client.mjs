@@ -4,14 +4,15 @@ import { fileURLToPath } from "node:url";
 import { PREVIEWS_MODULE_ID } from "@vitrine/protocol";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const entry = path.join(packageRoot, "client", "gallery-client.tsx");
-const outfile = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
 
-// Gallery는 package files에 포함되는 dist 아래 단일 bundle로 생성
+// Gallery UI와 iframe 안 frame renderer는 package files에 포함되는 dist 아래 각각 단일 bundle로 생성
 // React와 virtual module은 사용자의 Vite runtime이 해석하므로 external로 유지
 const options = {
-  entryPoints: [entry],
-  outfile,
+  entryPoints: {
+    "gallery-client": path.join(packageRoot, "client", "gallery-client.tsx"),
+    "frame-client": path.join(packageRoot, "client", "frame-client.tsx"),
+  },
+  outdir: path.join(packageRoot, "dist", "gallery"),
   bundle: true,
   external: [
     "react",

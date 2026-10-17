@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  FRAME_MODULE_ID,
+  FRAME_ROUTE,
   GALLERY_MODULE_ID,
   GALLERY_ROUTE as PROTOCOL_GALLERY_ROUTE,
   MANIFEST_ROUTE as PROTOCOL_MANIFEST_ROUTE,
@@ -38,6 +40,7 @@ export const MANIFEST_ROUTE = PROTOCOL_MANIFEST_ROUTE;
 // Source와 build output에서 동일한 package root 계산
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const galleryClientPath = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
+const frameClientPath = path.join(packageRoot, "dist", "gallery", "frame-client.js");
 
 /** @preview export를 스캔해 갤러리 라우트로 제공하는 Vite 플러그인 */
 export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
@@ -68,6 +71,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
     resolveId(id) {
       if (id === PREVIEWS_MODULE_ID) return RESOLVED_PREVIEWS_MODULE_ID;
       if (id === GALLERY_MODULE_ID) return GALLERY_MODULE_ID;
+      if (id === FRAME_MODULE_ID) return FRAME_MODULE_ID;
       return null;
     },
 
@@ -82,6 +86,9 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       }
       if (id === GALLERY_MODULE_ID) {
         return fs.readFileSync(galleryClientPath, "utf-8");
+      }
+      if (id === FRAME_MODULE_ID) {
+        return fs.readFileSync(frameClientPath, "utf-8");
       }
       return null;
     },
@@ -123,6 +130,13 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         }
         req.url = viteUrl;
         next();
+      });
+
+      // Gallery 경로가 prefix로 가로채지 않도록 먼저 등록, 프리뷰 id query는 frame client가 읽음
+      server.middlewares.use(FRAME_ROUTE, async (_req, res) => {
+        const html = await server.transformIndexHtml(FRAME_ROUTE, FRAME_HTML);
+        res.setHeader("Content-Type", "text/html");
+        res.end(html);
       });
 
       server.middlewares.use(GALLERY_ROUTE, async (_req, res) => {
@@ -199,6 +213,22 @@ const GALLERY_HTML = `<!doctype html>
   <body>
     <div id="vitrine-root"></div>
     <script type="module" src="/@id/${GALLERY_MODULE_ID}"></script>
+  </body>
+</html>
+`;
+
+// 배경은 Gallery가 iframe 바깥에서 칠하므로 frame 문서는 투명하게 둠
+const FRAME_HTML = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>vitrine preview</title>
+    <style>html, body { margin: 0; background: transparent; }</style>
+  </head>
+  <body>
+    <div id="vitrine-frame-root"></div>
+    <script type="module" src="/@id/${FRAME_MODULE_ID}"></script>
   </body>
 </html>
 `;
