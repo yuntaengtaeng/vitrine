@@ -19,7 +19,7 @@ function renderControls(
   changed: ReadonlySet<string> = new Set(),
   onReset = () => {},
 ) {
-  return createElement(ControlsPanel, { controls, args, changed, onChange, onReset, onResetAll: () => {} });
+  return createElement(ControlsPanel, { controls, args, changed, onChange, onReset });
 }
 
 describe("ControlsPanel", () => {
@@ -56,13 +56,12 @@ describe("ControlsPanel", () => {
     expect(markup).toContain('>&quot;sm&quot; | &quot;md&quot;</code>');
   });
 
-  it("바꾼 prop에만 Reset 버튼, 하나라도 바꾸면 Reset all", () => {
+  it("바꾼 prop에만 Reset 버튼", () => {
     expect(renderToStaticMarkup(renderControls({}))).not.toContain("Reset");
 
     const markup = renderToStaticMarkup(renderControls({ label: "Hi" }, () => {}, new Set(["label"])));
     expect(markup).toContain('aria-label="Reset label"');
     expect(markup).not.toContain('aria-label="Reset size"');
-    expect(markup).toContain("Reset all");
   });
 
   it("Reset 버튼은 그 prop 이름으로 초기화 요청", () => {

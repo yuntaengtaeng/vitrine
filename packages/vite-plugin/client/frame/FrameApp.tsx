@@ -54,7 +54,7 @@ export const FrameApp = (props: {
 
   const readyPreview = view.kind === "ready" ? view.preview : null;
   useEffect(() => {
-    if (entry && readyPreview) sendToGallery(buildFrameReady(entry.controls, readyPreview.config));
+    if (entry && readyPreview) sendToGallery(buildFrameReady(entry.controls, readyPreview.config, readyPreview.component));
   }, [entry, readyPreview]);
 
   const failure = view.kind === "error" ? view.error : null;
@@ -71,7 +71,7 @@ export const FrameApp = (props: {
   const reportRendered = () => {
     if (!failedRef.current || !entry || !readyPreview) return;
     failedRef.current = false;
-    sendToGallery(buildFrameReady(entry.controls, readyPreview.config));
+    sendToGallery(buildFrameReady(entry.controls, readyPreview.config, readyPreview.component));
   };
 
   return (

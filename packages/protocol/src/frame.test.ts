@@ -10,6 +10,9 @@ const ready = {
   initialVariantKey: "primary",
   defaultArgs: { size: "sm" },
   variantArgs: { primary: { size: "md", disabled: false, count: 2 } },
+  componentName: "Button",
+  defaultFrameOnlyArgs: [],
+  variantFrameOnlyArgs: { primary: ["onClick"] },
 };
 
 describe("isGalleryToFrameMessage", () => {
@@ -52,6 +55,8 @@ describe("isFrameToGalleryMessage", () => {
     expect(isFrameToGalleryMessage({ ...ready, controls: { size: { type: "slider", optional: false } } })).toBe(false);
     expect(isFrameToGalleryMessage({ ...ready, variantArgs: { primary: { icon: {} } } })).toBe(false);
     expect(isFrameToGalleryMessage({ ...ready, variants: [{ key: "", name: "Empty" }] })).toBe(false);
+    expect(isFrameToGalleryMessage({ ...ready, componentName: "" })).toBe(false);
+    expect(isFrameToGalleryMessage({ ...ready, variantFrameOnlyArgs: { primary: [1] } })).toBe(false);
   });
 
   it("음수 높이와 모르는 type은 거부", () => {

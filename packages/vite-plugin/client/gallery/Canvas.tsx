@@ -9,7 +9,9 @@ import { ErrorCard } from "./features/previewError/ErrorCard";
 import { LoadingOverlay } from "./features/stage/LoadingOverlay";
 import { PreviewStage } from "./features/stage/PreviewStage";
 import type { StageSettings } from "./features/stage/stageSettings";
+import { PanelTabs } from "./features/panel/PanelTabs";
 import { ViewSwitcher } from "./features/views/ViewSwitcher";
+import { usePanelTab } from "./usePanelTab";
 import { openInEditor } from "./shared/editorLink";
 
 export const Canvas = (props: {
@@ -28,6 +30,10 @@ export const Canvas = (props: {
     [viewId],
   );
   const session = usePreviewSession(layoutFor);
+  const [tabId, selectTab] = usePanelTab(PANEL_TABS[0].id);
+  const activeTab = PANEL_TABS.find((tab) => tab.id === tabId) ?? PANEL_TABS[0];
+  const ActivePanel = activeTab.Panel;
+  const ActiveActions = activeTab.Actions;
   const { ready, error } = session.status;
   const variants = ready?.variants ?? [];
   const availableViews = VIEWS.filter((view) => view.available(variants));
@@ -74,9 +80,16 @@ export const Canvas = (props: {
           )
         }
       />
-      {PANEL_TABS.map(({ id, Panel }) => (
-        <Panel key={id} {...contribution} />
-      ))}
+      {ready && (
+        <PanelTabs
+          tabs={PANEL_TABS}
+          activeId={activeTab.id}
+          onSelect={selectTab}
+          actions={ActiveActions && <ActiveActions {...contribution} />}
+        >
+          <ActivePanel {...contribution} />
+        </PanelTabs>
+      )}
     </div>
   );
 };

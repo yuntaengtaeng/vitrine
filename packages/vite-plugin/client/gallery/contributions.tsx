@@ -1,6 +1,7 @@
 import type { FrameVariant, GalleryViewport } from "@vitrine/protocol";
 import type { ComponentType } from "react";
-import { ControlsPanel } from "./features/controls/ControlsPanel";
+import { CodePanel } from "./features/code/CodePanel";
+import { ControlsPanel, ResetAllButton } from "./features/controls/ControlsPanel";
 import { VariantPicker } from "./features/controls/VariantPicker";
 import type { LayoutFor } from "./features/previewSession/frameLink";
 import type { usePreviewSession } from "./features/previewSession/usePreviewSession";
@@ -37,6 +38,7 @@ export interface GalleryPanelTab {
   id: string;
   label: string;
   Panel: ComponentType<ContributionProps>;
+  Actions?: ComponentType<ContributionProps>;
 }
 
 export const VIEWS: readonly GalleryView[] = [
@@ -82,9 +84,27 @@ const PropsPanel = ({ session }: ContributionProps) => {
       changed={session.changedArgs}
       onChange={session.changeArg}
       onReset={session.resetArg}
-      onResetAll={session.resetAllArgs}
     />
   );
 };
 
-export const PANEL_TABS: readonly GalleryPanelTab[] = [{ id: "props", label: "Props", Panel: PropsPanel }];
+const PropsActions = ({ session }: ContributionProps) =>
+  session.changedArgs.size > 0 ? <ResetAllButton onResetAll={session.resetAllArgs} /> : null;
+
+const CodeTab = ({ session }: ContributionProps) => {
+  const { ready } = session.status;
+  if (!ready || !session.args) return null;
+  const variantKey = session.activeVariantKey;
+  return (
+    <CodePanel
+      componentName={ready.componentName}
+      args={session.args}
+      frameOnlyArgs={variantKey ? (ready.variantFrameOnlyArgs[variantKey] ?? []) : ready.defaultFrameOnlyArgs}
+    />
+  );
+};
+
+export const PANEL_TABS: readonly GalleryPanelTab[] = [
+  { id: "props", label: "Props", Panel: PropsPanel, Actions: PropsActions },
+  { id: "code", label: "Code", Panel: CodeTab },
+];

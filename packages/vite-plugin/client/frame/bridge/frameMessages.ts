@@ -5,7 +5,7 @@ import {
   type FrameReadyMessage,
   type FrameRenderMessage,
 } from "@vitrine/protocol";
-import type { ElementType } from "react";
+import type { ComponentType, ElementType } from "react";
 import type { PreviewConfig } from "vite-plugin-react-vitrine/preview";
 import {
   getInitialVariantKey,
@@ -17,28 +17,54 @@ import {
 
 type InferredControls = Record<string, GalleryPropControl>;
 
+const isSendable = (value: unknown) =>
+  typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value));
+
 /** Gallery로 보낼 수 있는 값(문자열, 유한한 숫자, boolean)만 남김, 함수와 JSX는 frame에만 남음 */
 export function toFrameArgs(args: Args): FrameArgs {
-  const entries = Object.entries(args).filter(
-    ([, value]) =>
-      typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value)),
+  return Object.fromEntries(Object.entries(args).filter(([, value]) => isSendable(value))) as FrameArgs;
+}
+
+/** 값은 있지만 Gallery로 보내지 못하는 prop 이름 */
+export function frameOnlyArgNames(args: Args): string[] {
+  return Object.entries(args)
+    .filter(([, value]) => value !== undefined && value !== null && !isSendable(value))
+    .map(([name]) => name);
+}
+
+type NamedComponent = ComponentType & { type?: NamedComponent; render?: { name?: string } };
+
+/** memo와 forwardRef로 감싼 컴포넌트도 원래 이름으로 */
+export function componentName(component: NamedComponent): string {
+  return (
+    component.displayName ||
+    component.name ||
+    (component.type && componentName(component.type)) ||
+    component.render?.name ||
+    "Component"
   );
-  return Object.fromEntries(entries) as FrameArgs;
 }
 
 /** 로드한 프리뷰의 control, variant, 직렬화 가능한 args로 frameReady 메시지 생성 */
-export function buildFrameReady(inferred: InferredControls, config: PreviewConfig<ElementType>): FrameReadyMessage {
+export function buildFrameReady(
+  inferred: InferredControls,
+  config: PreviewConfig<ElementType>,
+  component: ComponentType,
+): FrameReadyMessage {
   const variants = toVariantOptions(config);
+  const defaultArgs = resolveVariantArgs(inferred, config, undefined);
+  const variantArgs = variants.map((variant) => [variant.key, resolveVariantArgs(inferred, config, variant.key)] as const);
   return {
     type: FRAME_READY_MESSAGE_TYPE,
     protocol: FRAME_PROTOCOL,
     controls: mergeControls(inferred, config.controls),
     variants,
     initialVariantKey: getInitialVariantKey(config) ?? null,
-    defaultArgs: toFrameArgs(resolveVariantArgs(inferred, config, undefined)),
-    variantArgs: Object.fromEntries(
-      variants.map((variant) => [variant.key, toFrameArgs(resolveVariantArgs(inferred, config, variant.key))]),
-    ),
+    defaultArgs: toFrameArgs(defaultArgs),
+    variantArgs: Object.fromEntries(variantArgs.map(([key, args]) => [key, toFrameArgs(args)])),
+    componentName: componentName(component),
+    defaultFrameOnlyArgs: frameOnlyArgNames(defaultArgs),
+    variantFrameOnlyArgs: Object.fromEntries(variantArgs.map(([key, args]) => [key, frameOnlyArgNames(args)])),
   };
 }
 

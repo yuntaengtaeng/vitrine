@@ -21,6 +21,9 @@ const ready: FrameReadyMessage = {
   initialVariantKey: "danger",
   defaultArgs: { label: "Save", size: "sm" },
   variantArgs: { danger: { label: "Delete", size: "sm" } },
+  componentName: "Button",
+  defaultFrameOnlyArgs: [],
+  variantFrameOnlyArgs: { danger: [] },
 };
 
 describe("reduceFrameStatus", () => {

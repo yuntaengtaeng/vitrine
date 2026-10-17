@@ -37,6 +37,8 @@ interface GalleryPanelTab {
   id: string;
   label: string;
   Panel: ComponentType<ContributionProps>;
+  /** 탭 줄 오른쪽에 두는 버튼(Props의 Reset all 등), 내용 위에 두면 값을 바꿀 때 내용이 밀림 */
+  Actions?: ComponentType<ContributionProps>;
 }
 
 interface GalleryToolbarItem {

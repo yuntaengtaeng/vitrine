@@ -12,6 +12,9 @@ const ready: FrameReadyMessage = {
   initialVariantKey: null,
   defaultArgs: {},
   variantArgs: {},
+  componentName: "Button",
+  defaultFrameOnlyArgs: [],
+  variantFrameOnlyArgs: {},
 };
 
 describe("createGalleryFrameLink", () => {

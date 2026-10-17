@@ -1,6 +1,7 @@
 import { isFrameToGalleryMessage } from "@vitrine/protocol";
 import { describe, expect, it } from "vitest";
-import { buildFrameReady, resolveFrameArgs, toFrameArgs } from "./frameMessages";
+import { forwardRef, memo } from "react";
+import { buildFrameReady, componentName, frameOnlyArgNames, resolveFrameArgs, toFrameArgs } from "./frameMessages";
 
 const inferred = {
   label: { type: "text" as const, optional: false, defaultValue: "" },
@@ -28,7 +29,8 @@ describe("toFrameArgs", () => {
 
 describe("buildFrameReady", () => {
   it("override를 반영한 control, variant, 직렬화 가능한 args로 계약에 맞는 메시지 생성", () => {
-    const ready = buildFrameReady(inferred, config);
+    const Button = () => null;
+    const ready = buildFrameReady(inferred, config, Button);
     expect(isFrameToGalleryMessage(ready)).toBe(true);
     expect(ready.controls.size.type).toBe("radio");
     expect(ready.variants).toEqual([
@@ -38,6 +40,28 @@ describe("buildFrameReady", () => {
     expect(ready.initialVariantKey).toBe("primary");
     expect(ready.defaultArgs).toEqual({ label: "Save", size: "sm" });
     expect(ready.variantArgs.danger).toEqual({ label: "Delete", size: "sm" });
+    expect(ready.componentName).toBe("Button");
+    expect(ready.defaultFrameOnlyArgs).toEqual(["onClick"]);
+    expect(ready.variantFrameOnlyArgs.danger).toEqual(["onClick"]);
+  });
+});
+
+describe("frameOnlyArgNames", () => {
+  it("값이 있지만 보낼 수 없는 prop만, 비운 값은 제외", () => {
+    expect(frameOnlyArgNames({ a: "x", b: onClick, c: { x: 1 }, d: undefined, e: null })).toEqual(["b", "c"]);
+  });
+});
+
+describe("componentName", () => {
+  it("displayName, 함수 이름, memo와 forwardRef 안의 이름 순서로 찾음", () => {
+    function Card() {
+      return null;
+    }
+    const Named = Object.assign(() => null, { displayName: "Fancy" });
+    expect(componentName(Card)).toBe("Card");
+    expect(componentName(Named)).toBe("Fancy");
+    expect(componentName(memo(Card))).toBe("Card");
+    expect(componentName(forwardRef(function Input() { return null; }))).toBe("Input");
   });
 });
 

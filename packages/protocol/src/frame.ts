@@ -75,6 +75,12 @@ export interface FrameReadyMessage {
   defaultArgs: FrameArgs;
   /** variant별 직렬화 가능한 args, 함수와 JSX 값은 frame에만 남음 */
   variantArgs: Record<string, FrameArgs>;
+  /** 프리뷰 컴포넌트의 이름, displayName이 있으면 그 값 */
+  componentName: string;
+  /** variant를 고르지 않았을 때 함수나 JSX라 Gallery로 보내지 못한 prop 이름 */
+  defaultFrameOnlyArgs: string[];
+  /** variant별로 함수나 JSX라 Gallery로 보내지 못한 prop 이름 */
+  variantFrameOnlyArgs: Record<string, string[]>;
 }
 
 /** Frame -> Gallery: 렌더링된 내용 높이(px) */
@@ -156,7 +162,11 @@ function isFrameReady(value: Record<string, unknown>): boolean {
     (value.initialVariantKey === null || isNonEmptyString(value.initialVariantKey)) &&
     isFrameArgs(value.defaultArgs) &&
     isRecord(value.variantArgs) &&
-    Object.values(value.variantArgs).every(isFrameArgs)
+    Object.values(value.variantArgs).every(isFrameArgs) &&
+    isNonEmptyString(value.componentName) &&
+    isNameList(value.defaultFrameOnlyArgs) &&
+    isRecord(value.variantFrameOnlyArgs) &&
+    Object.values(value.variantFrameOnlyArgs).every(isNameList)
   );
 }
 
@@ -175,4 +185,8 @@ function isFrameVariant(value: unknown): value is FrameVariant {
 
 function isFrameArgs(value: unknown): value is FrameArgs {
   return isRecord(value) && Object.values(value).every((arg) => arg === null || isDefaultValue(arg));
+}
+
+function isNameList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((name) => typeof name === "string");
 }
