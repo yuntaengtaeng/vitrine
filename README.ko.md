@@ -59,6 +59,8 @@ VS Code 패널 -> <iframe src="http://localhost:<port>/__vitrine">
 
 ## 개발
 
+Issue나 pull request를 열기 전에 [CONTRIBUTING.ko.md](CONTRIBUTING.ko.md)를 읽어 주세요.
+
 ```bash
 pnpm install
 pnpm run build            # plugin과 갤러리 빌드

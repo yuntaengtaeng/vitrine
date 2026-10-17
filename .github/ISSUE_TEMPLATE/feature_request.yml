@@ -1,0 +1,36 @@
+name: Feature request / 기능 제안
+description: Suggest a new feature or a change / 새 기능이나 변경 제안
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English or Korean. / 영어 또는 한국어로 작성해 주세요.
+
+        Check the product scope in [CONTRIBUTING.md](https://github.com/yuntaengtaeng/vitrine/blob/main/CONTRIBUTING.md#product-scope) first. / 먼저 [CONTRIBUTING.ko.md](https://github.com/yuntaengtaeng/vitrine/blob/main/CONTRIBUTING.ko.md#제품-범위)의 제품 범위를 확인해 주세요.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 해결하려는 문제
+      description: What you are trying to do and what gets in the way. / 하려는 작업과 막히는 지점
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal / 제안
+      description: How Vitrine could solve it. / Vitrine이 어떻게 해결하면 좋을지
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / 대안
+      description: Workarounds or other approaches you considered. / 지금 쓰는 우회 방법이나 검토한 다른 방법
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope / 범위
+      options:
+        - label: This is not one of the out-of-scope items in CONTRIBUTING. / CONTRIBUTING의 범위 밖 항목에 해당하지 않습니다.
+          required: true
