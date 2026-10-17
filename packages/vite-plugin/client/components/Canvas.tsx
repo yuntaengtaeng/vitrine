@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { usePreviewModule } from "../hooks/usePreviewModule";
 import type { PreviewSetupState } from "../hooks/usePreviewSetup";
 import { resolveCanvasView } from "../preview/canvasView";
+import type { StageSettings } from "../preview/stageSettings";
 import { CanvasHeader } from "./CanvasHeader";
 import { ErrorText } from "./ErrorText";
 import { PreviewStage } from "./PreviewStage";
@@ -20,6 +21,8 @@ export const Canvas = (props: {
   entry: GalleryPreviewEntry | undefined;
   previewSetup: PreviewSetupState;
   canOpenInEditor: boolean;
+  stage: StageSettings;
+  onStageChange: (patch: Partial<StageSettings>) => void;
 }) => {
   const { entry, previewSetup } = props;
   const previewModule = usePreviewModule(entry);
@@ -45,6 +48,8 @@ export const Canvas = (props: {
           preview={view.preview}
           inferredControls={entry.controls}
           globalWrapper={previewSetup.wrapper}
+          stage={props.stage}
+          onStageChange={props.onStageChange}
         />
       )}
     </div>

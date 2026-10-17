@@ -4,7 +4,7 @@ import { FONT_SIZE } from "../tokens/fontSize";
 import type { PreviewVariantOption } from "../preview/previewConfig";
 
 const Styled = {
-  Root: { display: "flex", gap: "0.4rem", padding: "0.7rem 2.5rem 0", flexWrap: "wrap" } satisfies CSSProperties,
+  Root: { display: "flex", gap: "0.4rem", flexWrap: "wrap" } satisfies CSSProperties,
   Tab: {
     base: {
       border: "none",

@@ -1,4 +1,4 @@
-import { BRAND, NEUTRAL, RED } from "@vitrine/brand";
+import { BRAND, INK, NEUTRAL, RED } from "@vitrine/brand";
 
 /** 갤러리 UI 용도별 색상 토큰, 값은 palette에서만 조회 */
 export const COLOR = {
@@ -16,4 +16,10 @@ export const COLOR = {
   sidebarBg: BRAND[50],
   sidebarActiveBg: BRAND[100],
   sidebarHoverBg: NEUTRAL[0],
+  stageDot: NEUTRAL[200],
+  frameBorder: BRAND[200],
+  frameDarkBg: INK[900],
+  frameDarkBorder: INK[700],
+  checkerLight: NEUTRAL[0],
+  checkerDark: NEUTRAL[200],
 } as const;
