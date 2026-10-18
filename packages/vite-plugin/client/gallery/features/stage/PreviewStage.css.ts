@@ -44,4 +44,11 @@ export const frame = style({
   overflow: "hidden",
 });
 
-export const iframe = style({ display: "block", width: "100%", border: 0, background: "transparent" });
+// Gallery의 dark color-scheme을 물려받으면 프리뷰 문서와 달라져 브라우저가 iframe 뒤를 불투명한 흰색으로 칠함
+export const iframe = style({
+  display: "block",
+  width: "100%",
+  border: 0,
+  background: "transparent",
+  colorScheme: "normal",
+});
