@@ -52,6 +52,7 @@ export const ko: Messages = {
   },
   features: {
     label: "기능",
+    follow: "팔로우",
     title: "프리뷰를 더 편하게 다루는 기능",
     groups: [
       { id: "write", label: "작성" },

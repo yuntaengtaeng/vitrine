@@ -1,3 +1,4 @@
+import { useI18n } from "../../i18n/locale";
 import * as styles from "./FeatureShowcase.css";
 
 const FEATURES = ["props", "variants", "globals", "groups", "viewport", "matrix", "actions", "history", "vscode", "links", "static"];
@@ -15,6 +16,8 @@ export function FeatureShowcase({ activeFeature }: { activeFeature: string }) {
 }
 
 function FeatureScene({ feature }: { feature: string }) {
+  const { locale, t } = useI18n();
+
   if (feature === "variants") {
     return (
       <div className={styles.withToolbar}>
@@ -69,13 +72,14 @@ function FeatureScene({ feature }: { feature: string }) {
     return (
       <div className={styles.withToolbar}>
         <div className={styles.toolbar}>
-          <span>Theme <span className={styles.select}>dark</span></span>
-          <span>Locale <span className={styles.select}><Swap from="en" to="ko" /></span></span>
+          {/* 페이지와 다른 언어가 섞여 보이지 않도록 locale은 고정하고 theme만 바꿈 */}
+          <span>Theme <span className={styles.select}><Swap from="light" to="dark" /></span></span>
+          <span>Locale <span className={styles.select}>{locale}</span></span>
         </div>
-        <div className={styles.darkCanvas}>
-          <span className={`${styles.card} ${styles.reveal}`}>
+        <div className={styles.themeCanvas}>
+          <span className={styles.themeCard}>
             Ada Park
-            <span className={styles.primaryButton}><Swap from="Follow" to="팔로우" late /></span>
+            <span className={styles.primaryButton}>{t.features.follow}</span>
           </span>
         </div>
       </div>
@@ -175,11 +179,11 @@ function FeatureScene({ feature }: { feature: string }) {
 }
 
 // 결과만 보여 주면 번역이 잘못된 것처럼 보여서, 값이 바뀌는 순간을 보여 줌
-function Swap({ from, to, late = false }: { from: string; to: string; late?: boolean }) {
+function Swap({ from, to }: { from: string; to: string }) {
   return (
     <span className={styles.swap}>
-      <span className={late ? styles.swapFromLate : styles.swapFrom}>{from}</span>
-      <span className={late ? styles.swapToLate : styles.swapTo}>{to}</span>
+      <span className={styles.swapFrom}>{from}</span>
+      <span className={styles.swapTo}>{to}</span>
     </span>
   );
 }

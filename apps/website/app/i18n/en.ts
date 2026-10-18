@@ -50,6 +50,7 @@ export const en = {
   },
   features: {
     label: "Features",
+    follow: "Follow",
     title: "Work with previews more easily.",
     groups: [
       { id: "write", label: "Write" },
