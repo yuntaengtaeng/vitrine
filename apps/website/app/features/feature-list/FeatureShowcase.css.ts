@@ -196,9 +196,26 @@ export const select = style({
   color: vars.color.text,
 });
 
-export const darkCanvas = style([canvas, { background: INK[950] }]);
+const toDarkCanvas = keyframes({
+  "0%, 35%": { background: INK[50] },
+  "45%, 100%": { background: INK[950] },
+});
 
-export const card = style({
+const toDarkCard = keyframes({
+  "0%, 35%": { borderColor: INK[100], background: "#ffffff", color: INK[950] },
+  "45%, 100%": { borderColor: INK[700], background: INK[800], color: INK[50] },
+});
+
+export const themeCanvas = style([
+  canvas,
+  {
+    background: INK[950],
+    selectors: { [`${sceneActive} &`]: { animation: `${toDarkCanvas} 1.6s ease both` } },
+    "@media": { "(prefers-reduced-motion: reduce)": { animation: "none" } },
+  },
+]);
+
+export const themeCard = style({
   display: "grid",
   gap: "0.625rem",
   padding: "1rem 1.25rem",
@@ -206,6 +223,11 @@ export const card = style({
   background: INK[800],
   color: INK[50],
   fontSize: "0.8125rem",
+  opacity: 0,
+  selectors: {
+    [`${sceneActive} &`]: { animation: `${appear} 260ms ease forwards, ${toDarkCard} 1.6s ease both` },
+  },
+  "@media": { "(prefers-reduced-motion: reduce)": { opacity: 1, animation: "none" } },
 });
 
 export const compare = style({
@@ -304,7 +326,3 @@ export const swapTo = style({
   selectors: { [`${sceneActive} &`]: { animation: `${swapIn} 1.6s ease both` } },
   "@media": { "(prefers-reduced-motion: reduce)": { animation: "none" } },
 });
-
-export const swapFromLate = style([swapFrom, { selectors: { [`${sceneActive} &`]: { animationDelay: "0.35s" } } }]);
-
-export const swapToLate = style([swapTo, { selectors: { [`${sceneActive} &`]: { animationDelay: "0.35s" } } }]);
