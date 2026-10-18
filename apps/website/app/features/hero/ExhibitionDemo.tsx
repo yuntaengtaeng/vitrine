@@ -7,6 +7,15 @@ import * as styles from "./ExhibitionDemo.css";
 const AUTOPLAY_MS = 3600;
 const EASE = [0.2, 0.8, 0.2, 1] as const;
 const TONES: ExhibitTone[] = ["primary", "danger", "ghost"];
+const EDITED_LABEL = "Save changes";
+
+// 자동 재생 한 바퀴 안에 코드를 고쳐 저장하면 진열장이 바로 바뀌는 장면을 한 번 넣음
+const STEPS = [
+  { index: 0, edited: false },
+  { index: 0, edited: true },
+  { index: 1, edited: false },
+  { index: 2, edited: false },
+];
 
 // 패널이 먼저 올라온 뒤 값 줄이 위에서부터 하나씩 채워짐
 const panelVariants: Variants = {
@@ -28,28 +37,46 @@ const rowVariants: Variants = {
 export function ExhibitionDemo() {
   const { t } = useI18n();
   const reducedMotion = useReducedMotion();
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(true);
   const autoplay = playing && !reducedMotion;
 
   useEffect(() => {
     if (!autoplay) return;
-    const timer = setInterval(() => setActiveIndex((index) => (index + 1) % EXHIBITS.length), AUTOPLAY_MS);
+    const timer = setInterval(() => setStep((current) => (current + 1) % STEPS.length), AUTOPLAY_MS);
     return () => clearInterval(timer);
   }, [autoplay]);
 
   const select = (index: number) => {
-    setActiveIndex(index);
+    setStep(STEPS.findIndex((candidate) => candidate.index === index && !candidate.edited));
     setPlaying(false);
   };
 
-  const active = EXHIBITS[activeIndex];
+  const { index: activeIndex, edited } = STEPS[step];
+  const exhibit = EXHIBITS[activeIndex];
+  const active = edited ? { ...exhibit, label: EDITED_LABEL } : exhibit;
 
   return (
     <div className={styles.frame} aria-label={t.demo.ariaLabel} role="group">
       <div>
         <div className={styles.tabBar}>
-          <span>{t.demo.editorTab}</span>
+          <span className={styles.tabTitle}>
+            {t.demo.editorTab}
+            <AnimatePresence>
+              {edited && (
+                <motion.span
+                  key="saved"
+                  className={styles.saved}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5 }}
+                >
+                  {t.demo.saved}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </span>
           {!reducedMotion && (
             <button
               type="button"
@@ -67,8 +94,14 @@ export function ExhibitionDemo() {
             <span className={styles.keyword}>import</span> {"{ Button }"} <span className={styles.keyword}>from</span>{" "}
             <span className={styles.string}>"./Button"</span>;
           </span>
-          {EXHIBITS.map((exhibit, index) => (
-            <CodeBlock key={exhibit.id} exhibit={exhibit} active={index === activeIndex} onSelect={() => select(index)} />
+          {EXHIBITS.map((item, index) => (
+            <CodeBlock
+              key={item.id}
+              exhibit={index === activeIndex ? active : item}
+              active={index === activeIndex}
+              edited={index === activeIndex && edited}
+              onSelect={() => select(index)}
+            />
           ))}
         </pre>
       </div>
@@ -76,7 +109,7 @@ export function ExhibitionDemo() {
       <div className={styles.room}>
         <div className={styles.stage}>
           <motion.div
-            key={`light-${active.id}`}
+            key={`light-${active.id}-${active.label}`}
             className={styles.spotlight}
             initial={{ opacity: 0.3 }}
             animate={{ opacity: 1 }}
@@ -85,7 +118,7 @@ export function ExhibitionDemo() {
           <div className={styles.glass}>
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
-                key={active.id}
+                key={`${active.id}-${active.label}`}
                 className={styles.exhibit[active.tone]}
                 initial={{ opacity: 0, y: 26, scale: 0.94 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -96,7 +129,7 @@ export function ExhibitionDemo() {
               </motion.span>
             </AnimatePresence>
             <motion.span
-              key={`glint-${active.id}`}
+              key={`glint-${active.id}-${active.label}`}
               className={styles.reflection}
               initial={{ left: "-40%" }}
               animate={{ left: "130%" }}
@@ -150,7 +183,17 @@ export function ExhibitionDemo() {
   );
 }
 
-function CodeBlock({ exhibit, active, onSelect }: { exhibit: Exhibit; active: boolean; onSelect: () => void }) {
+function CodeBlock({
+  exhibit,
+  active,
+  edited,
+  onSelect,
+}: {
+  exhibit: Exhibit;
+  active: boolean;
+  edited: boolean;
+  onSelect: () => void;
+}) {
   return (
     <button type="button" className={styles.block} onClick={onSelect} aria-pressed={active}>
       {active && (
@@ -164,7 +207,7 @@ function CodeBlock({ exhibit, active, onSelect }: { exhibit: Exhibit; active: bo
       </span>
       <span className={styles.line}>
         {"  "}&lt;<span className={styles.tag}>Button</span> tone=<span className={styles.string}>"{exhibit.tone}"</span>&gt;
-        {exhibit.label}&lt;/<span className={styles.tag}>Button</span>&gt;;
+        <span className={edited ? styles.editedText : undefined}>{exhibit.label}</span>&lt;/<span className={styles.tag}>Button</span>&gt;;
         {active && <span className={styles.caret} />}
       </span>
     </button>

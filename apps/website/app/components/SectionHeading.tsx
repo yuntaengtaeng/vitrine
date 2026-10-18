@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import * as styles from "./SectionHeading.css";
 
 /** 섹션 상단의 전시 라벨, 제목, 설명 묶음 */
-export function SectionHeading({ label, title, lead }: { label: string; title: string; lead?: ReactNode }) {
+export function SectionHeading({ label, title, lead }: { label: string; title: ReactNode; lead?: ReactNode }) {
   return (
     <>
       <p className={styles.label}>{label}</p>

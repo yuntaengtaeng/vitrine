@@ -12,24 +12,21 @@ export function Hero() {
     <section className={styles.hero}>
       <div className={container}>
         <div className={styles.intro}>
-          <div>
-            <p className={styles.label}>{t.hero.label}</p>
-            <h1 className={styles.title}>
-              {t.hero.titleLead}
-              <span className={styles.titleAccent}>{t.hero.titleAccent}</span>
-            </h1>
-          </div>
-          <div>
-            <p className={styles.lead}>{t.hero.lead}</p>
-            <div className={styles.actions}>
-              <CopyCommand command={SITE.installCommand} copyLabel={t.hero.copy} copiedLabel={t.hero.copied} />
-              <a className={styles.extension} href={SITE.marketplaceUrl}>
-                {t.hero.extension}
-              </a>
-              <a className={styles.liveDemo} href={SITE.demoPath}>
-                {t.hero.demo}
-              </a>
-            </div>
+          <p className={styles.label}>{t.hero.label}</p>
+          <h1 className={styles.title}>
+            {t.hero.titleLead}
+            <span className={styles.titleAccent}>{t.hero.titleAccent}</span>
+          </h1>
+          <p className={styles.lead}>
+            {t.hero.leadStart}
+            <code className={styles.leadCode}>/** @preview */</code>
+            {t.hero.leadEnd}
+          </p>
+          <div className={styles.actions}>
+            <a className={styles.demoLink} href={SITE.demoPath}>
+              {t.hero.demo}
+            </a>
+            <CopyCommand command={SITE.installCommand} copyLabel={t.hero.copy} copiedLabel={t.hero.copied} />
           </div>
         </div>
         <div className={styles.demo}>

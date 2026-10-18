@@ -22,6 +22,11 @@ globalStyle("body", {
   WebkitFontSmoothing: "antialiased",
 });
 
+// 한국어는 기본 줄바꿈이 음절 단위라 제목과 말풍선이 단어 중간에서 끊김
+globalStyle("html:lang(ko) body", {
+  wordBreak: "keep-all",
+});
+
 globalStyle("a", {
   color: "inherit",
 });
