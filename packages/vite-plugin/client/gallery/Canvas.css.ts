@@ -4,6 +4,9 @@ import { NARROW } from "./shared/ui/layout.css";
 
 export const root = style({ display: "flex", flexDirection: "column", width: "100%", height: "100%" });
 
+// 패널 높이 제한의 100%가 무대와 패널이 나눠 쓰는 높이만 가리키게 묶음
+export const workspace = style({ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 });
+
 export const toolbar = style({
   display: "flex",
   alignItems: "center",

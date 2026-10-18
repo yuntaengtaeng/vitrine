@@ -125,35 +125,37 @@ export const Canvas = (props: {
           ))}
         </div>
       </div>
-      <PreviewStage
-        entry={entry}
-        iframeRef={session.iframeRef}
-        framePhase={session.status.phase}
-        contentHeight={session.status.height}
-        settings={props.stage}
-        viewports={props.viewports}
-        overlay={session.status.phase === "loading" && <LoadingOverlay />}
-        fallback={
-          error ? (
-            <ErrorCard
-              failure={error}
-              onOpenInEditor={props.canOpenInEditor ? () => openInEditor(entry.id) : undefined}
-            />
-          ) : (
-            matrixPlan?.kind === "tooMany" && <MatrixLimitNotice count={matrixPlan.count} max={MAX_MATRIX_CELLS} />
-          )
-        }
-      />
-      {ready && (
-        <PanelTabs
-          tabs={tabs}
-          activeId={activeTab.id}
-          onSelect={selectTab}
-          actions={ActiveActions && <ActiveActions {...contribution} />}
-        >
-          <ActivePanel {...contribution} />
-        </PanelTabs>
-      )}
+      <div className={styles.workspace}>
+        <PreviewStage
+          entry={entry}
+          iframeRef={session.iframeRef}
+          framePhase={session.status.phase}
+          contentHeight={session.status.height}
+          settings={props.stage}
+          viewports={props.viewports}
+          overlay={session.status.phase === "loading" && <LoadingOverlay />}
+          fallback={
+            error ? (
+              <ErrorCard
+                failure={error}
+                onOpenInEditor={props.canOpenInEditor ? () => openInEditor(entry.id) : undefined}
+              />
+            ) : (
+              matrixPlan?.kind === "tooMany" && <MatrixLimitNotice count={matrixPlan.count} max={MAX_MATRIX_CELLS} />
+            )
+          }
+        />
+        {ready && (
+          <PanelTabs
+            tabs={tabs}
+            activeId={activeTab.id}
+            onSelect={selectTab}
+            actions={ActiveActions && <ActiveActions {...contribution} />}
+          >
+            <ActivePanel {...contribution} />
+          </PanelTabs>
+        )}
+      </div>
     </div>
   );
 };
