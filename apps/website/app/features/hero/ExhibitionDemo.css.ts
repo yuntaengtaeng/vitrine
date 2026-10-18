@@ -1,4 +1,4 @@
-import { style, styleVariants } from "@vanilla-extract/css";
+import { keyframes, style, styleVariants } from "@vanilla-extract/css";
 import { BRAND, INK, NEUTRAL, RED } from "@vitrine/brand";
 import { vars } from "../../styles/theme.css";
 
@@ -24,6 +24,34 @@ export const tabBar = style({
   color: INK[50],
   fontFamily: vars.font.mono,
   fontSize: "0.8125rem",
+});
+
+export const tabTitle = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.75rem",
+});
+
+export const saved = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.375rem",
+  color: BRAND[300],
+  fontSize: "0.75rem",
+  selectors: {
+    "&::before": { content: '""', width: "6px", height: "6px", borderRadius: "50%", background: "currentColor" },
+  },
+});
+
+const editFlash = keyframes({
+  from: { background: "rgba(143, 159, 232, 0.45)" },
+  to: { background: "transparent" },
+});
+
+export const editedText = style({
+  borderRadius: "3px",
+  animation: `${editFlash} 1.2s ease-out`,
+  "@media": { "(prefers-reduced-motion: reduce)": { animation: "none" } },
 });
 
 export const iconButton = style({

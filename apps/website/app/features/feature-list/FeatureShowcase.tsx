@@ -70,12 +70,12 @@ function FeatureScene({ feature }: { feature: string }) {
       <div className={styles.withToolbar}>
         <div className={styles.toolbar}>
           <span>Theme <span className={styles.select}>dark</span></span>
-          <span>Locale <span className={styles.select}>ko</span></span>
+          <span>Locale <span className={styles.select}><Swap from="en" to="ko" /></span></span>
         </div>
         <div className={styles.darkCanvas}>
           <span className={`${styles.card} ${styles.reveal}`}>
             Ada Park
-            <span className={styles.primaryButton}>팔로우</span>
+            <span className={styles.primaryButton}><Swap from="Follow" to="팔로우" late /></span>
           </span>
         </div>
       </div>
@@ -171,5 +171,15 @@ function FeatureScene({ feature }: { feature: string }) {
       <div className={styles.controlRow}><span>children</span><span className={styles.controlValue}>Save</span></div>
       <div className={styles.controlRow}><span>disabled</span><span className={styles.toggle} /></div>
     </div>
+  );
+}
+
+// 결과만 보여 주면 번역이 잘못된 것처럼 보여서, 값이 바뀌는 순간을 보여 줌
+function Swap({ from, to, late = false }: { from: string; to: string; late?: boolean }) {
+  return (
+    <span className={styles.swap}>
+      <span className={late ? styles.swapFromLate : styles.swapFrom}>{from}</span>
+      <span className={late ? styles.swapToLate : styles.swapTo}>{to}</span>
+    </span>
   );
 }

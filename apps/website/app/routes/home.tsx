@@ -3,6 +3,9 @@ import { localeFromPath, messagesFor } from "../i18n/locale";
 import { SiteHeader } from "../components/SiteHeader";
 import { SiteFooter } from "../components/SiteFooter";
 import { Hero } from "../features/hero/Hero";
+import { Why } from "../features/why/Why";
+import { Benefits } from "../features/benefits/Benefits";
+import { ClosingCta } from "../features/closing/ClosingCta";
 import { HowItWorks } from "../features/how-it-works/HowItWorks";
 import { FeatureList } from "../features/feature-list/FeatureList";
 import { Compatibility } from "../features/compatibility/Compatibility";
@@ -36,13 +39,16 @@ export function meta({ location }: MetaArgs) {
 export default function Home() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader floating />
       <main>
         <Hero />
-        <HowItWorks />
+        <Why />
+        <Benefits />
         <FeatureList />
+        <HowItWorks />
         <Compatibility />
         <Faq />
+        <ClosingCta />
       </main>
       <SiteFooter />
     </>

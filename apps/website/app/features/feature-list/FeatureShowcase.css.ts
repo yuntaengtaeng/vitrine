@@ -284,3 +284,27 @@ export const copied = style({
   color: INK[50],
   fontSize: "0.75rem",
 });
+
+const swapOut = keyframes({ "0%, 35%": { opacity: 1 }, "45%, 100%": { opacity: 0 } });
+const swapIn = keyframes({ "0%, 35%": { opacity: 0, transform: "translateY(3px)" }, "45%, 100%": { opacity: 1, transform: "none" } });
+
+export const swap = style({ display: "inline-grid" });
+
+const swapLayer = { gridArea: "1 / 1", textAlign: "center" } as const;
+
+export const swapFrom = style({
+  ...swapLayer,
+  opacity: 0,
+  selectors: { [`${sceneActive} &`]: { animation: `${swapOut} 1.6s ease both` } },
+  "@media": { "(prefers-reduced-motion: reduce)": { animation: "none", opacity: 0 } },
+});
+
+export const swapTo = style({
+  ...swapLayer,
+  selectors: { [`${sceneActive} &`]: { animation: `${swapIn} 1.6s ease both` } },
+  "@media": { "(prefers-reduced-motion: reduce)": { animation: "none" } },
+});
+
+export const swapFromLate = style([swapFrom, { selectors: { [`${sceneActive} &`]: { animationDelay: "0.35s" } } }]);
+
+export const swapToLate = style([swapTo, { selectors: { [`${sceneActive} &`]: { animationDelay: "0.35s" } } }]);
