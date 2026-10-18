@@ -24,6 +24,8 @@ description: 사용자가 "배포하자", "릴리스하자", "새 버전 내자"
 - npm에 아직 없는 package는 Trusted Publisher를 설정할 수 없다. 그런 package의 첫 버전만 사용자가 자기 PC에서
   `pnpm pack` 후 `npm publish ./<name>-<version>.tgz`로 2FA 인증해 올리고, 그 뒤 package Settings에 Trusted
   Publisher(`yuntaengtaeng/vitrine`, `publish.yml`)를 등록한다.
+- 새로 등록한 Trusted Publisher는 정해진 기한 안에 CI로 한 번 publish해야 확인이 끝난다("Pending validation").
+  기한이 지나 무효가 되면 다음 배포 직전에 같은 설정을 다시 등록하고 곧바로 태그를 push한다. 확인만을 위해 버전을 올리지 않는다.
 - npm 패키지는 2FA 필수, 우회 토큰 금지로 설정되어 있다. CI는 OIDC, 수동 배포는 사용자의 2FA로만 가능하다.
 
 ## npm 배포 단계
