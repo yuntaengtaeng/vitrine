@@ -292,6 +292,9 @@ importers:
       vite-plugin-react-vitrine:
         specifier: workspace:*
         version: link:../../packages/vite-plugin
+      vitrine-plugin-static:
+        specifier: workspace:*
+        version: link:../../packages/plugin-static
 
   fixtures/multi-project/app-a:
     dependencies:
@@ -384,6 +387,27 @@ importers:
       typescript-eslint:
         specifier: catalog:lint
         version: 8.67.0(eslint@10.9.0)(typescript@5.9.3)
+
+  packages/plugin-static:
+    devDependencies:
+      '@types/node':
+        specifier: catalog:node
+        version: 22.20.1
+      '@vitrine/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      esbuild:
+        specifier: catalog:build
+        version: 0.28.2
+      typescript:
+        specifier: catalog:typescript
+        version: 5.9.3
+      vite:
+        specifier: catalog:vite
+        version: 7.3.6(@types/node@22.20.1)(lightningcss@1.33.0)(yaml@2.9.1)
+      vite-plugin-react-vitrine:
+        specifier: workspace:*
+        version: link:../vite-plugin
 
   packages/protocol:
     devDependencies:

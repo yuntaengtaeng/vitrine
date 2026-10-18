@@ -1,4 +1,4 @@
-import { FRAME_ROUTE, type GalleryViewport } from "@vitrine/protocol";
+import type { GalleryViewport } from "@vitrine/protocol";
 import { useRef, type ReactNode, type RefObject } from "react";
 import { useElementWidth } from "../../shared/ui/useElementWidth";
 import { frame as frameBackground } from "./background/background.css";
@@ -11,6 +11,7 @@ const MIN_FRAME_HEIGHT = 80;
 
 export const PreviewStage = (props: {
   entry: GalleryPreviewEntry;
+  frameUrl: string;
   iframeRef: RefObject<HTMLIFrameElement>;
   framePhase: string;
   /** frame이 보고한 내용 높이(px), 보고 전에는 null */
@@ -49,7 +50,7 @@ export const PreviewStage = (props: {
         >
           <iframe
             ref={iframeRef}
-            src={`${FRAME_ROUTE}?id=${encodeURIComponent(entry.id)}`}
+            src={`${props.frameUrl}?id=${encodeURIComponent(entry.id)}`}
             title={`${entry.name} preview`}
             className={styles.iframe}
             style={{ height: Math.max(props.contentHeight ?? 0, MIN_FRAME_HEIGHT) }}

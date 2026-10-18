@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.json && vite build"
+    "build": "tsc -p tsconfig.json && vite build",
+    "build:gallery": "vitrine-static build"
   },
   "dependencies": {
     "react": "catalog:react",
@@ -18,6 +19,7 @@
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "typescript": "catalog:typescript",
-    "vite": "catalog:vite"
+    "vite": "catalog:vite",
+    "vitrine-plugin-static": "workspace:*"
   }
 }

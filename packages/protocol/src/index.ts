@@ -56,6 +56,10 @@ export interface GalleryConfig {
   include: string[];
   /** `snapshots: false`로 끄지 않았는지 */
   snapshots: boolean;
+  /** 프리뷰 iframe 문서 주소, 정적 빌드에서는 Gallery 기준 상대 경로 */
+  frameUrl: string;
+  /** dev server가 에디터를 열어 줄 수 있는지, 정적 빌드에서는 false */
+  openInEditor: boolean;
 }
 
 /** Gallery client virtual module 식별자 */

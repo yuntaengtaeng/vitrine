@@ -24,6 +24,7 @@ const SETTLE_TIMEOUT_MS = 1500;
 
 export const Canvas = (props: {
   entry: GalleryPreviewEntry;
+  frameUrl: string;
   canOpenInEditor: boolean;
   viewports: readonly GalleryViewport[];
   stage: StageSettings;
@@ -128,6 +129,7 @@ export const Canvas = (props: {
       <div className={styles.workspace}>
         <PreviewStage
           entry={entry}
+          frameUrl={props.frameUrl}
           iframeRef={session.iframeRef}
           framePhase={session.status.phase}
           contentHeight={session.status.height}

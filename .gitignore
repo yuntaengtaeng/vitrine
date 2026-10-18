@@ -7,3 +7,4 @@ dist/
 apps/website/build/
 test-results/
 playwright-report/
+vitrine-static/

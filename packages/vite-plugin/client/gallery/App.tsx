@@ -26,7 +26,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
   const [shownId, setShownId] = useState(activeId);
   const [embedded] = useState(() => isEmbeddedInFrame(window));
   // VS Code panel 안에서는 옆에 에디터가 있고, 바깥에서 에디터를 실행하면 새 창이 뜰 수 있어 숨김
-  const canOpenInEditor = !embedded;
+  const canOpenInEditor = props.config.openInEditor && !embedded;
   const host = useHostCapabilities(embedded);
   useColorTheme(embedded, host);
   // 프리뷰를 바꿔도 같은 배경과 너비로 비교할 수 있게 Canvas 밖에서 보관
@@ -93,6 +93,7 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
           >
             <Canvas
               entry={entry}
+              frameUrl={props.config.frameUrl}
               canOpenInEditor={canOpenInEditor}
               viewports={props.config.viewports}
               stage={stage}

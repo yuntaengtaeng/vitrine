@@ -19,7 +19,7 @@ import {
   type VariantEditRequest,
   type VariantEditResponse,
 } from "@vitrine/protocol";
-import type { Logger, Plugin } from "vite";
+import { normalizePath, type Logger, type Plugin } from "vite";
 import { DEFAULT_INCLUDE, createPreviewScanner, type PreviewScanner } from "./scan.js";
 import { renderPreviewsModule } from "./previews-module.js";
 import { createPreviewTracker, type PreviewTracker } from "./preview-tracker.js";
@@ -63,6 +63,22 @@ export interface SnapshotOptions {
   shouldRecord?: (context: SnapshotRecordContext) => boolean;
 }
 
+/** 정적 Gallery 빌드 설정 */
+export interface StaticBuildOptions {
+  /** 결과 폴더, Vite root 기준 */
+  outDir: string;
+  /** 배포 위치의 Vite base, "./"면 어느 하위 경로에 올려도 동작 */
+  base: string;
+}
+
+/** Vitrine에 등록하는 plugin (실험 단계, ADR 011) */
+export interface VitrinePlugin {
+  /** 로그와 오류에 쓰는 이름 */
+  name: string;
+  /** 이번 `vite build`를 정적 Gallery 빌드로 바꿀 때 그 설정, 아니면 null */
+  staticBuild?: () => StaticBuildOptions | null;
+}
+
 export interface VitrinePluginOptions {
   /** 프로젝트 루트 기준 @preview export 스캔 글롭 패턴 */
   include?: string[];
@@ -72,6 +88,8 @@ export interface VitrinePluginOptions {
   viewports?: ViewportsOption;
   /** `@preview` 파일 저장본을 dev server 메모리에 보관해 옛 버전과 비교, false면 끔 (실험 단계) */
   snapshots?: false | SnapshotOptions;
+  /** 선택 기능을 더하는 Vitrine plugin, 예) vitrine-plugin-static (실험 단계) */
+  plugins?: VitrinePlugin[];
 }
 
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
@@ -99,12 +117,34 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
   let tracker!: PreviewTracker;
   let galleryConfigModule = "";
   const snapshotStore = options.snapshots === false ? null : createSnapshotStore(options.snapshots);
+  // 등록한 plugin이 요청하지 않은 `vite build`에는 관여하지 않아 앱 배포 결과가 바뀌지 않음
+  const staticBuild = findStaticBuild(options.plugins);
+  let staticHtml = new Map<string, string>();
   const isPreviewSetupFile = (file: string) =>
     previewSetup?.status === "valid" && path.resolve(file) === previewSetup.filePath;
 
   return {
     name: "vitrine",
-    apply: "serve",
+    apply: (_config, env) => env.command === "serve" || staticBuild !== null,
+
+    config(config, env) {
+      if (env.command !== "build" || !staticBuild) return;
+      const projectRoot = normalizePath(path.resolve(config.root ?? process.cwd()));
+      staticHtml = new Map([
+        [`${projectRoot}/index.html`, STATIC_GALLERY_HTML],
+        [`${projectRoot}/${STATIC_FRAME_FILE}`, STATIC_FRAME_HTML],
+      ]);
+      config.base = staticBuild.base;
+      // 앱 build 설정(lib 모드, 입력, external)은 Gallery에 맞지 않아 병합하지 않고 바꿈
+      config.build = {
+        ...config.build,
+        outDir: staticBuild.outDir,
+        emptyOutDir: true,
+        lib: false,
+        ssr: false,
+        rollupOptions: { input: [...staticHtml.keys()] },
+      };
+    },
 
     configResolved(config) {
       root = config.root;
@@ -119,10 +159,23 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
       // 사용자 함수는 Node에서 한 번 실행하고 Gallery에는 결과만 데이터로 전달 (ADR 007)
       const { viewports, warning } = resolveViewports(options.viewports);
       if (warning) logger.warn(warning);
-      galleryConfigModule = renderGalleryConfigModule({ viewports, include, snapshots: snapshotStore !== null });
+      const isStatic = config.command === "build";
+      galleryConfigModule = renderGalleryConfigModule({
+        viewports,
+        include,
+        snapshots: !isStatic && snapshotStore !== null,
+        frameUrl: isStatic ? STATIC_FRAME_FILE : FRAME_ROUTE,
+        openInEditor: !isStatic,
+      });
+    },
+
+    async buildStart() {
+      // dev server는 configureServer에서 스캔을 시작하지만 정적 빌드는 그 단계가 없음
+      if (staticHtml.size > 0) await tracker.refresh();
     },
 
     resolveId(id) {
+      if (staticHtml.has(id)) return id;
       if (id === PREVIEWS_MODULE_ID) return RESOLVED_PREVIEWS_MODULE_ID;
       if (id === GALLERY_CONFIG_MODULE_ID) return RESOLVED_GALLERY_CONFIG_MODULE_ID;
       if (id === GALLERY_MODULE_ID) return GALLERY_MODULE_ID;
@@ -140,8 +193,13 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         return renderPreviewsModule(entries, setupModule);
       }
       if (id === RESOLVED_GALLERY_CONFIG_MODULE_ID) return galleryConfigModule;
+      const html = staticHtml.get(id);
+      if (html) return html;
       if (id === GALLERY_MODULE_ID) {
-        return fs.readFileSync(galleryClientPath, "utf-8");
+        const client = fs.readFileSync(galleryClientPath, "utf-8");
+        // 정적 빌드에는 CSS를 서빙할 dev server가 없어 bundle에 넣음
+        return staticHtml.size > 0 ? `import ${JSON.stringify(normalizePath(galleryStylePath))};
+${client}` : client;
       }
       if (id === FRAME_MODULE_ID) {
         return fs.readFileSync(frameClientPath, "utf-8");
@@ -330,6 +388,45 @@ const GALLERY_HTML = `<!doctype html>
   <body>
     <div id="vitrine-root"></div>
     <script type="module" src="/@id/${GALLERY_MODULE_ID}"></script>
+  </body>
+</html>
+`;
+
+function findStaticBuild(plugins: VitrinePlugin[] = []): StaticBuildOptions | null {
+  for (const plugin of plugins) {
+    const options = plugin.staticBuild?.();
+    if (options) return options;
+  }
+  return null;
+}
+
+const STATIC_FRAME_FILE = "frame.html";
+
+const STATIC_GALLERY_HTML = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>vitrine</title>
+  </head>
+  <body>
+    <div id="vitrine-root"></div>
+    <script type="module">import "${GALLERY_MODULE_ID}";</script>
+  </body>
+</html>
+`;
+
+const STATIC_FRAME_HTML = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>vitrine preview</title>
+    <style>html, body { margin: 0; background: transparent; }</style>
+  </head>
+  <body>
+    <div id="vitrine-frame-root"></div>
+    <script type="module">import "${FRAME_MODULE_ID}";</script>
   </body>
 </html>
 `;

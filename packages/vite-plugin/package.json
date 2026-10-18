@@ -75,7 +75,7 @@
     "vite": {
       "type": "compatible",
       "versions": "^6.4.0 || ^7.0.0 || ^8.0.0",
-      "note": "Runs on the Vite dev server only"
+      "note": "Runs on the Vite dev server, or in vite build through vitrine-plugin-static"
     },
     "rollup": {
       "type": "incompatible",

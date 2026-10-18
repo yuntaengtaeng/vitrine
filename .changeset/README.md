@@ -18,6 +18,7 @@ generated file with your PR. Refactors, tests and internal tooling do not need o
 | Package | Published to |
 | --- | --- |
 | `vite-plugin-react-vitrine` | npm |
+| `vitrine-plugin-static` | npm |
 | `vitrine` | VS Code Marketplace, as a VSIX |
 
 Examples, fixtures, compatibility lanes and private `@vitrine/*` packages are not
@@ -25,7 +26,7 @@ released.
 
 ## Versioning
 
-Both packages follow [Semantic Versioning](https://semver.org). While they are on `0.x`:
+All packages follow [Semantic Versioning](https://semver.org). While they are on `0.x`:
 
 | Change | Bump |
 | --- | --- |

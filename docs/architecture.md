@@ -48,10 +48,12 @@ packages/
     client/              gallery source
     scripts/             plugin과 gallery esbuild 작업, package smoke test
     dist/gallery/        build 시 생성되는 gallery bundle
+  plugin-static/         vitrine-plugin-static, `vitrine-static build` 명령과 배포 설정
   eslint-config/          base, Node, React 공용 lint preset
   typescript-config/      base, library, Node, React 공용 tsconfig
 examples/
-  react-basic/            단일 React 프로젝트 사용 예시
+  react-basic/            단일 React 프로젝트 사용 예시, e2e 대상
+  showcase/               문서와 사이트용 스크린샷, 정적 빌드 데모
 fixtures/
   multi-project/          두 Vite 프로젝트를 함께 여는 개발 fixture
 tests/
@@ -75,6 +77,10 @@ CJS entry를 함께 build한다. Node, React, Vite, VS Code API에는 의존하�
   ([ADR 010](adr/010-snapshot-history.md))
 - `variant-edit.ts`: Save as variant 편집을 AST로 계산. 파일은 쓰지 않고, 확장이 버퍼 hash를 확인한
   뒤 적용
+
+`index.ts`는 등록된 Vitrine plugin이 `staticBuild()`로 설정을 돌려줄 때만 `vite build`에 적용된다. 이때
+Gallery와 frame 문서를 build 입력으로 바꾸고 Gallery 설정에서 dev server 전용 기능을 끈다
+([ADR 011](adr/011-static-build-hook.md)).
 
 Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
 `client/`는 두 bundle로 나눈다.
@@ -159,6 +165,7 @@ protocol 값을 주입하거나 package smoke test로 실제 계약과의 일치
 packages/
   protocol/             runtime 간 공유 계약
   vite-plugin/          Vite adapter, scanner orchestration, gallery 배포
+  plugin-static/        정적 Gallery 빌드 명령, 코어의 공개 plugin hook만 사용
 apps/
   vscode-extension/     editor adapter와 webview orchestration
 ```
@@ -174,6 +181,7 @@ apps/
 
 ```text
 vite-plugin      -> protocol
+plugin-static    -> vite-plugin (공개 entry의 타입과 hook만)
 gallery target   -> protocol
 vscode-extension app -> protocol
 ```
@@ -182,8 +190,8 @@ vscode-extension app -> protocol
 - Scanner는 현재 `vite-plugin` 내부 모듈로 유지한다.
 - Gallery는 독립 browser build target으로 관리하지만 `vite-plugin`과 함께 배포한다.
 - Gallery의 최종 asset은 `vite-plugin/dist` 아래에 두어 package tarball에 포함한다.
-- 공개 npm package는 `vite-plugin-react-vitrine` 하나만 제공하고 `protocol`은 private workspace
-  package로 유지한다.
+- 공개 npm package는 코어 `vite-plugin-react-vitrine`과 공식 plugin `vitrine-plugin-static`이고
+  `protocol`은 private workspace package로 유지한다.
 
 Protocol과 공개 package 경계의 결정은
 [`adr/002-protocol-and-public-package.md`](./adr/002-protocol-and-public-package.md),

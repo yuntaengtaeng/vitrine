@@ -1,8 +1,8 @@
 import { expect, type FrameLocator, type Page } from "@playwright/test";
 
 /** Gallery 사이드바에서 프리뷰를 선택하고 선택 표시까지 확인 */
-export async function openPreview(page: Page, name: string): Promise<void> {
-  if (!page.url().includes("/__vitrine")) await page.goto("/__vitrine");
+export async function openPreview(page: Page, name: string, galleryUrl = "/__vitrine"): Promise<void> {
+  if (!page.url().includes(galleryUrl)) await page.goto(galleryUrl);
   const item = page.getByRole("navigation", { name: "Previews" }).getByRole("button", { name, exact: true });
   await item.click();
   await expect(item).toHaveAttribute("aria-current", "true");
