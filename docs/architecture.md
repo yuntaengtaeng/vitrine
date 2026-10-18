@@ -173,7 +173,7 @@ apps/
 공식 사이트는 같은 monorepo의 `apps/website`에 둔다. 문서와 코드 변경을 한 PR에서 함께 검토하기 위한
 결정이다. React 19, React Router(prerender, `ssr: false`), vanilla-extract로 만들고 Cloudflare Pages에 배포한다.
 사이트 build는 `examples/showcase`를 `vitrine-static build`로 만든 Gallery를 `/demo/`에 함께 담아, 라이브 데모가 늘
-저장소의 plugin과 같은 버전이 되게 한다. 기능 소개 이미지는 `pnpm screenshots`로 showcase에서 다시 찍는다.
+저장소의 plugin과 같은 버전이 되게 한다. README의 Gallery 이미지는 `pnpm screenshots`로 showcase에서 다시 찍는다.
 스타일은 컴포넌트와 같은 폴더의 `.css.ts`에 두고, 공용 컴포넌트는 `app/components`, 화면 단위 코드는
 `app/features/<이름>`, theme, global, layout 토큰은 `app/styles`가 소유한다. React Router v8은 React 19.2.7 이상이
 필요해 사이트는 `react19` catalog를 쓰고, 예제와 plugin의 React 18 기준은 유지한다.
