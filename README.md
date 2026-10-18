@@ -6,7 +6,7 @@
   <img src="./apps/website/public/favicon.svg" width="72" height="72" alt="Vitrine" />
 </p>
 
-[Website](https://vitrine-4kr.pages.dev/) · [Documentation](https://vitrine-4kr.pages.dev/docs) · [npm](https://www.npmjs.com/package/vite-plugin-react-vitrine) · [VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+[Website](https://vitrine-4kr.pages.dev/) · [Live demo](https://vitrine-4kr.pages.dev/demo/) · [Documentation](https://vitrine-4kr.pages.dev/docs) · [npm](https://www.npmjs.com/package/vite-plugin-react-vitrine) · [VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
 
 Jetpack Compose style previews for React, right next to the file you are editing.
 
@@ -18,6 +18,13 @@ live gallery, and the VS Code extension shows that gallery beside your editor.
 export const PrimaryButton = () => <Button variant="primary">Save</Button>;
 ```
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./apps/website/public/screenshots/gallery-dark.png" />
+  <img src="./apps/website/public/screenshots/gallery.png" alt="The Vitrine Gallery with a Button preview and its props panel" />
+</picture>
+
+Try it without installing anything in the [live demo](https://vitrine-4kr.pages.dev/demo/).
+
 ## Why Vitrine
 
 - **Previews live next to the code.** A preview is a comment above the export, not a
@@ -28,11 +35,27 @@ export const PrimaryButton = () => <Button variant="primary">Save</Button>;
   around the gallery's preview tree.
 - **The editor is the main interface.** Moving the cursor onto a preview switches the
   panel to it. The browser gallery works on its own too.
+- **Deploy it when you need to.** `vitrine-plugin-static` builds the gallery into static files
+  for reviewers, without touching your app build.
+
+## What's in the gallery
+
+| | |
+| --- | --- |
+| ![Variants view](./apps/website/public/screenshots/variants-crop.png) | **Variants.** Name sets of props with `preview()` and lay them out side by side. |
+| ![Matrix view](./apps/website/public/screenshots/matrix-crop.png) | **Matrix.** Render every combination of two props at once. |
+| ![Actions tab](./apps/website/public/screenshots/actions-crop.png) | **Actions.** Calls to `on*` props are recorded with their arguments. |
+| ![Globals in the toolbar](./apps/website/public/screenshots/globals-crop.png) | **Globals.** Theme, locale or any provider value, chosen from the toolbar. |
+| ![History view](./apps/website/public/screenshots/history-crop.png) | **History.** Compare the current version with an earlier save. |
+
+Props are generated from your types, links reopen the same state, and in VS Code the panel
+follows your cursor and can save the current props as a variant.
 
 ## Getting started
 
 See the [vite-plugin-react-vitrine README](./packages/vite-plugin/README.md) for
-installation, preview declarations, controls, variants and provider setup.
+installation, preview declarations, controls, variants and provider setup. To deploy the
+gallery, see [vitrine-plugin-static](./packages/plugin-static/README.md).
 
 To see previews beside your editor, install [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine) from the
 Visual Studio Marketplace.
@@ -42,9 +65,12 @@ Visual Studio Marketplace.
 | Path | Description |
 | --- | --- |
 | `packages/vite-plugin` | `vite-plugin-react-vitrine`, the published Vite plugin and gallery |
+| `packages/plugin-static` | `vitrine-plugin-static`, the official plugin that builds a static gallery |
 | `packages/protocol` | Private runtime contracts shared by the plugin, gallery and extension |
 | `apps/vscode-extension` | [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine), shows the gallery in a panel |
-| `examples/react-basic` | Example app used during development |
+| `examples/react-basic` | Example app used during development and e2e tests |
+| `examples/showcase` | Styled components for screenshots and the live demo |
+| `apps/website` | The website, with the live demo at `/demo/` |
 | `fixtures/multi-project` | Two apps for testing project switching |
 | `tests/compat` | Pinned React and Vite version lanes |
 
@@ -68,6 +94,8 @@ pnpm run build            # build the plugin and gallery
 pnpm run dev:example      # start the example app
 pnpm run test             # run unit tests
 pnpm run lint
+pnpm run test:e2e         # build, then run the Playwright suite
+pnpm run screenshots      # recapture the screenshots used by the READMEs and website
 ```
 
 Open `http://localhost:5173/__vitrine` to see the example gallery.

@@ -2,7 +2,7 @@
 
 [한국어](https://github.com/yuntaengtaeng/vitrine/blob/main/packages/vite-plugin/README.ko.md)
 
-[Website](https://vitrine-4kr.pages.dev/) · [Documentation](https://vitrine-4kr.pages.dev/docs) · [VS Code extension](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+[Website](https://vitrine-4kr.pages.dev/) · [Live demo](https://vitrine-4kr.pages.dev/demo/) · [Documentation](https://vitrine-4kr.pages.dev/docs) · [VS Code extension](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
 
 Inline previews for React components, rendered by your own Vite dev server.
 
@@ -13,6 +13,8 @@ Put `/** @preview */` above a component export and it appears in a live gallery 
 /** @preview */
 export const PrimaryButton = () => <Button variant="primary">Save</Button>;
 ```
+
+![The Vitrine Gallery with a Button preview and its props panel](https://raw.githubusercontent.com/yuntaengtaeng/vitrine/main/apps/website/public/screenshots/gallery.png)
 
 ## Install
 
@@ -40,6 +42,7 @@ export default defineConfig({
 Start your dev server as usual and open `http://localhost:5173/__vitrine`.
 
 The plugin only runs in dev mode (`vite serve`). It adds nothing to your production build.
+To deploy the gallery as static files, see [Deploying the gallery](#deploying-the-gallery).
 
 ## Declaring previews
 
@@ -107,6 +110,20 @@ Function props whose names start with `on` and a capital letter, such as `onClic
 recorded: each call shows up in the gallery's Actions tab with its arguments. A function you pass
 in `args` still runs and its return value is kept. Other function props, such as render props or
 component props, are left alone.
+
+## Gallery views
+
+| View | Shows |
+| --- | --- |
+| Single | One preview with the selected variant |
+| Variants | Every variant side by side, with your prop changes applied to all of them |
+| Matrix | Every combination of two props you pick as rows and columns (booleans and unions, up to 36 cells) |
+| History | The current version next to, or over, an earlier save. See [Snapshot history](#snapshot-history) |
+
+![Matrix view with button tones as rows and sizes as columns](https://raw.githubusercontent.com/yuntaengtaeng/vitrine/main/apps/website/public/screenshots/matrix-crop.png)
+
+The address follows the gallery: it holds the preview, variant, changed props and globals, so
+reloading or sharing the link from **Copy link** opens the same state.
 
 ## Providers, context and global CSS
 
@@ -187,6 +204,8 @@ vitrine({
   viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
   // Snapshot history settings, or false to turn it off (experimental)
   snapshots: { limit: 20 },
+  // Optional features, such as the static build (experimental)
+  plugins: [],
 });
 ```
 
@@ -223,6 +242,24 @@ vitrine({
   },
 });
 ```
+
+## Deploying the gallery
+
+[`vitrine-plugin-static`](https://www.npmjs.com/package/vitrine-plugin-static) builds the gallery
+into static files with your Vite config. Your regular `vite build` is not affected.
+
+```ts
+import vitrineStatic from "vitrine-plugin-static";
+
+vitrine({ plugins: [vitrineStatic()] });
+```
+
+```bash
+npx vitrine-static build   # writes vitrine-static/
+```
+
+The [live demo](https://vitrine-4kr.pages.dev/demo/) is built this way. Vitrine plugins are
+experimental during `0.x`; official ones are named `vitrine-plugin-<name>`.
 
 ## VS Code
 

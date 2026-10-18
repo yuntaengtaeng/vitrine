@@ -2,7 +2,7 @@
 
 [English](https://github.com/yuntaengtaeng/vitrine/tree/main/packages/vite-plugin#readme)
 
-[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [VS Code 확장](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [라이브 데모](https://vitrine-4kr.pages.dev/demo/) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [VS Code 확장](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
 
 React 컴포넌트 프리뷰를 프로젝트의 Vite dev server에서 바로 렌더링합니다.
 
@@ -13,6 +13,8 @@ stories 파일도, 별도 빌드도, 추가 서버도 필요 없습니다.
 /** @preview */
 export const PrimaryButton = () => <Button variant="primary">Save</Button>;
 ```
+
+![Button 프리뷰와 Props 패널을 보여주는 Vitrine Gallery](https://raw.githubusercontent.com/yuntaengtaeng/vitrine/main/apps/website/public/screenshots/gallery.png)
 
 ## 설치
 
@@ -40,6 +42,7 @@ export default defineConfig({
 평소처럼 dev server를 실행하고 `http://localhost:5173/__vitrine`을 엽니다.
 
 이 plugin은 dev 모드(`vite serve`)에서만 동작합니다. production 빌드에는 아무것도 추가하지 않습니다.
+갤러리를 정적 파일로 배포하려면 [갤러리 배포](#갤러리-배포)를 참고하세요.
 
 ## 프리뷰 선언
 
@@ -106,6 +109,20 @@ Wrapper는 프리뷰에만 적용되며 export한 컴포넌트는 바꾸지 않�
 `onClick`처럼 `on`과 대문자로 시작하는 함수 prop은 호출이 기록되어 gallery의 Actions 탭에
 인자와 함께 표시됩니다. `args`로 넘긴 함수는 그대로 실행되고 반환값도 유지됩니다. render prop이나
 컴포넌트 prop 같은 다른 함수 prop은 건드리지 않습니다.
+
+## 갤러리 보기
+
+| 보기 | 보여주는 것 |
+| --- | --- |
+| Single | 고른 variant로 프리뷰 하나 |
+| Variants | 모든 variant를 나란히, 바꾼 prop은 모든 칸에 적용 |
+| Matrix | 행과 열로 고른 prop 두 개의 모든 조합 (boolean과 union, 36칸까지) |
+| History | 지금 버전과 이전 저장본을 나란히 또는 겹쳐서. [스냅샷 히스토리](#스냅샷-히스토리) 참고 |
+
+![버튼 tone을 행으로, size를 열로 펼친 Matrix 보기](https://raw.githubusercontent.com/yuntaengtaeng/vitrine/main/apps/website/public/screenshots/matrix-crop.png)
+
+주소가 갤러리 상태를 따라갑니다. 프리뷰, variant, 바꾼 prop, globals를 담고 있어 새로고침하거나
+**Copy link**로 공유한 링크를 열면 같은 상태로 열립니다.
 
 ## Provider, context와 전역 CSS
 
@@ -184,6 +201,8 @@ vitrine({
   viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
   // 스냅샷 히스토리 설정, false면 끔 (실험 단계)
   snapshots: { limit: 20 },
+  // 정적 빌드 같은 선택 기능 (실험 단계)
+  plugins: [],
 });
 ```
 
@@ -217,6 +236,24 @@ vitrine({
   },
 });
 ```
+
+## 갤러리 배포
+
+[`vitrine-plugin-static`](https://www.npmjs.com/package/vitrine-plugin-static)이 내 Vite 설정으로
+갤러리를 정적 파일로 만듭니다. 평소 `vite build`는 그대로입니다.
+
+```ts
+import vitrineStatic from "vitrine-plugin-static";
+
+vitrine({ plugins: [vitrineStatic()] });
+```
+
+```bash
+npx vitrine-static build   # vitrine-static/에 생성
+```
+
+[라이브 데모](https://vitrine-4kr.pages.dev/demo/)도 이렇게 만들었습니다. Vitrine plugin은 `0.x` 동안
+실험 단계이고, 공식 plugin 이름은 `vitrine-plugin-<name>`입니다.
 
 ## VS Code
 

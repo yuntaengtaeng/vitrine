@@ -1,8 +1,8 @@
 # vitrine-plugin-static
 
-Build your [Vitrine](https://vitrine-4kr.pages.dev/) Gallery into static files and deploy it anywhere, so reviewers can browse your components without running a dev server.
+Build your [Vitrine](https://vitrine-4kr.pages.dev/) Gallery into static files and deploy it anywhere, so reviewers can browse your components without running a dev server. See the [live demo](https://vitrine-4kr.pages.dev/demo/), built with this plugin.
 
-[한국어](./README.ko.md)
+[한국어](https://github.com/yuntaengtaeng/vitrine/blob/main/packages/plugin-static/README.ko.md)
 
 ## Install
 

@@ -24,7 +24,7 @@ TypeScript prop 분석 기반 controls, `preview()`의 args/control override와 
 - Storybook 수준의 문서화, 시각적 회귀
 
 일부 사용자만 필요한 기능은 코어를 키우는 대신 Vitrine plugin으로 제공하며, 누구나 자기 plugin을
-만들 수 있습니다. 자세한 결정은 [`docs/adr/005-plugin-architecture.md`](docs/adr/005-plugin-architecture.md)에
+만들 수 있습니다. 첫 공식 plugin인 `vitrine-plugin-static`이 갤러리를 정적 파일로 만듭니다. 자세한 결정은 [`docs/adr/005-plugin-architecture.md`](docs/adr/005-plugin-architecture.md)에
 있습니다. Plugin API는 Vitrine이 `0.x`인 동안 실험 단계입니다.
 
 이 범위를 바꾸는 기능은 구현보다 제품 결정이 먼저입니다. PR 전에 issue로 먼저 논의해 주세요.
