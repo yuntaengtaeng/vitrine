@@ -9,8 +9,10 @@ export default {
     "/docs",
     "/docs/previews",
     "/docs/preview-function",
+    "/docs/static-build",
     "/ko/docs",
     "/ko/docs/previews",
     "/ko/docs/preview-function",
+    "/ko/docs/static-build",
   ],
 } satisfies Config;

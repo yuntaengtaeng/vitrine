@@ -7,7 +7,9 @@ export default [
   route("docs", "routes/docs.tsx", { id: "docs-en" }),
   route("docs/previews", "routes/docs.tsx", { id: "docs-previews-en" }),
   route("docs/preview-function", "routes/docs.tsx", { id: "docs-preview-function-en" }),
+  route("docs/static-build", "routes/docs.tsx", { id: "docs-static-build-en" }),
   route("ko/docs", "routes/docs.tsx", { id: "docs-ko" }),
   route("ko/docs/previews", "routes/docs.tsx", { id: "docs-previews-ko" }),
   route("ko/docs/preview-function", "routes/docs.tsx", { id: "docs-preview-function-ko" }),
+  route("ko/docs/static-build", "routes/docs.tsx", { id: "docs-static-build-ko" }),
 ] satisfies RouteConfig;

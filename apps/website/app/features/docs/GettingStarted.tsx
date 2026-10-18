@@ -65,6 +65,34 @@ function SignedInPreview({ children }: PreviewWrapperProps) {
 
 preview(Button, { wrapper: SignedInPreview });`;
 
+const PREVIEW_GLOBALS = `// src/vitrine.preview.tsx
+import type { PreviewGlobals, PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+
+export const globals = {
+  theme: { label: "Theme", options: ["light", "dark"], default: "light" },
+} as const satisfies PreviewGlobals;
+
+export default function PreviewSetup({ children, globals: selected }: PreviewWrapperProps<typeof globals>) {
+  return <ThemeProvider theme={selected.theme}>{children}</ThemeProvider>;
+}`;
+
+const STATIC_INSTALL = "npm install -D vitrine-plugin-static";
+
+const STATIC_CONFIG = `import vitrine from "vite-plugin-react-vitrine";
+import vitrineStatic from "vitrine-plugin-static";
+
+export default defineConfig({
+  plugins: [react(), vitrine({ plugins: [vitrineStatic()] })],
+});`;
+
+const STATIC_BUILD = "npx vitrine-static build";
+
+const STATIC_APP_PLUGINS = `const isGalleryBuild = process.env.VITRINE_STATIC_BUILD === "1";
+
+export default defineConfig({
+  plugins: [react(), vitrine({ plugins: [vitrineStatic()] }), !isGalleryBuild && dts()],
+});`;
+
 export function GettingStarted() {
   const { locale, t } = useI18n();
   const page = docsPageFromPath(useLocation().pathname) ?? "getting-started";
@@ -72,6 +100,7 @@ export function GettingStarted() {
     "getting-started": { label: t.docs.label, title: t.docs.title, lead: t.docs.lead },
     previews: { label: "@preview", ...t.docs.declarations },
     "preview-function": { label: "preview()", ...t.docs.controls },
+    "static-build": { label: "vitrine-plugin-static", ...t.docs.staticBuild },
   }[page];
 
   return (
@@ -153,10 +182,51 @@ export function GettingStarted() {
               <h3 className={styles.providerSubtitle}>{t.docs.controls.providers.wrapperTitle}</h3>
               <p className={styles.providerText}>{t.docs.controls.providers.wrapperText}</p>
               <CodeSnippet code={COMPONENT_WRAPPER} />
+              <h3 className={styles.providerSubtitle}>{t.docs.controls.providers.globalsTitle}</h3>
+              <p className={styles.providerText}>{t.docs.controls.providers.globalsText}</p>
+              <CodeSnippet code={PREVIEW_GLOBALS} />
               <p className={styles.note}>{t.docs.controls.providers.state}</p>
             </section>
           </div>
         </section>}
+
+        {page === "static-build" && (
+          <section className={styles.docSection}>
+            <div className={styles.docContent}>
+              <ol className={styles.steps}>
+                {t.docs.staticBuild.steps.map((step, index) => (
+                  <li key={step.title} className={styles.step}>
+                    <div className={styles.stepNumber}>{String(index + 1).padStart(2, "0")}</div>
+                    <div className={styles.stepBody}>
+                      <h2 className={styles.stepTitle}>{step.title}</h2>
+                      <p className={styles.stepText}>{step.text}</p>
+                      {index === 0 && <CopyCommand command={STATIC_INSTALL} copyLabel={t.hero.copy} copiedLabel={t.hero.copied} />}
+                      {index === 1 && <CodeSnippet code={STATIC_CONFIG} />}
+                      {index === 2 && <CopyCommand command={STATIC_BUILD} copyLabel={t.hero.copy} copiedLabel={t.hero.copied} />}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <dl className={styles.options}>
+                {t.docs.staticBuild.options.map((option) => (
+                  <div key={option.name} className={styles.option}>
+                    <dt className={styles.optionName}><code>{option.name}</code></dt>
+                    <dd className={styles.optionDescription}>{option.text}</dd>
+                  </div>
+                ))}
+              </dl>
+              <section className={styles.providerSection}>
+                <h2 className={styles.providerTitle}>{t.docs.staticBuild.includedTitle}</h2>
+                <p className={styles.providerText}>{t.docs.staticBuild.included}</p>
+                <p className={styles.providerText}>{t.docs.staticBuild.excluded}</p>
+                <h3 className={styles.providerSubtitle}>{t.docs.staticBuild.appPluginsTitle}</h3>
+                <p className={styles.providerText}>{t.docs.staticBuild.appPluginsText}</p>
+                <CodeSnippet code={STATIC_APP_PLUGINS} />
+              </section>
+              <a className={styles.textLink} href={SITE.demoPath}>{t.docs.staticBuild.demo}</a>
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );

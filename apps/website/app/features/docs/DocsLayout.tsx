@@ -15,6 +15,7 @@ export function DocsLayout({ children }: DocsLayoutProps) {
     { page: "getting-started", label: t.docs.label },
     { page: "previews", label: t.docs.declarations.title },
     { page: "preview-function", label: t.docs.controls.title },
+    { page: "static-build", label: t.docs.staticBuild.title },
   ];
 
   const navigation = (
