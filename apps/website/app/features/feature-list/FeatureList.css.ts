@@ -1,68 +1,75 @@
-import { style } from "@vanilla-extract/css";
+import { keyframes, style } from "@vanilla-extract/css";
 import { vars } from "../../styles/theme.css";
 
-export const layout = style({
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1.2fr)",
-  gridTemplateAreas: `"heading ." "showcase catalog"`,
-  columnGap: "3rem",
-  rowGap: "2.5rem",
-  alignItems: "start",
-  "@media": {
-    "(max-width: 860px)": {
-      gridTemplateColumns: "minmax(0, 1fr)",
-      gridTemplateAreas: `"heading" "catalog"`,
-    },
+export const tabs = style({
+  display: "flex",
+  gap: "0.5rem",
+  margin: "2.5rem 0 1.5rem",
+});
+
+export const tab = style({
+  padding: "0.5rem 1.125rem",
+  border: `1px solid ${vars.color.border}`,
+  borderRadius: "999px",
+  background: "transparent",
+  color: vars.color.textMuted,
+  font: "inherit",
+  fontWeight: 600,
+  cursor: "pointer",
+  selectors: {
+    "&:hover": { color: vars.color.text },
+    '&[aria-selected="true"]': { borderColor: vars.color.accent, background: vars.color.accent, color: vars.color.onAccent },
   },
 });
 
-export const heading = style({
-  gridArea: "heading",
-});
-
-export const showcase = style({
-  gridArea: "showcase",
-  position: "sticky",
-  top: "88px",
+export const layout = style({
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.1fr)",
+  gap: "3rem",
+  alignItems: "start",
   "@media": {
-    "(max-width: 860px)": { display: "none" },
+    "(max-width: 860px)": { gridTemplateColumns: "minmax(0, 1fr)", gap: "2rem" },
   },
 });
 
 export const catalog = style({
-  gridArea: "catalog",
+  display: "grid",
+  gap: "1.75rem",
+});
+
+export const list = style({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "0.25rem 1.5rem",
   margin: 0,
-  padding: 0,
+  padding: "0 0 0.75rem",
+  borderBottom: `1px solid ${vars.color.border}`,
   listStyle: "none",
 });
 
-export const entry = style({
-  display: "grid",
-  gap: "1.25rem",
-  minHeight: "min(62vh, 560px)",
-  alignContent: "center",
-  paddingBlock: "3rem",
+export const item = style({
+  padding: "0.375rem 0",
+  border: "none",
+  borderBottom: "2px solid transparent",
+  background: "transparent",
+  color: vars.color.textMuted,
+  font: "inherit",
+  fontSize: "0.9375rem",
+  cursor: "pointer",
   selectors: {
-    "&:first-child": {
-      alignContent: "start",
-      paddingTop: 0,
-    },
-  },
-  "@media": {
-    "(max-width: 860px)": {
-      minHeight: "auto",
-      paddingBlock: "2.5rem",
-    },
+    "&:hover": { color: vars.color.text },
+    '&[aria-pressed="true"]': { borderBottomColor: vars.color.accent, color: vars.color.text, fontWeight: 650 },
   },
 });
 
-export const summary = style({
+const enter = keyframes({ from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "none" } });
+
+// 기능이 바뀔 때마다 key로 다시 그려져 설명도 장면과 함께 나타남
+export const detail = style({
   display: "grid",
-  gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1fr)",
-  gap: "1.5rem",
-  "@media": {
-    "(max-width: 560px)": { gridTemplateColumns: "minmax(0, 1fr)", gap: "0.75rem" },
-  },
+  gap: "1.25rem",
+  animation: `${enter} 220ms ease`,
+  "@media": { "(prefers-reduced-motion: reduce)": { animation: "none" } },
 });
 
 export const text = style({

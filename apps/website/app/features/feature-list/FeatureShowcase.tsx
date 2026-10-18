@@ -1,6 +1,6 @@
 import * as styles from "./FeatureShowcase.css";
 
-const FEATURES = ["props", "variants", "matrix", "actions", "globals", "history", "cursor", "groups", "static"];
+const FEATURES = ["props", "variants", "globals", "groups", "viewport", "matrix", "actions", "history", "vscode", "links", "static"];
 
 export function FeatureShowcase({ activeFeature }: { activeFeature: string }) {
   return (
@@ -94,7 +94,41 @@ function FeatureScene({ feature }: { feature: string }) {
     );
   }
 
-  if (feature === "cursor") {
+  if (feature === "viewport") {
+    return (
+      <div className={styles.withToolbar}>
+        <div className={styles.toolbar}>
+          <span>Viewport <span className={styles.select}>Mobile</span></span>
+        </div>
+        <div className={styles.stage}>
+          <div className={styles.viewportFrame}>
+            <span className={styles.widthLabel}>375px</span>
+            <span className={styles.bar} />
+            <span className={styles.bar} style={{ width: "70%" }} />
+            <span className={styles.primaryButton}>Save</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (feature === "links") {
+    return (
+      <div className={styles.withToolbar}>
+        <span className={styles.address}>
+          /__vitrine#preview=src%2FButton.tsx%23Button<span className={styles.addressParam}>&amp;variant=danger</span>
+        </span>
+        <div className={styles.split}>
+          <div className={styles.canvas}><span className={styles.dangerButton}>Delete</span></div>
+          <span className={`${styles.copied} ${styles.reveal}`} style={{ animationDelay: "500ms", marginBottom: "1rem" }}>
+            Link copied
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (feature === "vscode") {
     return (
       <div className={styles.editor}>
         <span>/** @preview */</span>

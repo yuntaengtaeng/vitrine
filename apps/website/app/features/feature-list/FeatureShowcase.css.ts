@@ -4,13 +4,10 @@ import { vars } from "../../styles/theme.css";
 
 export const frame = style({
   position: "relative",
-  height: "220px",
+  height: "260px",
   overflow: "hidden",
   border: `1px solid ${vars.color.border}`,
   background: vars.color.surface,
-  "@media": {
-    "(max-width: 860px)": { display: "none" },
-  },
 });
 
 export const scene = style({
@@ -229,4 +226,61 @@ export const version = style({
 export const withToolbar = style({
   display: "grid",
   gridTemplateRows: "auto minmax(0, 1fr)",
+});
+
+export const stage = style({
+  display: "grid",
+  placeItems: "center",
+  backgroundImage: `radial-gradient(${vars.color.border} 1px, transparent 1px)`,
+  backgroundSize: "14px 14px",
+});
+
+// 화면 너비가 375px로 줄어드는 모습을 보여 주는 frame
+const narrow = keyframes({ "0%, 30%": { width: "88%" }, "55%, 100%": { width: "34%" } });
+
+export const viewportFrame = style({
+  display: "grid",
+  gap: "0.5rem",
+  padding: "0.75rem",
+  border: `1px dashed ${BRAND[300]}`,
+  background: vars.color.surfaceRaised,
+  width: "34%",
+  selectors: {
+    [`${sceneActive} &`]: { animation: `${narrow} 1600ms ease forwards` },
+  },
+  "@media": { "(prefers-reduced-motion: reduce)": { animation: "none" } },
+});
+
+export const widthLabel = style({
+  justifySelf: "end",
+  color: vars.color.textMuted,
+  fontFamily: vars.font.mono,
+  fontSize: "0.6875rem",
+});
+
+export const bar = style({ height: "8px", background: vars.color.border });
+
+export const address = style({
+  margin: "1rem",
+  padding: "0.5rem 0.75rem",
+  border: `1px solid ${vars.color.border}`,
+  borderRadius: "999px",
+  background: vars.color.surfaceRaised,
+  color: vars.color.textMuted,
+  fontFamily: vars.font.mono,
+  fontSize: "0.75rem",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+});
+
+export const addressParam = style({ color: vars.color.accent });
+
+export const copied = style({
+  justifySelf: "end",
+  marginRight: "1rem",
+  padding: "0.375rem 0.75rem",
+  background: INK[900],
+  color: INK[50],
+  fontSize: "0.75rem",
 });
