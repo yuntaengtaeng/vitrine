@@ -1,5 +1,5 @@
 import { assignVars, createGlobalThemeContract, globalStyle } from "@vanilla-extract/css";
-import { BRAND, INK, NEUTRAL, PAPER } from "@vitrine/brand";
+import { BRAND, INK, NEUTRAL } from "@vitrine/brand";
 
 /** 사이트 전체의 용도별 디자인 토큰, 값은 @vitrine/brand 팔레트에서만 조회 */
 export const vars = createGlobalThemeContract({
@@ -17,14 +17,9 @@ export const vars = createGlobalThemeContract({
     codeBackground: "color-code-background",
     codeText: "color-code-text",
     codeComment: "color-code-comment",
-    room: "color-room",
-    roomText: "color-room-text",
-    roomMuted: "color-room-muted",
-    frame: "color-frame",
   },
   font: {
     body: "font-body",
-    display: "font-display",
     mono: "font-mono",
   },
   radius: {
@@ -41,12 +36,12 @@ export const vars = createGlobalThemeContract({
 type ColorTokens = Record<keyof typeof vars.color, string>;
 
 const lightColors: ColorTokens = {
-  background: PAPER[50],
-  surface: PAPER[100],
+  background: NEUTRAL[0],
+  surface: BRAND[50],
   surfaceRaised: NEUTRAL[0],
   text: INK[950],
   textMuted: INK[500],
-  border: PAPER[200],
+  border: INK[100],
   accent: BRAND[600],
   accentStrong: BRAND[800],
   accentSoft: BRAND[100],
@@ -54,10 +49,6 @@ const lightColors: ColorTokens = {
   codeBackground: INK[900],
   codeText: INK[100],
   codeComment: BRAND[300],
-  room: INK[950],
-  roomText: INK[50],
-  roomMuted: INK[300],
-  frame: NEUTRAL[0],
 };
 
 const darkColors: ColorTokens = {
@@ -74,10 +65,6 @@ const darkColors: ColorTokens = {
   codeBackground: INK[900],
   codeText: INK[100],
   codeComment: BRAND[300],
-  room: INK[900],
-  roomText: INK[50],
-  roomMuted: INK[300],
-  frame: INK[800],
 };
 
 globalStyle(":root", {
@@ -85,12 +72,10 @@ globalStyle(":root", {
     color: lightColors,
     font: {
       body: '"Pretendard Variable", Pretendard, system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
-      // 한글 글리프가 없어 한국어 제목은 본문 글꼴로 이어짐
-      display: '"Instrument Serif", "Pretendard Variable", Pretendard, Georgia, serif',
       mono: '"JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace',
     },
     radius: { small: "6px", medium: "12px", large: "20px" },
-    layout: { maxWidth: "1180px", gutter: "24px" },
+    layout: { maxWidth: "1120px", gutter: "24px" },
   }),
   "@media": {
     "(prefers-color-scheme: dark)": {

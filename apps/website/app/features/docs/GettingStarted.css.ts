@@ -18,11 +18,9 @@ export const label = style({
 export const title = style({
   margin: 0,
   maxWidth: "18ch",
-  fontFamily: vars.font.display,
-  fontSize: "clamp(2.75rem, 6.5vw, 5rem)",
-  fontWeight: 400,
+  fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
   lineHeight: 1,
-  letterSpacing: "-0.015em",
+  letterSpacing: "-0.045em",
 });
 
 export const lead = style({
@@ -48,7 +46,6 @@ export const step = style({
   gap: "clamp(1rem, 4vw, 3rem)",
   paddingBlock: "clamp(2.5rem, 6vw, 4.5rem)",
   borderTop: `1px solid ${vars.color.border}`,
-  selectors: { "&:first-child": { paddingTop: 0, borderTop: "none" } },
   "@media": {
     "(max-width: 600px)": {
       gridTemplateColumns: "1fr",
@@ -69,8 +66,6 @@ export const stepBody = style({
 
 export const stepTitle = style({
   margin: 0,
-  fontFamily: vars.font.display,
-  fontWeight: 400,
   fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
   letterSpacing: "-0.025em",
 });
@@ -168,8 +163,6 @@ export const providerSection = style({
 
 export const providerTitle = style({
   margin: 0,
-  fontFamily: vars.font.display,
-  fontWeight: 400,
   fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
   letterSpacing: "-0.025em",
 });
@@ -191,8 +184,6 @@ export const next = style({
 
 export const nextTitle = style({
   margin: 0,
-  fontFamily: vars.font.display,
-  fontWeight: 400,
   fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
   letterSpacing: "-0.03em",
 });

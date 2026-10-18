@@ -4,8 +4,7 @@ import { SiteHeader } from "../components/SiteHeader";
 import { SiteFooter } from "../components/SiteFooter";
 import { Hero } from "../features/hero/Hero";
 import { HowItWorks } from "../features/how-it-works/HowItWorks";
-import { Collection } from "../features/collection/Collection";
-import { Tour } from "../features/tour/Tour";
+import { FeatureList } from "../features/feature-list/FeatureList";
 import { Compatibility } from "../features/compatibility/Compatibility";
 import { Faq } from "../features/faq/Faq";
 import { SITE, siteUrl } from "../site";
@@ -22,8 +21,8 @@ export function meta({ location }: MetaArgs) {
     { property: "og:url", content: siteUrl(canonicalPath) },
     { property: "og:image", content: siteUrl(SITE.ogImagePath) },
     { property: "og:image:alt", content: "Vitrine component preview gallery" },
-    { property: "og:image:width", content: "1200" },
-    { property: "og:image:height", content: "630" },
+    { property: "og:image:width", content: "1731" },
+    { property: "og:image:height", content: "908" },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:image", content: siteUrl(SITE.ogImagePath) },
     { tagName: "link", rel: "canonical", href: siteUrl(canonicalPath) },
@@ -41,8 +40,7 @@ export default function Home() {
       <main>
         <Hero />
         <HowItWorks />
-        <Collection />
-        <Tour />
+        <FeatureList />
         <Compatibility />
         <Faq />
       </main>

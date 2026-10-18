@@ -45,11 +45,3 @@ export const INK = {
   900: "#0e1329",
   950: "#080b1c",
 } as const;
-
-/** 사이트의 전시실 벽처럼 따뜻한 흰색 계열 */
-export const PAPER = {
-  50: "#fbf9f5",
-  100: "#f4f0e8",
-  200: "#e6e0d4",
-  300: "#cfc7b6",
-} as const;

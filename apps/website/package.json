@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "catalog:website",
-    "@fontsource/instrument-serif": "catalog:website",
     "isbot": "catalog:website",
+    "motion": "catalog:website",
     "pretendard": "catalog:website",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
