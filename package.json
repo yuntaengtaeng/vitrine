@@ -22,6 +22,7 @@
     "build:website": "pnpm --filter @vitrine/website typecheck && pnpm --filter @vitrine/website build",
     "test": "pnpm --filter @vitrine/protocol build && vitest run",
     "lint": "eslint .",
+    "screenshots": "pnpm run build && playwright test -c playwright.screenshots.config.ts",
     "changeset": "changeset",
     "version-packages": "changeset version && pnpm install --lockfile-only",
     "package:extension": "pnpm --filter vitrine package"
