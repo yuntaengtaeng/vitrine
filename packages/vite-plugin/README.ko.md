@@ -2,7 +2,7 @@
 
 [English](https://github.com/yuntaengtaeng/vitrine/tree/main/packages/vite-plugin#readme)
 
-[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [VS Code 확장](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [라이브 데모](https://vitrine-4kr.pages.dev/demo/) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [VS Code 확장](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
 
 React 컴포넌트 프리뷰를 프로젝트의 Vite dev server에서 바로 렌더링합니다.
 
@@ -13,6 +13,8 @@ stories 파일도, 별도 빌드도, 추가 서버도 필요 없습니다.
 /** @preview */
 export const PrimaryButton = () => <Button variant="primary">Save</Button>;
 ```
+
+![Button 프리뷰와 Props 패널을 보여주는 Vitrine Gallery](https://raw.githubusercontent.com/yuntaengtaeng/vitrine/main/apps/website/public/screenshots/gallery.png)
 
 ## 설치
 
@@ -40,6 +42,7 @@ export default defineConfig({
 평소처럼 dev server를 실행하고 `http://localhost:5173/__vitrine`을 엽니다.
 
 이 plugin은 dev 모드(`vite serve`)에서만 동작합니다. production 빌드에는 아무것도 추가하지 않습니다.
+갤러리를 정적 파일로 배포하려면 [갤러리 배포](#갤러리-배포)를 참고하세요.
 
 ## 프리뷰 선언
 
@@ -99,18 +102,39 @@ preview(Button, {
 | `variants` | 갤러리에서 전환할 수 있는 이름 붙은 args 묶음 |
 | `defaultVariant` | 처음 선택되는 variant. 기본값은 `variants`의 첫 번째 키 |
 | `wrapper` | 이 컴포넌트 프리뷰를 감싸는 router나 provider 같은 React wrapper |
+| `globals` | 이 프리뷰에서 고정할 globals, [Globals](#globals) 참고 |
 
 Wrapper는 프리뷰에만 적용되며 export한 컴포넌트는 바꾸지 않습니다.
 
-## Provider와 context
+`onClick`처럼 `on`과 대문자로 시작하는 함수 prop은 호출이 기록되어 gallery의 Actions 탭에
+인자와 함께 표시됩니다. `args`로 넘긴 함수는 그대로 실행되고 반환값도 유지됩니다. render prop이나
+컴포넌트 prop 같은 다른 함수 prop은 건드리지 않습니다.
 
-갤러리는 별도의 React root를 사용하므로 앱에 마운트된 provider의 context를 상속할 수 없습니다.
-모든 프리뷰에 같은 provider가 필요하면 setup file을 추가합니다.
+## 갤러리 보기
+
+| 보기 | 보여주는 것 |
+| --- | --- |
+| Single | 고른 variant로 프리뷰 하나 |
+| Variants | 모든 variant를 나란히, 바꾼 prop은 모든 칸에 적용 |
+| Matrix | 행과 열로 고른 prop 두 개의 모든 조합 (boolean과 union, 36칸까지) |
+| History | 지금 버전과 이전 저장본을 나란히 또는 겹쳐서. [스냅샷 히스토리](#스냅샷-히스토리) 참고 |
+
+![버튼 tone을 행으로, size를 열로 펼친 Matrix 보기](https://raw.githubusercontent.com/yuntaengtaeng/vitrine/main/apps/website/public/screenshots/matrix-crop.png)
+
+주소가 갤러리 상태를 따라갑니다. 프리뷰, variant, 바꾼 prop, globals를 담고 있어 새로고침하거나
+**Copy link**로 공유한 링크를 열면 같은 상태로 열립니다.
+
+## Provider, context와 전역 CSS
+
+프리뷰는 각자 별도 frame에서 렌더링되므로 앱의 provider와 전역 CSS를 상속하지 않습니다.
+`main.tsx`에서 import한 폰트, CSS reset, Tailwind 스타일은 프리뷰에 적용되지 않고 글자는 브라우저
+기본 폰트로 보입니다. 모든 프리뷰에 같은 provider나 stylesheet가 필요하면 setup file을 추가합니다.
 
 ```tsx
 // src/vitrine.preview.tsx
 import type { PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
 import { DarkModeProvider } from "./DarkModeProvider";
+import "./index.css";
 
 export default function PreviewSetup({ children }: PreviewWrapperProps) {
   return <DarkModeProvider>{children}</DarkModeProvider>;
@@ -132,6 +156,39 @@ vitrine({ setupFile: "./src/vitrine.preview.tsx" });
 상태도 유지됩니다. 다른 프리뷰를 선택하면 새로운 프리뷰 tree가 마운트됩니다. 한 컴포넌트에만
 provider가 필요하면 `preview(Component, { wrapper: ComponentWrapper })`를 사용합니다.
 
+## Globals
+
+Globals는 테마나 언어처럼 앱 전체의 provider가 정하는 값입니다. setup file에 선언해 두면 파일을
+고치지 않고 gallery toolbar에서 값을 바꿔 볼 수 있습니다.
+
+```tsx
+// src/vitrine.preview.tsx
+import type { PreviewGlobals, PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+
+export const globals = {
+  locale: { label: "Locale", options: ["en", "ko"], default: "en" },
+} as const satisfies PreviewGlobals;
+
+// prop 이름을 globals로 받으면 typeof globals가 자기 자신을 가리키므로 다른 이름으로 받음
+export default function PreviewSetup({ children, globals: selected }: PreviewWrapperProps<typeof globals>) {
+  return <LocaleProvider locale={selected.locale}>{children}</LocaleProvider>;
+}
+```
+
+선택지는 문자열이고, `default`가 없으면 첫 선택지를 씁니다. `preview(Component, { wrapper })`의
+wrapper도 같은 `globals` prop을 받습니다. 값을 바꾸면 wrapper를 새로 마운트하므로 처음 마운트할
+때만 값을 읽는 provider에도 새 값이 반영됩니다. 고른 값은 프리뷰를 바꾸거나 새로고침해도
+유지됩니다.
+
+프리뷰나 variant가 global을 고정할 수 있습니다. 고정한 값은 toolbar에 표시되고 바꿀 수 없습니다.
+
+```ts
+preview(Greeting, {
+  globals: { locale: "en" },
+  variants: { korean: { globals: { locale: "ko" } } },
+});
+```
+
 ## Plugin 옵션
 
 ```ts
@@ -140,11 +197,63 @@ vitrine({
   include: ["src/**/*.{tsx,jsx}"],
   // 모든 프리뷰를 감싸는 default export module
   setupFile: "./src/vitrine.preview.tsx",
+  // gallery viewport 프리셋 변경 (실험 단계)
+  viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
+  // 스냅샷 히스토리 설정, false면 끔 (실험 단계)
+  snapshots: { limit: 20 },
+  // 정적 빌드 같은 선택 기능 (실험 단계)
+  plugins: [],
 });
 ```
 
 `include` 기본값은 `["src/**/*.{tsx,jsx}"]`입니다. 컴포넌트가 `src/` 밖에 있는데 gallery에
 프리뷰가 없다고 나오면 해당 폴더를 `include`에 추가합니다.
+
+프리뷰는 iframe 안에서 렌더링되므로 미디어 쿼리는 선택한 viewport 너비를 따릅니다. 기본
+프리셋은 Mobile 375px, Tablet 768px, Desktop 1280px입니다. `viewports`는 이 목록을 받아 보여줄
+목록을 돌려주므로 추가, 삭제, 교체가 모두 가능합니다. 무대를 채우는 Responsive는 항상
+제공됩니다. 이름이 겹치거나 너비가 양의 정수가 아니면 경고를 남기고 기본 목록을 씁니다.
+
+### 스냅샷 히스토리
+
+dev server가 켜져 있는 동안 `@preview`가 있는 파일을 저장할 때마다 메모리에 보관하므로, gallery의
+History 보기에서 옛 버전을 지금 버전 옆에 나란히 또는 겹쳐서 볼 수 있습니다. Snapshot 1은 서버를
+켤 때, 또는 파일에 `@preview`가 생긴 때의 내용입니다. 문법 오류가 있거나 내용이 같은 저장은
+건너뜁니다. 파일마다 Snapshot 1과 최근 저장본을 합쳐 기본 20개를 보관합니다. 서버를 끄거나 파일을
+지우거나 `@preview`가 사라지면 기록도 사라지고, 이름을 바꾼 파일은 새 기록으로 시작합니다.
+
+옛 버전은 import하는 다른 파일의 지금 버전과 함께 그려집니다. 옛 버전에 프리뷰 export가 없으면 그
+칸에 안내가 나옵니다.
+
+입력마다 저장하는 에디터에서는 기록이 빨리 찹니다. `shouldRecord`로 저장을 남길지 정할 수 있습니다.
+
+```ts
+vitrine({
+  snapshots: {
+    limit: 30,
+    // 3초에 한 번까지만 기록
+    shouldRecord: ({ lastRecordedAt, now }) => lastRecordedAt === null || now - lastRecordedAt > 3000,
+  },
+});
+```
+
+## 갤러리 배포
+
+[`vitrine-plugin-static`](https://www.npmjs.com/package/vitrine-plugin-static)이 내 Vite 설정으로
+갤러리를 정적 파일로 만듭니다. 평소 `vite build`는 그대로입니다.
+
+```ts
+import vitrineStatic from "vitrine-plugin-static";
+
+vitrine({ plugins: [vitrineStatic()] });
+```
+
+```bash
+npx vitrine-static build   # vitrine-static/에 생성
+```
+
+[라이브 데모](https://vitrine-4kr.pages.dev/demo/)도 이렇게 만들었습니다. Vitrine plugin은 `0.x` 동안
+실험 단계이고, 공식 plugin 이름은 `vitrine-plugin-<name>`입니다.
 
 ## VS Code
 
@@ -157,6 +266,13 @@ code --install-extension yuntaengtaeng.vitrine
 
 확장이 dev server를 찾을 수 있도록 plugin은 프로젝트 root의 `.vitrine/port.json`에 포트를 기록합니다.
 이 폴더는 자체 `.gitignore`로 스스로를 제외하므로 커밋에 포함되지 않습니다.
+
+VS Code 안에서는 Props 탭에서 지금 props를 새 variant로 저장할 수 있습니다. 이름을 정하면 확장이
+파일의 `preview()`에 추가하고, 필요하면 `preview()` 호출과 import도 만듭니다. 편집은 에디터를 거치므로
+undo할 수 있고, gallery가 읽은 내용과 파일이 같을 때만 적용되어 저장하지 않은 수정을 덮어쓰지
+않습니다. 익명 default export에는 variant를 만들 수 없고, props의 함수나 element 값은 쓰지 않습니다.
+gallery와 확장은 패널을 열 때 이 기능을 포함해 함께 지원하는 기능을 맞추고, 한쪽이 오래되었으면
+업데이트 안내를 한 줄 보여줍니다.
 
 ## 호환성
 

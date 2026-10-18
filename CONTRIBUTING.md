@@ -25,7 +25,8 @@ Out of scope for now:
 - Storybook-level documentation or visual regression
 
 Features only some users need ship as Vitrine plugins instead of growing the core, and anyone can
-write their own plugin. See [`docs/adr/005-plugin-architecture.md`](docs/adr/005-plugin-architecture.md).
+write their own plugin. The first official one, `vitrine-plugin-static`, builds the gallery into
+static files. See [`docs/adr/005-plugin-architecture.md`](docs/adr/005-plugin-architecture.md).
 The plugin API is experimental while Vitrine is on `0.x`.
 
 Changing this scope is a product decision before it is an implementation. Please open an issue

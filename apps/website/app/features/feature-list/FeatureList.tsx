@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useI18n } from "../../i18n/locale";
 import { CodeSnippet } from "../../components/CodeSnippet";
 import { Placard } from "../../components/Placard";
 import { SectionHeading } from "../../components/SectionHeading";
 import { container, section } from "../../styles/layout.css";
 import { FeatureShowcase } from "./FeatureShowcase";
+import { useFeatureTour } from "./useFeatureTour";
 import * as styles from "./FeatureList.css";
 
 // 코드는 번역 대상이 아니라 사전 대신 기능 id로 연결
@@ -19,55 +20,76 @@ const FEATURE_CODE: Record<string, string> = {
     danger: { args: { tone: "danger" } },
   },
 });`,
+  globals: `// src/vitrine.preview.tsx
+export const globals = {
+  theme: { label: "Theme", options: ["light", "dark"] },
+};`,
   groups: `/** @preview name="Inputs/Button" */
 export const Primary = () => <Button />;`,
+  viewport: `vitrine({
+  viewports: (defaults) => [
+    ...defaults,
+    { name: "Breakpoint", width: 800 },
+  ],
+});`,
+  static: `vitrine({ plugins: [vitrineStatic()] });
+
+$ npx vitrine-static build`,
 };
 
 export function FeatureList() {
   const { t } = useI18n();
+  const { groups, items } = t.features;
   const sectionRef = useRef<HTMLElement>(null);
-  const [activeFeature, setActiveFeature] = useState(t.features.items[0].id);
-
-  useEffect(() => {
-    const entries = sectionRef.current?.querySelectorAll<HTMLElement>("[data-feature]");
-    if (!entries) return;
-
-    const observer = new IntersectionObserver(
-      (changes) => {
-        const visible = changes.find((change) => change.isIntersecting);
-        const feature = visible?.target.getAttribute("data-feature");
-        if (feature) setActiveFeature(feature);
-      },
-      { rootMargin: "-30% 0px -55%", threshold: 0 },
-    );
-
-    entries.forEach((entry) => observer.observe(entry));
-    return () => observer.disconnect();
-  }, []);
+  const order = useMemo(() => items.map((item) => item.id), [items]);
+  const [activeId, choose] = useFeatureTour(order, sectionRef);
+  const active = items.find((item) => item.id === activeId) ?? items[0];
+  const code = FEATURE_CODE[active.id];
 
   return (
     <section ref={sectionRef} id="features" className={section}>
-      <div className={`${container} ${styles.layout}`}>
-        <div className={styles.heading}>
-          <SectionHeading label={t.features.label} title={t.features.title} />
+      <div className={container}>
+        <SectionHeading label={t.features.label} title={t.features.title} />
+        <div className={styles.tabs} role="tablist" aria-label={t.features.label}>
+          {groups.map((group) => (
+            <button
+              key={group.id}
+              type="button"
+              role="tab"
+              aria-selected={group.id === active.group}
+              className={styles.tab}
+              onClick={() => choose(items.find((item) => item.group === group.id)?.id ?? active.id)}
+            >
+              {group.label}
+            </button>
+          ))}
         </div>
-        <div className={styles.showcase}>
-          <FeatureShowcase activeFeature={activeFeature} />
+        <div className={styles.layout} role="tabpanel">
+          <div className={styles.catalog}>
+            <ul className={styles.list}>
+              {items
+                .filter((item) => item.group === active.group)
+                .map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      className={styles.item}
+                      aria-pressed={item.id === active.id}
+                      onClick={() => choose(item.id)}
+                    >
+                      {item.title}
+                    </button>
+                  </li>
+                ))}
+            </ul>
+            <div key={active.id} className={styles.detail}>
+              <Placard title={active.title} medium={active.medium} />
+              <p className={styles.text}>{active.text}</p>
+              {code && <CodeSnippet code={code} />}
+            </div>
+          </div>
+          <FeatureShowcase activeFeature={active.id} />
         </div>
-        <ul className={styles.catalog}>
-          {t.features.items.map((item) => {
-            const code = FEATURE_CODE[item.id];
-            return (
-              <li key={item.id} className={styles.entry} data-feature={item.id}>
-                <div className={styles.summary}>
-                  <Placard title={item.title} medium={item.medium} />
-                  <p className={styles.text}>{item.text}</p>
-                </div>
-                {code && <CodeSnippet code={code} />}
-              </li>
-            );
-          })}
-        </ul>
       </div>
     </section>
   );

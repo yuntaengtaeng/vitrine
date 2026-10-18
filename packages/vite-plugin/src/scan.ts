@@ -4,8 +4,7 @@ import type { ManifestEntry } from "@vitrine/protocol";
 import fg from "fast-glob";
 import { parse } from "@babel/parser";
 import traverseModule, { type NodePath } from "@babel/traverse";
-import { getTypeContext, getPropControls } from "./props-controls.js";
-import type { PreviewSetupModule } from "./preview-setup.js";
+import { analyzeProps, createTypeContext, type TypeContext } from "./props-controls.js";
 
 // CJS/ESM interop에 따라 default export가 한 번 더 감싸여 오는 경우 보정
 const traverse = (
@@ -26,30 +25,47 @@ const PREVIEW_TAG = "@preview";
 // 같은 줄에 다른 옵션이 올 수 있어 인용부호로 값의 끝을 구분
 const NAME_OPTION_RE = /name\s*=\s*(?:"([^"]*)"|'([^']*)')/;
 
-/** include 글롭 패턴 기준 프로젝트 전체 @preview export 스캔 */
-export async function scanPreviews(options: ScanOptions): Promise<PreviewEntry[]> {
-  const { root, include = ["src/**/*.{tsx,jsx}"] } = options;
-  const files = await fg(include, {
-    cwd: root,
-    absolute: true,
-    ignore: ["**/node_modules/**"],
-  });
+/** 프로젝트 하나의 @preview 스캐너 */
+export interface PreviewScanner {
+  /** include 글롭 패턴 기준 프로젝트 전체 @preview export 스캔 */
+  scan(): Promise<PreviewEntry[]>;
+  /** 소스가 바뀌어 캐시된 타입 정보가 낡았을 때 다음 scan에서 다시 만들도록 무효화 */
+  invalidateTypes(): void;
+}
 
-  const entries: PreviewEntry[] = [];
-  const typeContext = getTypeContext(root);
-  for (const file of files) {
-    for (const entry of scanFile(file, root)) {
-      // scanFile 캐시 entry를 공유하므로 복사해서 확장
-      entries.push({ ...entry, controls: getPropControls(file, entry.exportName, typeContext) });
-    }
-  }
-  return entries;
+type FileCache = Map<string, { mtimeMs: number; size: number; entries: PreviewEntry[] }>;
+
+/** 파일별 스캔 결과와 prop 타입 분석용 ts.Program을 캐시하는 스캐너 생성 */
+export const DEFAULT_INCLUDE = ["src/**/*.{tsx,jsx}"];
+
+export function createPreviewScanner(options: ScanOptions): PreviewScanner {
+  const { root, include = DEFAULT_INCLUDE } = options;
+  const fileCache: FileCache = new Map();
+  // ts.createProgram()이 tsconfig 전체를 다시 읽어들이는 비용이 커서(예제 9개
+  // 파일 기준 Babel 스캔의 17배), 무효화될 때까지 한 번 만든 Program을 재사용
+  let typeContext: TypeContext | undefined;
+
+  return {
+    scan: async () => {
+      const files = await fg(include, { cwd: root, absolute: true, ignore: ["**/node_modules/**"] });
+      const context = (typeContext ??= createTypeContext(root));
+      const entries: PreviewEntry[] = [];
+      for (const file of files) {
+        for (const entry of scanFile(file, root, fileCache)) {
+          // scanFile 캐시 entry를 공유하므로 복사해서 확장
+          entries.push({ ...entry, ...analyzeProps(file, entry.exportName, context) });
+        }
+      }
+      return entries;
+    },
+    invalidateTypes: () => {
+      typeContext = undefined;
+    },
+  };
 }
 
 // 변경 판단은 mtime+size, content hash는 캐시로 피하려는 파일 읽기가 다시 필요
-const fileCache = new Map<string, { mtimeMs: number; size: number; entries: PreviewEntry[] }>();
-
-function scanFile(file: string, root: string): PreviewEntry[] {
+function scanFile(file: string, root: string, fileCache: FileCache): PreviewEntry[] {
   const stat = fs.statSync(file);
   const cached = fileCache.get(file);
   if (cached && cached.mtimeMs === stat.mtimeMs && cached.size === stat.size) {
@@ -64,6 +80,11 @@ function scanFile(file: string, root: string): PreviewEntry[] {
 
 /** 소스 문자열에서 @preview export 스캔 (relFile은 프로젝트 루트 기준 POSIX 경로) */
 export function scanSource(code: string, relFile: string): PreviewEntry[] {
+  return scanParsedSource(code, relFile) ?? [];
+}
+
+/** scanSource와 같지만 파싱에 실패하면 null, 저장 중인 문법 오류와 @preview가 사라진 경우를 구분할 때 사용 */
+export function scanParsedSource(code: string, relFile: string): PreviewEntry[] | null {
   let ast;
   try {
     ast = parse(code, {
@@ -72,7 +93,7 @@ export function scanSource(code: string, relFile: string): PreviewEntry[] {
       attachComment: true,
     });
   } catch {
-    return [];
+    return null;
   }
 
   const comments = ast.comments ?? [];
@@ -186,26 +207,4 @@ function splitNameAndGroup(raw: string): { name: string; group?: string } {
   const segments = raw.split("/").map((segment) => segment.trim()).filter((segment) => segment.length > 0);
   if (segments.length <= 1) return { name: segments[0] ?? raw };
   return { name: segments[segments.length - 1], group: segments.slice(0, -1).join("/") };
-}
-
-/** 스캔된 프리뷰 목록과 setup module loader를 가상 모듈 JS 문자열로 직렬화 */
-export function renderPreviewsModule(entries: PreviewEntry[], setup?: PreviewSetupModule): string {
-  const items = entries.map(
-    (entry) =>
-      `  { id: ${JSON.stringify(entry.id)}, name: ${JSON.stringify(entry.name)}, ` +
-      `group: ${JSON.stringify(entry.group)}, ` +
-      `file: ${JSON.stringify(entry.file)}, exportName: ${JSON.stringify(entry.exportName)}, ` +
-      `controls: ${JSON.stringify(entry.controls)}, ` +
-      `load: () => import(${JSON.stringify("/" + entry.file)}) }`,
-  );
-  return `${renderPreviewSetupLoader(setup)}\nexport default [\n${items.join(",\n")}\n];\n`;
-}
-
-// 없는 파일을 import로 내보내면 Vite import 분석이 previews module 전체를 실패시킴
-function renderPreviewSetupLoader(setup: PreviewSetupModule | undefined): string {
-  if (!setup) return "export const loadPreviewSetup = undefined;";
-  if (setup.status === "unavailable") {
-    return `export const loadPreviewSetup = () => Promise.reject(new Error(${JSON.stringify(setup.message)}));`;
-  }
-  return `export const loadPreviewSetup = () => import(${JSON.stringify(setup.importPath)});`;
 }

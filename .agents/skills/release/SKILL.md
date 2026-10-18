@@ -14,10 +14,16 @@ description: 사용자가 "배포하자", "릴리스하자", "새 버전 내자"
 | 대상 | 배포 방법 |
 | --- | --- |
 | `vite-plugin-react-vitrine` (npm) | `vite-plugin-react-vitrine@<version>` 태그 push -> `publish.yml`이 Trusted Publishing(OIDC)으로 publish |
+| `vitrine-plugin-static` (npm) | `vitrine-plugin-static@<version>` 태그 push, 같은 `publish.yml` |
 | `vitrine` (VS Code 확장) | VSIX를 만들어 Marketplace 관리 화면에 수동 업로드 |
 
 - `version.yml`은 main push마다 대기 중인 changeset으로 "Version Packages" PR을 갱신하고 배포는 하지 않는다.
-- `publish.yml`은 태그와 `packages/vite-plugin/package.json` 버전이 다르면 실패한다.
+- `publish.yml`은 태그 이름으로 package 폴더를 정하고, 태그와 그 `package.json` 버전이 다르면 실패한다.
+- 아래 npm 단계는 package마다 따로 진행한다. 코어와 plugin을 함께 내면 코어를 먼저 publish한다. plugin의
+  `peerDependencies`가 새 코어 버전을 요구하기 때문이다.
+- npm에 아직 없는 package는 Trusted Publisher를 설정할 수 없다. 그런 package의 첫 버전만 사용자가 자기 PC에서
+  `pnpm pack` 후 `npm publish ./<name>-<version>.tgz`로 2FA 인증해 올리고, 그 뒤 package Settings에 Trusted
+  Publisher(`yuntaengtaeng/vitrine`, `publish.yml`)를 등록한다.
 - npm 패키지는 2FA 필수, 우회 토큰 금지로 설정되어 있다. CI는 OIDC, 수동 배포는 사용자의 2FA로만 가능하다.
 
 ## npm 배포 단계

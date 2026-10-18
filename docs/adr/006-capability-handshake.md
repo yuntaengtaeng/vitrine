@@ -1,6 +1,6 @@
 # ADR 006: Gallery와 VS Code 확장은 capability handshake로 기능을 맞춘다
 
-- 상태: 채택, 구현은 처음 필요한 기능에서 함
+- 상태: 채택, handshake는 리뉴얼 2-4에서 구현
 - 날짜: 2026-10-18
 
 ## 맥락
@@ -39,6 +39,10 @@ Gallery가 VS Code webview 안에서 시작하면 자신이 할 수 있는 기�
   동작한다. Handshake는 이후 추가되는 기능에만 적용한다.
 
 구현은 처음 handshake가 필요한 기능(Gallery 다크 모드의 `theme.sync`)과 함께 한다.
+
+- 응답을 기다리는 시간은 1.5초다. 그 전까지 확장이 필요한 기능은 숨긴다.
+- webview relay가 넘기는 type 목록은 `@vitrine/protocol`의 `GALLERY_TO_EXTENSION_RELAY_TYPES`와
+  `EXTENSION_TO_GALLERY_RELAY_TYPES`가 소유한다. 새 메시지는 이 목록에 더해야 확장을 통과한다.
 
 ## 결과
 

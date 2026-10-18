@@ -48,10 +48,12 @@ packages/
     client/              gallery source
     scripts/             plugin과 gallery esbuild 작업, package smoke test
     dist/gallery/        build 시 생성되는 gallery bundle
+  plugin-static/         vitrine-plugin-static, `vitrine-static build` 명령과 배포 설정
   eslint-config/          base, Node, React 공용 lint preset
   typescript-config/      base, library, Node, React 공용 tsconfig
 examples/
-  react-basic/            단일 React 프로젝트 사용 예시
+  react-basic/            단일 React 프로젝트 사용 예시, e2e 대상
+  showcase/               문서와 사이트용 스크린샷, 정적 빌드 데모
 fixtures/
   multi-project/          두 Vite 프로젝트를 함께 여는 개발 fixture
 tests/
@@ -61,9 +63,61 @@ tests/
 `protocol`은 route, virtual module ID, manifest DTO, message, port-file schema를 소유하며 ESM과
 CJS entry를 함께 build한다. Node, React, Vite, VS Code API에는 의존하지 않는다.
 
-현재 `packages/vite-plugin/src/index.ts`는 Vite lifecycle과 HTTP/HMR orchestration을 맡고,
-`scan.ts`, `props-controls.ts`, `port-file.ts`가 세부 로직을 맡는다. Gallery는 별도 browser
-source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
+현재 `packages/vite-plugin/src/index.ts`는 Vite lifecycle과 HTTP/HMR orchestration을 맡는다.
+세부 로직은 다음 모듈이 맡는다.
+
+- `scan.ts`: `createPreviewScanner()`가 파일별 스캔 결과와 prop 타입 분석용 ts.Program 캐시를 소유
+- `props-controls.ts`: prop 타입에서 control 추론
+- `preview-tracker.ts`: 마지막 스캔 결과를 보관하고, Gallery 가상 모듈과 manifest가 같은 결과를 쓰게 함
+- `previews-module.ts`: Gallery 가상 모듈 생성. 줄 번호를 넣지 않아 export 위 코드가 밀려도 Gallery가
+  reload되지 않음
+- `open-in-editor.ts`: 브라우저 Gallery의 에디터 열기 요청을 Vite 내장 `/__open-in-editor`로 연결
+- `port-file.ts`: port file 기록
+- `snapshot-store.ts`, `snapshot-recorder.ts`: `@preview` 파일 저장본 보관과 기록, 유지, 폐기 판단
+  ([ADR 010](adr/010-snapshot-history.md))
+- `variant-edit.ts`: Save as variant 편집을 AST로 계산. 파일은 쓰지 않고, 확장이 버퍼 hash를 확인한
+  뒤 적용
+
+`index.ts`는 등록된 Vitrine plugin이 `staticBuild()`로 설정을 돌려줄 때만 `vite build`에 적용된다. 이때
+Gallery와 frame 문서를 build 입력으로 바꾸고 Gallery 설정에서 dev server 전용 기능을 끈다
+([ADR 011](adr/011-static-build-hook.md)).
+
+Gallery는 별도 browser source root와 type-check/build 단계를 갖지만 workspace package는 아니다.
+`client/`는 두 bundle로 나눈다.
+
+- `frame/`: iframe 안에서 사용자 module을 불러 렌더링. `preview/`는 프리뷰 module과 setup file
+  로드, 렌더링, 에러 경계를, `bridge/`는 Gallery와 주고받는 message와 높이 보고를 맡음
+- `gallery/`: 사용자 코드를 import하지 않고 `@vitrine/protocol` data만 사용.
+  [code-philosophy 8장](code-philosophy.md#8-폴더는-기능-단위로-나눈다)의 기능 단위 구조를 따름
+  - 최상위 module: feature를 조합하고 여러 feature에 걸친 앱 상태(선택, 실패한 프리뷰)를 소유
+  - `features/`: `sidebar/`, `header/`, `previewSession/`(iframe 연결과 variant, 바꾼 값),
+    `stage/`(배경, viewport, iframe 무대), `controls/`(Props 패널과 variant 선택),
+    `previewError/`(에러 카드), `emptyState/`
+  - `shared/`: 여러 feature가 쓰는 theme, UI 스타일, 아이콘, helper
+
+`gallery/`는 `frame/`을 import하지 않는다. feature끼리 import하지 않고, `shared/`는 feature를
+import하지 않는다. `frame/`은 `gallery/`와 stylesheet를 import하지 않는다. 이 경계는 루트
+`eslint.config.mjs`의 `no-restricted-imports`가 강제하며, `features/` 아래 새 폴더는 자동으로
+같은 규칙을 받는다.
+
+### Gallery 스타일
+
+- Gallery는 vanilla-extract `.css.ts`로 스타일을 쓰고, build 때 `dist/gallery/gallery-client.css`
+  하나로 나온다. plugin이 `/__vitrine/gallery.css`로 서빙하고 Gallery HTML이 `<link>`로 읽는다.
+  vanilla-extract는 devDependency라 배포 package의 runtime 의존성이 늘지 않는다.
+- 색, 간격, radius, 글자 크기는 `shared/theme/theme.css.ts`의 계약(`--vt-*` CSS 변수)만 쓴다.
+  다크 모드는 `<html data-vt-theme="dark">`에서 같은 계약에 색 값만 바꿔 붙인다. 브라우저는
+  `prefers-color-scheme`을, VS Code는 `theme.sync` handshake가 맞으면 확장이 보내는 테마를 따른다.
+- 프리뷰 뒤 배경(Light, Dark, 투명)은 사용자 컴포넌트를 비춰 보는 값이라 Gallery 테마와 상관없이
+  고정 색을 쓴다.
+- 보조 글자는 흰 배경과 사이드바 배경 모두에서 4.5:1 이상인 `textMuted` 하나로 쓰고, 위계는
+  크기와 굵기로 만든다.
+- 상태 스타일은 JS 조건 대신 `aria-pressed`, `aria-current`, `aria-checked` 같은 속성 selector로 쓴다.
+- 공용 스타일을 덧입힐 때는 TSX에서 class를 이어 붙이지 않고 `.css.ts`에서
+  `style([base, { ... }])`로 조합한다. 이어 붙이면 어느 규칙이 이길지 CSS 순서에 달린다.
+- 좁은 패널(VS Code)은 `shared/ui/layout.css.ts`의 gallery container query로 대응한다. 640px
+  이하에서는 사이드바가 서랍으로 바뀐다.
+- frame은 사용자 문서이므로 Gallery CSS를 넣지 않고 inline style만 쓴다.
 
 각 runtime project 내부는 다음 원칙으로 정리한다. 구체적인 디렉터리 이름은 이 원칙을 구현하는
 현재 선택이며 영구 규칙이 아니다.
@@ -111,12 +165,15 @@ protocol 값을 주입하거나 package smoke test로 실제 계약과의 일치
 packages/
   protocol/             runtime 간 공유 계약
   vite-plugin/          Vite adapter, scanner orchestration, gallery 배포
+  plugin-static/        정적 Gallery 빌드 명령, 코어의 공개 plugin hook만 사용
 apps/
   vscode-extension/     editor adapter와 webview orchestration
 ```
 
 공식 사이트는 같은 monorepo의 `apps/website`에 둔다. 문서와 코드 변경을 한 PR에서 함께 검토하기 위한
-결정이다. React 19, React Router(prerender, `ssr: false`), vanilla-extract로 만들고 배포 방식은 아직 정하지 않았다.
+결정이다. React 19, React Router(prerender, `ssr: false`), vanilla-extract로 만들고 Cloudflare Pages에 배포한다.
+사이트 build는 `examples/showcase`를 `vitrine-static build`로 만든 Gallery를 `/demo/`에 함께 담아, 라이브 데모가 늘
+저장소의 plugin과 같은 버전이 되게 한다. README의 Gallery 이미지는 `pnpm screenshots`로 showcase에서 다시 찍는다.
 스타일은 컴포넌트와 같은 폴더의 `.css.ts`에 두고, 공용 컴포넌트는 `app/components`, 화면 단위 코드는
 `app/features/<이름>`, theme, global, layout 토큰은 `app/styles`가 소유한다. React Router v8은 React 19.2.7 이상이
 필요해 사이트는 `react19` catalog를 쓰고, 예제와 plugin의 React 18 기준은 유지한다.
@@ -126,6 +183,7 @@ apps/
 
 ```text
 vite-plugin      -> protocol
+plugin-static    -> vite-plugin (공개 entry의 타입과 hook만)
 gallery target   -> protocol
 vscode-extension app -> protocol
 ```
@@ -134,8 +192,8 @@ vscode-extension app -> protocol
 - Scanner는 현재 `vite-plugin` 내부 모듈로 유지한다.
 - Gallery는 독립 browser build target으로 관리하지만 `vite-plugin`과 함께 배포한다.
 - Gallery의 최종 asset은 `vite-plugin/dist` 아래에 두어 package tarball에 포함한다.
-- 공개 npm package는 `vite-plugin-react-vitrine` 하나만 제공하고 `protocol`은 private workspace
-  package로 유지한다.
+- 공개 npm package는 코어 `vite-plugin-react-vitrine`과 공식 plugin `vitrine-plugin-static`이고
+  `protocol`은 private workspace package로 유지한다.
 
 Protocol과 공개 package 경계의 결정은
 [`adr/002-protocol-and-public-package.md`](./adr/002-protocol-and-public-package.md),

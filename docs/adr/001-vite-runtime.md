@@ -21,7 +21,7 @@ server를 찾고 webview iframe을 연결하며 editor state를 전달하는 ada
 - Extension과 gallery가 통신하는 wire contract는 별도로 명시해야 한다.
 - Vite dev server는 사용자가 직접 실행한다.
 - 배포용 정적 Gallery는 [ADR 005](./005-plugin-architecture.md)의 선택 plugin이 `vite build`로
-  만든다. 렌더링 책임은 계속 Vite에 있다.
+  만든다. 렌더링 책임은 계속 Vite에 있다. 연결 방식은 [ADR 011](./011-static-build-hook.md)
 
 ## 재검토 조건
 

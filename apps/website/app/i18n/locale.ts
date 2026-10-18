@@ -3,7 +3,14 @@ import { en, type Messages } from "./en";
 import { ko } from "./ko";
 
 export type Locale = "en" | "ko";
-export type DocsPage = "getting-started" | "previews" | "preview-function";
+export type DocsPage =
+  | "getting-started"
+  | "previews"
+  | "preview-function"
+  | "gallery"
+  | "options"
+  | "plugins"
+  | "plugins/static";
 
 const MESSAGES: Record<Locale, Messages> = { en, ko };
 
@@ -27,6 +34,10 @@ export function docsPageFromPath(pathname: string): DocsPage | undefined {
   if (!pathname.includes("/docs")) return undefined;
   if (pathname.endsWith("/previews")) return "previews";
   if (pathname.endsWith("/preview-function")) return "preview-function";
+  if (pathname.endsWith("/gallery")) return "gallery";
+  if (pathname.endsWith("/options")) return "options";
+  if (pathname.endsWith("/plugins/static")) return "plugins/static";
+  if (pathname.endsWith("/plugins")) return "plugins";
   return "getting-started";
 }
 

@@ -6,7 +6,7 @@
   <img src="./apps/website/public/favicon.svg" width="72" height="72" alt="Vitrine" />
 </p>
 
-[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [npm](https://www.npmjs.com/package/vite-plugin-react-vitrine) · [VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
+[공식 사이트](https://vitrine-4kr.pages.dev/ko) · [라이브 데모](https://vitrine-4kr.pages.dev/demo/) · [문서](https://vitrine-4kr.pages.dev/ko/docs) · [npm](https://www.npmjs.com/package/vite-plugin-react-vitrine) · [VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)
 
 편집 중인 파일 바로 옆에서 보는 React용 Jetpack Compose 스타일 프리뷰입니다.
 
@@ -18,6 +18,13 @@
 export const PrimaryButton = () => <Button variant="primary">Save</Button>;
 ```
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./apps/website/public/screenshots/gallery-dark.png" />
+  <img src="./apps/website/public/screenshots/gallery.png" alt="Button 프리뷰와 Props 패널을 보여주는 Vitrine Gallery" />
+</picture>
+
+설치 없이 [라이브 데모](https://vitrine-4kr.pages.dev/demo/)에서 바로 써 보세요.
+
 ## 왜 Vitrine인가
 
 - **프리뷰가 코드 옆에 있습니다.** 프리뷰는 export 위의 주석입니다. 따로 맞춰야 하는
@@ -28,11 +35,27 @@ export const PrimaryButton = () => <Button variant="primary">Save</Button>;
   갤러리의 프리뷰 tree에 마운트할 수 있습니다.
 - **에디터가 주 인터페이스입니다.** 커서를 프리뷰 위로 옮기면 패널이 그 프리뷰로
   바뀝니다. 브라우저 갤러리만 따로 써도 됩니다.
+- **필요하면 배포합니다.** `vitrine-plugin-static`이 앱 build는 그대로 두고 리뷰용 정적 갤러리를
+  만듭니다.
+
+## 갤러리에 있는 것
+
+| | |
+| --- | --- |
+| ![Variants 보기](./apps/website/public/screenshots/variants-crop.png) | **Variants.** `preview()`로 prop 묶음에 이름을 붙여 나란히 펼쳐 봅니다. |
+| ![Matrix 보기](./apps/website/public/screenshots/matrix-crop.png) | **Matrix.** prop 두 개의 모든 조합을 한 번에 렌더링합니다. |
+| ![Actions 탭](./apps/website/public/screenshots/actions-crop.png) | **Actions.** `on*` prop 호출이 인자와 함께 기록됩니다. |
+| ![toolbar의 Globals](./apps/website/public/screenshots/globals-crop.png) | **Globals.** 테마, 언어 같은 provider 값을 toolbar에서 고릅니다. |
+| ![History 보기](./apps/website/public/screenshots/history-crop.png) | **History.** 지금 버전을 이전 저장본과 비교합니다. |
+
+Props는 타입에서 만들어지고, 링크는 같은 상태를 다시 엽니다. VS Code에서는 패널이 커서를 따라가고
+지금 props를 variant로 저장할 수 있습니다.
 
 ## 시작하기
 
 설치, 프리뷰 선언, controls, variants와 provider 설정은
-[vite-plugin-react-vitrine README](./packages/vite-plugin/README.md)를 참고하세요.
+[vite-plugin-react-vitrine README](./packages/vite-plugin/README.ko.md)를 참고하세요. 갤러리 배포는
+[vitrine-plugin-static](./packages/plugin-static/README.ko.md)을 참고하세요.
 
 에디터 옆에서 프리뷰를 보려면 Visual Studio Marketplace에서 [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine)를 설치하세요.
 
@@ -41,9 +64,12 @@ export const PrimaryButton = () => <Button variant="primary">Save</Button>;
 | 경로 | 설명 |
 | --- | --- |
 | `packages/vite-plugin` | 배포되는 Vite plugin과 갤러리, `vite-plugin-react-vitrine` |
+| `packages/plugin-static` | 정적 갤러리를 만드는 공식 plugin, `vitrine-plugin-static` |
 | `packages/protocol` | plugin, 갤러리, 확장이 공유하는 비공개 runtime 계약 |
 | `apps/vscode-extension` | 갤러리를 패널에 보여주는 VS Code 확장, [Vitrine for VS Code](https://marketplace.visualstudio.com/items?itemName=yuntaengtaeng.vitrine) |
-| `examples/react-basic` | 개발용 예제 앱 |
+| `examples/react-basic` | 개발과 e2e 테스트용 예제 앱 |
+| `examples/showcase` | 스크린샷과 라이브 데모용 컴포넌트 |
+| `apps/website` | 공식 사이트, 라이브 데모는 `/demo/` |
 | `fixtures/multi-project` | 프로젝트 전환 테스트용 앱 두 개 |
 | `tests/compat` | 버전을 고정한 React, Vite 호환성 조합 |
 
@@ -67,6 +93,8 @@ pnpm run build            # plugin과 갤러리 빌드
 pnpm run dev:example      # 예제 앱 실행
 pnpm run test             # 단위 테스트
 pnpm run lint
+pnpm run test:e2e         # build 후 Playwright 테스트 실행
+pnpm run screenshots      # README와 사이트가 쓰는 스크린샷 다시 찍기
 ```
 
 `http://localhost:5173/__vitrine`에서 예제 갤러리를 볼 수 있습니다.

@@ -8,7 +8,7 @@
   },
   "packageManager": "pnpm@10.23.0",
   "scripts": {
-    "build": "pnpm --filter vite-plugin-react-vitrine build",
+    "build": "pnpm --filter vite-plugin-react-vitrine build && pnpm --filter vitrine-plugin-static build",
     "build:extension": "pnpm --filter vitrine build",
     "test:package": "pnpm --filter vite-plugin-react-vitrine test:package",
     "test:compat": "pnpm run build && node scripts/test-vite-compat.mjs",
@@ -22,6 +22,7 @@
     "build:website": "pnpm --filter @vitrine/website typecheck && pnpm --filter @vitrine/website build",
     "test": "pnpm --filter @vitrine/protocol build && vitest run",
     "lint": "eslint .",
+    "screenshots": "pnpm run build && playwright test -c playwright.screenshots.config.ts",
     "changeset": "changeset",
     "version-packages": "changeset version && pnpm install --lockfile-only",
     "package:extension": "pnpm --filter vitrine package"
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@changesets/cli": "catalog:release",
     "@playwright/test": "catalog:test",
+    "@vanilla-extract/vite-plugin": "catalog:vanilla-extract",
     "@vitrine/eslint-config": "workspace:*",
     "eslint": "catalog:lint",
     "typescript": "catalog:typescript",

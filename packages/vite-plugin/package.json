@@ -52,11 +52,14 @@
     "@vitrine/brand": "workspace:*",
     "@vitrine/protocol": "workspace:*",
     "@vitrine/typescript-config": "workspace:*",
+    "@babel/types": "catalog:babel",
     "@types/babel__traverse": "catalog:babel",
     "@types/node": "catalog:node",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@types/react-test-renderer": "catalog:react",
+    "@vanilla-extract/css": "catalog:vanilla-extract",
+    "@vanilla-extract/esbuild-plugin": "catalog:vanilla-extract",
     "esbuild": "catalog:build",
     "react-test-renderer": "catalog:react",
     "typescript": "catalog:typescript",
@@ -72,7 +75,7 @@
     "vite": {
       "type": "compatible",
       "versions": "^6.4.0 || ^7.0.0 || ^8.0.0",
-      "note": "Runs on the Vite dev server only"
+      "note": "Runs on the Vite dev server, or in vite build through vitrine-plugin-static"
     },
     "rollup": {
       "type": "incompatible",

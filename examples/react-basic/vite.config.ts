@@ -3,5 +3,11 @@ import react from "@vitejs/plugin-react";
 import vitrine from "vite-plugin-react-vitrine";
 
 export default defineConfig({
-  plugins: [react(), vitrine({ setupFile: "./src/vitrine.preview.tsx" })],
+  plugins: [
+    react(),
+    vitrine({
+      setupFile: "./src/vitrine.preview.tsx",
+      viewports: (defaults) => [...defaults, { name: "Breakpoint", width: 800 }],
+    }),
+  ],
 });

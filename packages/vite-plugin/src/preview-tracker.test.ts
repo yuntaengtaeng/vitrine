@@ -71,4 +71,15 @@ describe("createPreviewTracker", () => {
     expect(await tracker.refresh()).toBe(false);
     expect(tracker.getEntries().map((e) => e.name)).toEqual(["Button"]);
   });
+
+  it("진행 중인 스캔이 끝난 뒤의 최신 결과 조회", async () => {
+    const scan = deferred<PreviewEntry[]>();
+    const tracker = createPreviewTracker(() => scan.promise);
+    void tracker.refresh();
+
+    const latest = tracker.getLatestEntries();
+    scan.resolve([entry("Card")]);
+
+    expect((await latest).map((e) => e.name)).toEqual(["Card"]);
+  });
 });

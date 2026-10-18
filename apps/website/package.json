@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "build": "react-router build",
+    "build": "react-router build && node scripts/add-demo.mjs",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -21,8 +21,8 @@
     "@react-router/dev": "catalog:website",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "@vanilla-extract/css": "catalog:website",
-    "@vanilla-extract/vite-plugin": "catalog:website",
+    "@vanilla-extract/css": "catalog:vanilla-extract",
+    "@vanilla-extract/vite-plugin": "catalog:vanilla-extract",
     "@vitrine/brand": "workspace:*",
     "@vitrine/typescript-config": "workspace:*",
     "typescript": "catalog:typescript",

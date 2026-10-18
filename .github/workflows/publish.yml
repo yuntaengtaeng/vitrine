@@ -2,7 +2,7 @@ name: Publish
 
 on:
   push:
-    tags: ["vite-plugin-react-vitrine@*"]
+    tags: ["vite-plugin-react-vitrine@*", "vitrine-plugin-static@*"]
 
 concurrency: publish-${{ github.ref }}
 
@@ -24,18 +24,29 @@ jobs:
       # Trusted Publishing은 npm CLI 11.5.1 이상이 필요함
       - run: npm install -g npm@11
       - run: pnpm install --frozen-lockfile
+      - name: Resolve package from tag
+        run: |
+          name="${GITHUB_REF_NAME%@*}"
+          case "$name" in
+            vite-plugin-react-vitrine) dir=packages/vite-plugin ;;
+            vitrine-plugin-static) dir=packages/plugin-static ;;
+            *) echo "Unknown package $name"; exit 1 ;;
+          esac
+          echo "PACKAGE_NAME=$name" >> "$GITHUB_ENV"
+          echo "PACKAGE_DIR=$dir" >> "$GITHUB_ENV"
       - name: Check tag matches package version
         run: |
-          expected="${GITHUB_REF_NAME#vite-plugin-react-vitrine@}"
-          actual="$(node -p "require('./packages/vite-plugin/package.json').version")"
+          expected="${GITHUB_REF_NAME##*@}"
+          actual="$(node -p "require('./$PACKAGE_DIR/package.json').version")"
           if [ "$expected" != "$actual" ]; then
             echo "Tag version $expected does not match package.json version $actual"
             exit 1
           fi
+      # 두 package를 build하고 tarball을 함께 설치해 확인
       - run: pnpm run test:package
       # pnpm pack이 catalog:, workspace: 범위를 실제 버전으로 바꾸고 npm이 OIDC로 publish함
       - name: Publish to npm
-        working-directory: packages/vite-plugin
+        working-directory: ${{ env.PACKAGE_DIR }}
         run: |
           pnpm pack
-          npm publish ./vite-plugin-react-vitrine-*.tgz
+          npm publish ./"$PACKAGE_NAME"-*.tgz

@@ -13,7 +13,8 @@ VS Code panel에 보여주는 도구다. 이 파일은 Claude Code, Codex 등 �
 | 구조나 경계를 판단할 때 | [`docs/architecture.md`](docs/architecture.md), 관련 [`docs/adr/`](docs/adr/) |
 | 장애를 진단할 때 | [`docs/troubleshooting.md`](docs/troubleshooting.md) |
 
-개발 절차, 주석 스타일, 배포 절차는 `.agents/skills/`의 skill이 소유한다. Claude Code는
+개발 절차, 주석 스타일, 배포 절차는 `.agents/skills/`의 skill이 소유한다. 주석을 한 줄이라도
+쓰거나 고치기 전에는 반드시 `comment-style` skill을 읽는다. Claude Code는
 `.claude/skills/`의 포인터로 같은 skill을 읽는다.
 
 ## 원칙

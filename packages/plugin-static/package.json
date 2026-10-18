@@ -1,0 +1,55 @@
+{
+  "name": "vitrine-plugin-static",
+  "version": "0.2.0",
+  "description": "Vitrine plugin that builds your component gallery into static files you can deploy anywhere.",
+  "keywords": [
+    "vitrine-plugin",
+    "vitrine",
+    "vite",
+    "react",
+    "static",
+    "gallery"
+  ],
+  "license": "MIT",
+  "author": "yuntaengtaeng",
+  "homepage": "https://vitrine-4kr.pages.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuntaengtaeng/vitrine.git",
+    "directory": "packages/plugin-static"
+  },
+  "bugs": {
+    "url": "https://github.com/yuntaengtaeng/vitrine/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "vitrine-static": "./bin/vitrine-static.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "node scripts/build-package.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:node",
+    "@vitrine/typescript-config": "workspace:*",
+    "esbuild": "catalog:build",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite",
+    "vite-plugin-react-vitrine": "workspace:*"
+  },
+  "peerDependencies": {
+    "vite": "^6.4.0 || ^7.0.0 || ^8.0.0",
+    "vite-plugin-react-vitrine": "^0.2.0"
+  }
+}

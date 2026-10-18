@@ -1,7 +1,12 @@
-import type { MetaArgs } from "react-router";
+import type { ReactNode } from "react";
+import { useLocation, type MetaArgs } from "react-router";
 import { DocsLayout } from "../features/docs/DocsLayout";
+import { GalleryGuide } from "../features/docs/GalleryGuide";
 import { GettingStarted } from "../features/docs/GettingStarted";
-import { docsPageFromPath, docsPath, localeFromPath, messagesFor } from "../i18n/locale";
+import { OptionsGuide } from "../features/docs/OptionsGuide";
+import { PluginsOverview } from "../features/docs/PluginsOverview";
+import { StaticPluginGuide } from "../features/docs/StaticPluginGuide";
+import { docsPageFromPath, docsPath, localeFromPath, messagesFor, type DocsPage } from "../i18n/locale";
 import { SITE, siteUrl } from "../site";
 
 export function meta({ location }: MetaArgs) {
@@ -9,7 +14,15 @@ export function meta({ location }: MetaArgs) {
   const locale = localeFromPath(location.pathname);
   const page = docsPageFromPath(location.pathname) ?? "getting-started";
   const canonicalPath = docsPath(locale, page);
-  const pageMeta = page === "previews" ? t.docs.declarations : page === "preview-function" ? t.docs.controls : t.docs;
+  const pageMeta = {
+    "getting-started": t.docs,
+    previews: t.docs.declarations,
+    "preview-function": t.docs.controls,
+    gallery: t.docs.gallery,
+    options: t.docs.options,
+    plugins: t.docs.plugins,
+    "plugins/static": t.docs.pluginStatic,
+  }[page];
   const title = page === "getting-started" ? t.docs.meta.title : `${pageMeta.title} · Vitrine`;
   const description = page === "getting-started" ? t.docs.meta.description : pageMeta.lead;
   return [
@@ -32,10 +45,17 @@ export function meta({ location }: MetaArgs) {
   ];
 }
 
+const PAGES: Record<DocsPage, ReactNode> = {
+  "getting-started": <GettingStarted page="getting-started" />,
+  previews: <GettingStarted page="previews" />,
+  "preview-function": <GettingStarted page="preview-function" />,
+  gallery: <GalleryGuide />,
+  options: <OptionsGuide />,
+  plugins: <PluginsOverview />,
+  "plugins/static": <StaticPluginGuide />,
+};
+
 export default function Docs() {
-  return (
-    <DocsLayout>
-      <GettingStarted />
-    </DocsLayout>
-  );
+  const page = docsPageFromPath(useLocation().pathname) ?? "getting-started";
+  return <DocsLayout>{PAGES[page]}</DocsLayout>;
 }

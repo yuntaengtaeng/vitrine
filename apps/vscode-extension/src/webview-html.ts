@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import {
-  PREVIEW_SELECTED_MESSAGE_TYPE,
-  SELECT_PREVIEW_MESSAGE_TYPE,
+  EXTENSION_TO_GALLERY_RELAY_TYPES,
+  GALLERY_TO_EXTENSION_RELAY_TYPES,
   SWITCH_PROJECT_MESSAGE_TYPE,
 } from "@vitrine/protocol";
 
@@ -126,8 +126,8 @@ function renderShell(options: {
       // 인라인 relay는 TS 검사 대상이 아니므로 protocol message type을 build 시 주입
       const vscodeApi = acquireVsCodeApi();
       const switchProjectMessageType = ${JSON.stringify(SWITCH_PROJECT_MESSAGE_TYPE)};
-      const previewSelectedMessageType = ${JSON.stringify(PREVIEW_SELECTED_MESSAGE_TYPE)};
-      const selectPreviewMessageType = ${JSON.stringify(SELECT_PREVIEW_MESSAGE_TYPE)};
+      const galleryToExtensionTypes = ${JSON.stringify(GALLERY_TO_EXTENSION_RELAY_TYPES)};
+      const extensionToGalleryTypes = ${JSON.stringify(EXTENSION_TO_GALLERY_RELAY_TYPES)};
       document.getElementById("vitrine-switch-project").addEventListener("click", () => {
         vscodeApi.postMessage({ type: switchProjectMessageType });
       });
@@ -136,11 +136,11 @@ function renderShell(options: {
       const galleryOrigin = ${JSON.stringify(options.galleryOrigin ?? null)};
       window.addEventListener("message", (event) => {
         if (galleryFrame && event.source === galleryFrame.contentWindow) {
-          if (event.data?.type === previewSelectedMessageType) vscodeApi.postMessage(event.data);
+          if (galleryToExtensionTypes.includes(event.data?.type)) vscodeApi.postMessage(event.data);
           return;
         }
         if (!galleryFrame || !galleryOrigin) return;
-        if (event.data?.type !== selectPreviewMessageType) return;
+        if (!extensionToGalleryTypes.includes(event.data?.type)) return;
         galleryFrame.contentWindow.postMessage(event.data, galleryOrigin);
       });
     </script>

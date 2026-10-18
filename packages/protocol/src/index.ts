@@ -1,11 +1,66 @@
+import {
+  isControlOption,
+  isDefaultValue,
+  isNonEmptyString,
+  isPort,
+  isPositiveSafeInteger,
+  isRecord,
+} from "./guards.js";
+import {
+  CAPABILITIES_REQUEST_MESSAGE_TYPE,
+  CAPABILITIES_RESPONSE_MESSAGE_TYPE,
+  THEME_CHANGED_MESSAGE_TYPE,
+  isCapabilitiesRequestMessage,
+  isCapabilitiesResponseMessage,
+  isThemeChangedMessage,
+  type CapabilitiesRequestMessage,
+  type CapabilitiesResponseMessage,
+  type ThemeChangedMessage,
+} from "./capabilities.js";
+import {
+  SAVE_VARIANT_MESSAGE_TYPE,
+  SAVE_VARIANT_RESULT_MESSAGE_TYPE,
+  isSaveVariantMessage,
+  isSaveVariantResultMessage,
+  type SaveVariantMessage,
+  type SaveVariantResultMessage,
+} from "./variants.js";
+
 /** Standalone Gallery HTTP 경로 */
 export const GALLERY_ROUTE = "/__vitrine";
 
 /** 프리뷰 manifest HTTP 경로 */
 export const MANIFEST_ROUTE = "/__vitrine/manifest";
 
+/** 프리뷰 id의 소스 위치를 에디터로 여는 HTTP 경로 (`?id=` query) */
+export const OPEN_IN_EDITOR_ROUTE = "/__vitrine/open-in-editor";
+
 /** 프리뷰 목록 virtual module 식별자 */
 export const PREVIEWS_MODULE_ID = "virtual:vitrine-previews";
+
+/** Plugin 옵션을 반영한 Gallery 설정 virtual module 식별자 */
+export const GALLERY_CONFIG_MODULE_ID = "virtual:vitrine-gallery-config";
+
+/** 무대 iframe 너비 프리셋 */
+export interface GalleryViewport {
+  name: string;
+  /** px */
+  width: number;
+}
+
+/** Gallery 설정 virtual module의 default export */
+export interface GalleryConfig {
+  /** Responsive(무대 전체 너비) 외에 고를 수 있는 viewport */
+  viewports: GalleryViewport[];
+  /** 스캔에 실제로 쓰는 glob 패턴, Vite root 기준 */
+  include: string[];
+  /** `snapshots: false`로 끄지 않았는지 */
+  snapshots: boolean;
+  /** 프리뷰 iframe 문서 주소, 정적 빌드에서는 Gallery 기준 상대 경로 */
+  frameUrl: string;
+  /** dev server가 에디터를 열어 줄 수 있는지, 정적 빌드에서는 false */
+  openInEditor: boolean;
+}
 
 /** Gallery client virtual module 식별자 */
 export const GALLERY_MODULE_ID = "virtual:vitrine-preview-gallery";
@@ -43,7 +98,18 @@ export interface ManifestEntry {
   startLine: number;
   endLine: number;
   controls: PropControls;
+  /** 호출을 기록할 함수 prop 이름, 0.2 이전 plugin의 manifest에는 없음 */
+  actions?: string[];
 }
+
+/**
+ * Plugin이 프리뷰 목록 virtual module로 Gallery에 넘기는 entry 필드
+ * 줄 번호를 빼야 export 위 코드가 밀려도 module 내용이 그대로라 Gallery 전체 reload가 생기지 않음
+ */
+export type GalleryEntryData = Pick<
+  ManifestEntry,
+  "id" | "name" | "group" | "file" | "exportName" | "controls" | "actions"
+>;
 
 /** Runtime 사이에 전송되는 프리뷰 manifest */
 export type Manifest = ManifestEntry[];
@@ -83,13 +149,32 @@ export interface SelectPreviewMessage {
 }
 
 /** Webview에서 Extension으로 전달 가능한 message */
-export type WebviewToExtensionMessage = SwitchProjectMessage | PreviewSelectedMessage;
+export type WebviewToExtensionMessage = SwitchProjectMessage | GalleryToExtensionMessage;
 
 /** Extension에서 Gallery로 전달 가능한 message */
-export type ExtensionToGalleryMessage = SelectPreviewMessage;
+export type ExtensionToGalleryMessage =
+  | SelectPreviewMessage
+  | CapabilitiesResponseMessage
+  | ThemeChangedMessage
+  | SaveVariantResultMessage;
 
 /** Gallery에서 Extension으로 전달 가능한 message */
-export type GalleryToExtensionMessage = PreviewSelectedMessage;
+export type GalleryToExtensionMessage = PreviewSelectedMessage | CapabilitiesRequestMessage | SaveVariantMessage;
+
+/** webview relay가 Gallery에서 Extension으로 넘기는 type, 목록에 없으면 버림 */
+export const GALLERY_TO_EXTENSION_RELAY_TYPES = [
+  PREVIEW_SELECTED_MESSAGE_TYPE,
+  CAPABILITIES_REQUEST_MESSAGE_TYPE,
+  SAVE_VARIANT_MESSAGE_TYPE,
+];
+
+/** webview relay가 Extension에서 Gallery로 넘기는 type, 목록에 없으면 버림 */
+export const EXTENSION_TO_GALLERY_RELAY_TYPES = [
+  SELECT_PREVIEW_MESSAGE_TYPE,
+  CAPABILITIES_RESPONSE_MESSAGE_TYPE,
+  THEME_CHANGED_MESSAGE_TYPE,
+  SAVE_VARIANT_RESULT_MESSAGE_TYPE,
+];
 
 /**
  * 외부 값의 프리뷰 manifest 계약 일치 판단
@@ -117,6 +202,7 @@ export function isWebviewToExtensionMessage(
 ): value is WebviewToExtensionMessage {
   if (!isRecord(value)) return false;
   if (value.type === SWITCH_PROJECT_MESSAGE_TYPE) return true;
+  if (isCapabilitiesRequestMessage(value) || isSaveVariantMessage(value)) return true;
   return value.type === PREVIEW_SELECTED_MESSAGE_TYPE && isNonEmptyString(value.id);
 }
 
@@ -127,6 +213,9 @@ export function isWebviewToExtensionMessage(
 export function isExtensionToGalleryMessage(
   value: unknown,
 ): value is ExtensionToGalleryMessage {
+  if (isCapabilitiesResponseMessage(value) || isThemeChangedMessage(value) || isSaveVariantResultMessage(value)) {
+    return true;
+  }
   return (
     isRecord(value) &&
     value.type === SELECT_PREVIEW_MESSAGE_TYPE &&
@@ -145,7 +234,9 @@ function isManifestEntry(value: unknown): value is ManifestEntry {
     !isPositiveSafeInteger(value.startLine) ||
     !isPositiveSafeInteger(value.endLine) ||
     value.startLine > value.endLine ||
-    !isRecord(value.controls)
+    !isRecord(value.controls) ||
+    (value.actions !== undefined &&
+      (!Array.isArray(value.actions) || !value.actions.every((name) => isNonEmptyString(name))))
   ) {
     return false;
   }
@@ -164,26 +255,7 @@ function isPropControl(value: unknown): value is PropControl {
   return value.defaultValue === undefined || isDefaultValue(value.defaultValue);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0;
-}
-
-function isPositiveSafeInteger(value: unknown): value is number {
-  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
-}
-
-function isPort(value: unknown): value is number {
-  return isPositiveSafeInteger(value) && value <= 65_535;
-}
-
-function isControlOption(value: unknown): value is ControlOption {
-  return typeof value === "string" || (typeof value === "number" && Number.isFinite(value));
-}
-
-function isDefaultValue(value: unknown): value is string | number | boolean {
-  return typeof value === "string" || typeof value === "boolean" || isControlOption(value);
-}
+export * from "./frame.js";
+export * from "./capabilities.js";
+export * from "./snapshots.js";
+export * from "./variants.js";

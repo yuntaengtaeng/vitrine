@@ -20,6 +20,7 @@ export function SiteHeader() {
         <nav className={styles.nav} aria-label="Main">
           <a className={styles.navLink} href={`${homePath(locale)}#how-it-works`}>{t.header.howItWorks}</a>
           <a className={styles.navLink} href={`${homePath(locale)}#features`}>{t.header.features}</a>
+          <a className={styles.navLink} href={SITE.demoPath}>{t.header.demo}</a>
           <Link className={styles.navLink} to={docsPath(locale)}>{t.header.docs}</Link>
           <a className={styles.navLink} href={`${homePath(locale)}#faq`}>{t.header.faq}</a>
           <a className={styles.navLink} href={SITE.githubUrl}>GitHub</a>

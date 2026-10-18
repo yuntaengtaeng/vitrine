@@ -1,9 +1,9 @@
-import { useLocation } from "react-router";
 import { CodeSnippet } from "../../components/CodeSnippet";
 import { CopyCommand } from "../../components/CopyCommand";
-import { docsPageFromPath, useI18n } from "../../i18n/locale";
+import { useI18n } from "../../i18n/locale";
 import { SITE } from "../../site";
-import * as styles from "./GettingStarted.css";
+import { DocHeader } from "./DocHeader";
+import * as styles from "./docs.css";
 
 const VITE_CONFIG = `import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -65,9 +65,21 @@ function SignedInPreview({ children }: PreviewWrapperProps) {
 
 preview(Button, { wrapper: SignedInPreview });`;
 
-export function GettingStarted() {
+const PREVIEW_GLOBALS = `// src/vitrine.preview.tsx
+import type { PreviewGlobals, PreviewWrapperProps } from "vite-plugin-react-vitrine/preview";
+
+export const globals = {
+  theme: { label: "Theme", options: ["light", "dark"], default: "light" },
+} as const satisfies PreviewGlobals;
+
+export default function PreviewSetup({ children, globals: selected }: PreviewWrapperProps<typeof globals>) {
+  return <ThemeProvider theme={selected.theme}>{children}</ThemeProvider>;
+}`;
+
+export type GuidePage = "getting-started" | "previews" | "preview-function";
+
+export function GettingStarted({ page }: { page: GuidePage }) {
   const { locale, t } = useI18n();
-  const page = docsPageFromPath(useLocation().pathname) ?? "getting-started";
   const pageHeading = {
     "getting-started": { label: t.docs.label, title: t.docs.title, lead: t.docs.lead },
     previews: { label: "@preview", ...t.docs.declarations },
@@ -76,11 +88,7 @@ export function GettingStarted() {
 
   return (
     <main className={styles.article}>
-      <header className={styles.intro}>
-        <p className={styles.label}>{pageHeading.label}</p>
-        <h1 className={styles.title}>{pageHeading.title}</h1>
-        <p className={styles.lead}>{pageHeading.lead}</p>
-      </header>
+      <DocHeader label={pageHeading.label} title={pageHeading.title} lead={pageHeading.lead} />
 
       <div className={styles.guide}>
         {page === "getting-started" && (
@@ -153,10 +161,14 @@ export function GettingStarted() {
               <h3 className={styles.providerSubtitle}>{t.docs.controls.providers.wrapperTitle}</h3>
               <p className={styles.providerText}>{t.docs.controls.providers.wrapperText}</p>
               <CodeSnippet code={COMPONENT_WRAPPER} />
+              <h3 className={styles.providerSubtitle}>{t.docs.controls.providers.globalsTitle}</h3>
+              <p className={styles.providerText}>{t.docs.controls.providers.globalsText}</p>
+              <CodeSnippet code={PREVIEW_GLOBALS} />
               <p className={styles.note}>{t.docs.controls.providers.state}</p>
             </section>
           </div>
         </section>}
+
       </div>
     </main>
   );

@@ -62,6 +62,16 @@ export const extension = style({
   },
 });
 
+export const liveDemo = style([
+  extension,
+  {
+    border: `1px solid ${vars.color.border}`,
+    background: vars.color.surfaceRaised,
+    color: vars.color.text,
+    selectors: { "&:hover": { borderColor: vars.color.accent, background: vars.color.surfaceRaised } },
+  },
+]);
+
 export const demo = style({
   marginTop: "clamp(2.5rem, 6vw, 4rem)",
 });

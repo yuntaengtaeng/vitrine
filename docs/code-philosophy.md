@@ -210,6 +210,34 @@ return (
 
 이렇게 하면 중요한 규칙을 React 렌더링 구조와 독립적으로 테스트할 수 있다.
 
+### 설정 props보다 조합, Context는 마지막
+
+컴포넌트가 무엇을 그릴지 boolean과 설정 props로 늘려 가지 않는다.
+작은 컴포넌트를 `children`이나 하위 컴포넌트로 조합한다.
+조합은 Props Drilling과 불필요한 중간 추상화를 함께 없애 각 컴포넌트의 역할을 드러낸다.
+
+props를 줄이는 판단은 다음 순서를 따른다.
+
+1. 컴포넌트가 직접 쓰고 역할과 의도를 드러내는 props라면 그대로 둔다.
+2. 쓰지 않고 아래로 넘기기만 하는 props라면, 그 아래 컴포넌트를 부모가 `children`이나
+   render prop으로 직접 작성해 중간 단계를 없앤다.
+3. 조합으로도 트리가 깊어 해결되지 않을 때만 Context를 쓴다.
+
+```tsx
+// Bad: 새 요구사항마다 props가 늘어남
+<ControlField name="label" typeLabel="string" optional showReset onReset={reset} />
+
+// Better: 필요한 조각만 조합
+<ControlField>
+  <ControlField.Label name="label" type="string" optional />
+  <ControlField.Input><ControlInput ... /></ControlField.Input>
+  {changed && <ControlField.Reset name="label" onReset={reset} />}
+</ControlField>
+```
+
+틀은 배치와 공통 스타일만 맡고, 무엇을 넣을지는 쓰는 쪽이 정한다.
+아이콘도 같은 방식으로 공통 `Icon` 틀에 path만 넣어 `shared/icons/`에 모은다.
+
 ---
 
 ## 6. 테스트는 구현이 아니라 행동을 검증한다
@@ -267,6 +295,51 @@ Wrapper
 * 테스트에서 실제로 제어해야 하는 의존성이 있다.
 
 **테스트를 위해 구조를 복잡하게 만드는 것은 목적이 아니다.**
+
+---
+
+## 8. 폴더는 기능 단위로 나눈다
+
+폴더는 파일 종류가 아니라 **함께 바뀌는 기능** 기준으로 나눈다.
+한 기능을 고칠 때 여러 폴더를 오가야 한다면 경계가 잘못 그어진 것이다.
+
+```text
+// Bad: viewport 하나를 고치려면 세 폴더를 오감
+components/ViewportPicker.tsx
+hooks/useStageSettings.ts
+utils/viewport.ts
+
+// Better: 함께 바뀌는 파일이 한 폴더에 있음
+features/stage/viewport/ViewportPicker.tsx
+features/stage/viewport/viewport.ts
+features/stage/useStageSettings.ts
+```
+
+UI 앱은 다음 세 영역으로 나눈다.
+
+* **조합**: 앱 최상위의 컴포넌트가 feature를 가져와 화면을 구성한다.
+  feature를 import할 수 있는 곳은 여기뿐이다.
+* **`features/<기능>/`**: 하나의 변경 이유를 가진 기능. 다른 feature를 import하지 않는다.
+* **`shared/`**: 두 개 이상의 feature가 쓰는 코드. feature를 import하지 않는다.
+
+두 feature가 같은 코드를 필요로 하면 한쪽에서 가져다 쓰지 않고 `shared/`로 옮긴다.
+이 경계는 문서가 아니라 lint(`no-restricted-imports`)로 강제한다.
+
+### 파일 종류는 이름으로 구분한다
+
+`components/`, `hooks/`, `utils/` 같은 종류별 폴더는 만들지 않는다.
+
+* `PascalCase.tsx`: 컴포넌트
+* `useXxx.ts`: hook
+* `camelCase.ts`: 순수 로직, 테스트 대상
+
+### 언제 더 나누는가
+
+feature 폴더 안의 파일이 많아지거나 독립적으로 바뀌는 하위 기능이 생기면
+그 feature 안에서 하위 기능 폴더로 나눈다 (예: `stage/viewport/`).
+파일 한두 개를 위한 폴더는 만들지 않는다.
+
+현재 runtime별 폴더 구성은 [`architecture.md`](architecture.md)가 기록한다.
 
 ---
 

@@ -10,7 +10,8 @@ export interface TypeContext {
   checker: ts.TypeChecker;
 }
 
-function buildTypeContext(root: string): TypeContext {
+/** 루트의 tsconfig로 prop 타입 분석용 ts.Program 생성, tsconfig가 없으면 빈 Program */
+export function createTypeContext(root: string): TypeContext {
   const configPath = ts.findConfigFile(root, fs.existsSync, "tsconfig.json");
   if (!configPath) {
     const program = ts.createProgram([], { jsx: ts.JsxEmit.ReactJSX, allowJs: true });
@@ -23,59 +24,65 @@ function buildTypeContext(root: string): TypeContext {
   return { program, checker: program.getTypeChecker() };
 }
 
-// ts.createProgram()이 tsconfig 전체를 다시 읽어들이는 비용이 커서(예제 9개
-// 파일 기준 Babel 스캔의 17배), 루트별로 한 번 만든 프로그램을 재사용하고
-// invalidateTypeContext로 명시적으로 무효화될 때만 다시 만듦
-const typeContextCache = new Map<string, TypeContext>();
 
-/** 루트 기준 캐시된 ts.Program, 없으면 새로 만들어 캐시 */
-export function getTypeContext(root: string): TypeContext {
-  const cached = typeContextCache.get(root);
-  if (cached) return cached;
-  const context = buildTypeContext(root);
-  typeContextCache.set(root, context);
-  return context;
+export interface PropAnalysis {
+  controls: PropControls;
+  /** Gallery가 호출을 기록할 함수 prop 이름 */
+  actions: string[];
 }
 
-/** 루트의 캐시된 ts.Program 무효화, 다음 getTypeContext 호출에서 재생성 */
-export function invalidateTypeContext(root: string): void {
-  typeContextCache.delete(root);
-}
+const NO_PROPS: PropAnalysis = { controls: {}, actions: [] };
 
-export function getPropControls(file: string, exportName: string, context: TypeContext): PropControls {
+// Storybook 기본 규칙과 같이 on으로 시작하는 함수만, ComponentType 같은 render prop은 호출 기록 대상이 아님
+const ACTION_NAME = /^on[A-Z]/;
+
+/** export된 컴포넌트의 props 타입에서 Gallery control과 action prop을 추론 */
+export function analyzeProps(file: string, exportName: string, context: TypeContext): PropAnalysis {
   const source = context.program.getSourceFile(file);
   const moduleSymbol = source && context.checker.getSymbolAtLocation(source);
-  if (!source || !moduleSymbol) return {};
+  if (!source || !moduleSymbol) return NO_PROPS;
 
   const exported = context.checker
     .getExportsOfModule(moduleSymbol)
     .find((symbol) => symbol.name === exportName);
-  if (!exported) return {};
+  if (!exported) return NO_PROPS;
 
   const symbol = exported.flags & ts.SymbolFlags.Alias
     ? context.checker.getAliasedSymbol(exported)
     : exported;
   const declaration = symbol.valueDeclaration ?? symbol.declarations?.[0];
-  if (!declaration) return {};
+  if (!declaration) return NO_PROPS;
 
   const componentType = context.checker.getTypeOfSymbolAtLocation(symbol, declaration);
   const signature = componentType.getCallSignatures()[0];
   const parameter = signature?.getParameters()[0];
-  if (!parameter) return {};
+  if (!parameter) return NO_PROPS;
 
   const parameterDeclaration = parameter.valueDeclaration ?? parameter.declarations?.[0] ?? declaration;
   const propsType = context.checker.getTypeOfSymbolAtLocation(parameter, parameterDeclaration);
   const controls: PropControls = {};
+  const actions: string[] = [];
 
   for (const prop of context.checker.getPropertiesOfType(propsType)) {
     const propDeclaration = prop.valueDeclaration ?? prop.declarations?.[0] ?? parameterDeclaration;
     const propType = context.checker.getTypeOfSymbolAtLocation(prop, propDeclaration);
+    if (ACTION_NAME.test(prop.name) && isFunctionType(propType)) {
+      actions.push(prop.name);
+      continue;
+    }
     const optional = Boolean(prop.flags & ts.SymbolFlags.Optional);
     const control = toControl(propType, optional, context.checker);
     if (control) controls[prop.name] = control;
   }
 
-  return controls;
+  return { controls, actions };
+}
+
+function isFunctionType(type: ts.Type): boolean {
+  const members = type.isUnion()
+    ? type.types.filter((member) => !(member.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null)))
+    : [type];
+  return members.length > 0 && members.every((member) => member.getCallSignatures().length > 0);
 }
 
 function toControl(type: ts.Type, optional: boolean, checker: ts.TypeChecker): PropControl | null {
@@ -96,10 +103,7 @@ function toControl(type: ts.Type, optional: boolean, checker: ts.TypeChecker): P
 
   const effective = members[0] ?? type;
   const literal = literalValue(effective);
-  if (typeof literal === "string") {
-    return { type: "select", options: [literal], optional, ...(!optional ? { defaultValue: literal } : {}) };
-  }
-  if (typeof literal === "number") {
+  if (literal !== undefined) {
     return { type: "select", options: [literal], optional, ...(!optional ? { defaultValue: literal } : {}) };
   }
   if (effective.flags & ts.TypeFlags.BooleanLike) {

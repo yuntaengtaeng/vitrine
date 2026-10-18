@@ -26,6 +26,9 @@ export function Hero() {
               <a className={styles.extension} href={SITE.marketplaceUrl}>
                 {t.hero.extension}
               </a>
+              <a className={styles.liveDemo} href={SITE.demoPath}>
+                {t.hero.demo}
+              </a>
             </div>
           </div>
         </div>

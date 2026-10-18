@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const staticPackageRoot = path.resolve(packageRoot, "..", "plugin-static");
 // Windows runner의 8.3 짧은 경로(RUNNER~1)를 root로 쓰면 Vite가 root 안의 파일도 403으로 거부함
 const tempRoot = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), "vitrine-package-smoke-"));
 const consumerRoot = path.join(tempRoot, "consumer");
@@ -102,7 +103,12 @@ try {
   );
   const packResult = parsePackResult(packOutput);
   assert.ok(packResult, "pnpm pack did not return package metadata");
-  for (const filePath of [...PUBLIC_FILES, "dist/gallery/gallery-client.js"]) {
+  for (const filePath of [
+    ...PUBLIC_FILES,
+    "dist/gallery/gallery-client.js",
+    "dist/gallery/gallery-client.css",
+    "dist/gallery/frame-client.js",
+  ]) {
     assert.ok(
       packResult.files.some((file) => file.path === filePath),
       `packed package is missing ${filePath}`,
@@ -114,6 +120,21 @@ try {
   );
 
   const tarballPath = resolvePackPath(packResult.filename);
+
+  runPackageCommand(pnpmCommand, ["run", "build"], { cwd: staticPackageRoot, stdio: "inherit" });
+  const staticPackResult = parsePackResult(
+    runPackageCommand(pnpmCommand, ["pack", "--json", "--pack-destination", tempRoot], {
+      cwd: staticPackageRoot,
+      encoding: "utf8",
+    }),
+  );
+  for (const filePath of ["README.md", "LICENSE", "bin/vitrine-static.js", "dist/index.js", "dist/index.d.ts", "dist/cli.js"]) {
+    assert.ok(
+      staticPackResult.files.some((file) => file.path === filePath),
+      `packed vitrine-plugin-static is missing ${filePath}`,
+    );
+  }
+  const staticTarballPath = resolvePackPath(staticPackResult.filename);
   const consumerVersions = Object.fromEntries(
     ["vite", "react", "react-dom", "typescript", "@types/react", "@types/node"].map((name) => [
       name,
@@ -129,6 +150,7 @@ try {
       type: "module",
       dependencies: {
         "vite-plugin-react-vitrine": `file:${tarballPath.split(path.sep).join("/")}`,
+        "vitrine-plugin-static": `file:${staticTarballPath.split(path.sep).join("/")}`,
         ...consumerVersions,
       },
       pnpm: {
@@ -155,8 +177,13 @@ try {
     [
       'import vitrine, { GALLERY_ROUTE, MANIFEST_ROUTE } from "vite-plugin-react-vitrine";',
       'import { preview, type PreviewWrapper } from "vite-plugin-react-vitrine/preview";',
+      'import vitrineStatic from "vitrine-plugin-static";',
       "",
-      'const plugin = vitrine({ include: ["src/**/*.tsx"], setupFile: "./src/preview-setup.tsx" });',
+      'const plugin = vitrine({',
+      '  include: ["src/**/*.tsx"],',
+      '  setupFile: "./src/preview-setup.tsx",',
+      '  plugins: [vitrineStatic({ outDir: "gallery" })],',
+      "});",
       "export const values: string[] = [GALLERY_ROUTE, MANIFEST_ROUTE, plugin.name];",
       "const Wrapper: PreviewWrapper = ({ children }) => children;",
       "preview(() => null, { args: {}, wrapper: Wrapper });",
@@ -190,6 +217,8 @@ try {
     MANIFEST_ROUTE: protocol.MANIFEST_ROUTE,
     GALLERY_MODULE_ID: protocol.GALLERY_MODULE_ID,
     PREVIEWS_MODULE_ID: protocol.PREVIEWS_MODULE_ID,
+    FRAME_ROUTE: protocol.FRAME_ROUTE,
+    FRAME_MODULE_ID: protocol.FRAME_MODULE_ID,
   };
   execFileSync(process.execPath, ["test-package-consumer.mjs"], {
     cwd: consumerRoot,
@@ -200,6 +229,27 @@ try {
 
   const manifest = JSON.parse(fs.readFileSync(path.join(consumerRoot, "manifest.json"), "utf8"));
   assert.equal(protocol.isManifest(manifest), true, "served manifest does not match the protocol contract");
+
+  // dev server 검사는 inline config를 쓰므로 정적 빌드용 config 파일은 이제 추가
+  fs.writeFileSync(
+    path.join(consumerRoot, "vite.config.mjs"),
+    [
+      'import vitrine from "vite-plugin-react-vitrine";',
+      'import vitrineStatic from "vitrine-plugin-static";',
+      'export default { plugins: [vitrine({ setupFile: "./src/preview-setup.tsx", plugins: [vitrineStatic({ outDir: "gallery" })] })] };',
+      "",
+    ].join("\n"),
+  );
+  runPackageCommand(pnpmCommand, ["exec", "vitrine-static", "build"], { cwd: consumerRoot, stdio: "inherit" });
+  for (const file of ["index.html", "frame.html"]) {
+    assert.ok(fs.existsSync(path.join(consumerRoot, "gallery", file)), `static build did not write ${file}`);
+  }
+  const builtScripts = fs
+    .readdirSync(path.join(consumerRoot, "gallery", "assets"))
+    .filter((file) => file.endsWith(".js"))
+    .map((file) => fs.readFileSync(path.join(consumerRoot, "gallery", "assets", file), "utf8"))
+    .join("\n");
+  assert.ok(builtScripts.includes("src/Smoke.tsx#Smoke"), "static build does not include the scanned preview");
 
   console.log("Vitrine package smoke test passed");
 } finally {
