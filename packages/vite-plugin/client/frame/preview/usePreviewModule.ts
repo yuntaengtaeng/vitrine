@@ -37,5 +37,26 @@ export const usePreviewModule = (
     };
   }, [entry, snapshot]);
 
+  // Fast Refresh는 컴포넌트 코드만 바꾸고 preview() 설정은 새 모듈의 컴포넌트에 등록되므로,
+  // 파일이 갱신되면 Vite가 이미 실행한 같은 URL에서 설정만 다시 읽고 컴포넌트와 그 state는 유지
+  useEffect(() => {
+    const hot = import.meta.hot;
+    if (!entry || snapshot || !hot) return;
+    const path = `/${entry.file}`;
+    const onUpdate = (payload: { updates: { path: string; timestamp: number }[] }) => {
+      const update = payload.updates.find((candidate) => candidate.path === path);
+      if (!update) return;
+      (import(/* @vite-ignore */ `${path}?t=${update.timestamp}`) as Promise<Record<string, unknown>>)
+        .then((mod) => {
+          const config = getPreviewConfig(pickPreviewComponent(mod, entry)) ?? {};
+          setPreview((current) => current && { component: current.component, config });
+        })
+        // 갱신된 모듈이 깨졌으면 Fast Refresh와 에러 경계가 알리므로 설정은 그대로 둠
+        .catch(() => undefined);
+    };
+    hot.on("vite:afterUpdate", onUpdate);
+    return () => hot.off("vite:afterUpdate", onUpdate);
+  }, [entry, snapshot]);
+
   return { preview, error };
 };

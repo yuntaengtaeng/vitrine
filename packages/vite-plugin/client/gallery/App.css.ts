@@ -62,4 +62,9 @@ export const menuButton = style([
   { display: "flex", alignItems: "center", gap: 6, padding: `${vars.space.xs} ${vars.space.sm}`, fontSize: vars.fontSize.label },
 ]);
 
-export const canvas = style({ flex: 1, minHeight: 0, overflow: "auto" });
+export const canvas = style({ position: "relative", flex: 1, minHeight: 0 });
+
+export const layer = style({ position: "absolute", inset: 0, overflow: "auto" });
+
+// 다음 프리뷰의 frame이 준비되는 동안 크기는 같게 두고 보이지만 않게 함
+export const pendingLayer = style([layer, { visibility: "hidden", pointerEvents: "none" }]);

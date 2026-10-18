@@ -1,60 +1,94 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { saveVariant, savableArgs } from "./saveVariant";
 import * as styles from "./SaveVariantForm.css";
 
-type Status = { kind: "idle" } | { kind: "saving" } | { kind: "done"; message: string };
+// 저장 결과는 잠깐 보여주고 지워 탭 줄에 남지 않게 함
+const SAVED_NOTICE_MS = 3000;
 
 export const SaveVariantForm = (props: { previewId: string; args: Record<string, unknown> }) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [savedKey, setSavedKey] = useState<string | null>(null);
+  const rootRef = useRef<HTMLSpanElement>(null);
 
-  const submit = async () => {
-    setStatus({ kind: "saving" });
-    const outcome = await saveVariant({ previewId: props.previewId, name, args: savableArgs(props.args) });
-    setStatus({ kind: "done", message: outcome.ok ? `Saved as ${outcome.key}` : outcome.reason });
-    if (outcome.ok) {
-      setOpen(false);
-      setName("");
-    }
+  const close = () => {
+    setOpen(false);
+    setError(null);
   };
 
-  const message = status.kind === "saving" ? "Saving" : status.kind === "done" ? status.message : "";
+  useEffect(() => {
+    if (!savedKey) return;
+    const timer = setTimeout(() => setSavedKey(null), SAVED_NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [savedKey]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) close();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  const submit = async () => {
+    setSaving(true);
+    setError(null);
+    const outcome = await saveVariant({ previewId: props.previewId, name, args: savableArgs(props.args) });
+    setSaving(false);
+    if (!outcome.ok) return setError(outcome.reason);
+    setSavedKey(outcome.key);
+    setName("");
+    close();
+  };
+
   return (
-    <span className={styles.form}>
-      <span className={styles.status} role="status">
-        {message}
-      </span>
-      {open ? (
+    <span ref={rootRef} className={styles.root}>
+      {savedKey && (
+        <span className={styles.saved} role="status">
+          Saved as {savedKey}
+        </span>
+      )}
+      <button type="button" className={styles.button} aria-expanded={open} onClick={() => (open ? close() : setOpen(true))}>
+        Save as variant
+      </button>
+      {open && (
         <form
-          className={styles.form}
+          className={styles.popover}
+          aria-label="Save as variant"
           onSubmit={(event) => {
             event.preventDefault();
-            if (name.trim()) void submit();
+            if (name.trim() && !saving) void submit();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") close();
           }}
         >
-          <input
-            className={styles.input}
-            aria-label="Variant name"
-            placeholder="Variant name"
-            value={name}
-            autoFocus
-            onChange={(event) => setName(event.currentTarget.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") setOpen(false);
-            }}
-          />
-          <button type="submit" className={styles.button} disabled={!name.trim() || status.kind === "saving"}>
-            Save
-          </button>
-          <button type="button" className={styles.button} onClick={() => setOpen(false)}>
-            Cancel
-          </button>
+          <label className={styles.label}>
+            Variant name
+            <input
+              className={styles.input}
+              value={name}
+              autoFocus
+              onChange={(event) => setName(event.currentTarget.value)}
+            />
+          </label>
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+          <div className={styles.actions}>
+            <button type="button" className={styles.button} onClick={close}>
+              Cancel
+            </button>
+            <button type="submit" className={styles.button} disabled={!name.trim() || saving}>
+              {saving ? "Saving" : "Save"}
+            </button>
+          </div>
         </form>
-      ) : (
-        <button type="button" className={styles.button} onClick={() => setOpen(true)}>
-          Save as variant
-        </button>
       )}
     </span>
   );

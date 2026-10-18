@@ -38,3 +38,32 @@ test("브라우저 단독으로 열면 Save as variant가 없음", async ({ page
   await expect(page.getByRole("tab", { name: "Props" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Save as variant" })).toHaveCount(0);
 });
+
+test("확장이 거절하면 이유를 팝업 안에만 보여주고 Cancel로 닫으면 지움", async ({ page, baseURL }) => {
+  await page.setContent(`<!doctype html><body style="margin:0">
+<iframe src="${baseURL}/__vitrine" style="width:1280px;height:760px;border:0"></iframe>
+<script>
+window.addEventListener("message", (event) => {
+  const data = event.data;
+  if (data?.type === "capabilitiesRequest") {
+    event.source.postMessage({ type: "capabilitiesResponse", protocol: 1, capabilities: { "variant.save": 1 } }, "*");
+  }
+  if (data?.type === "saveVariant") {
+    event.source.postMessage({ type: "saveVariantResult", ok: false, reason: "The file has unsaved changes" }, "*");
+  }
+});
+</script></body>`);
+  const gallery = page.frameLocator("iframe");
+  await gallery.getByRole("navigation", { name: "Previews" }).getByRole("button", { name: "Toast", exact: true }).click();
+  await expect(gallery.locator('iframe[data-frame-state="ready"]')).toBeAttached();
+
+  await gallery.getByRole("button", { name: "Save as variant" }).click();
+  const popup = gallery.getByRole("form", { name: "Save as variant" });
+  await popup.getByRole("textbox", { name: "Variant name" }).fill("Short");
+  await popup.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(popup.getByRole("alert")).toHaveText("The file has unsaved changes");
+
+  await popup.getByRole("button", { name: "Cancel" }).click();
+  await expect(popup).toHaveCount(0);
+  await expect(gallery.getByText("The file has unsaved changes")).toHaveCount(0);
+});

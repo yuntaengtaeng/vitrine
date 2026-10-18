@@ -7,6 +7,7 @@ import { useFailedPreviews } from "./useFailedPreviews";
 import { Sidebar } from "./features/sidebar/Sidebar";
 import { SidebarItem } from "./features/sidebar/SidebarItem";
 import { Canvas } from "./Canvas";
+import { canvasLayers } from "./canvasLayers";
 import { EmptyGallery } from "./features/emptyState/EmptyGallery";
 import { UpdateNotice } from "./features/hostNotice/UpdateNotice";
 import { useColorTheme } from "./useColorTheme";
@@ -21,7 +22,8 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
   // 처음 연 URL의 상태 링크는 그 프리뷰를 처음 보여줄 때 한 번만 적용
   const [pendingLink, setPendingLink] = useState(() => decodeStateLink(window.location.hash));
   const [activeId, setActiveId] = usePreviewSelectionSync(entries, pendingLink?.previewId);
-  const activeEntry = entries.find((entry) => entry.id === activeId);
+  // 화면에 보이는 프리뷰, 새로 고른 프리뷰의 frame이 준비되면 그쪽으로 바뀜
+  const [shownId, setShownId] = useState(activeId);
   const [embedded] = useState(() => isEmbeddedInFrame(window));
   // VS Code panel 안에서는 옆에 에디터가 있고, 바깥에서 에디터를 실행하면 새 창이 뜰 수 있어 숨김
   const canOpenInEditor = !embedded;
@@ -81,20 +83,28 @@ export const App = (props: { entries: GalleryPreviewEntry[]; config: GalleryConf
         </div>
         <div className={styles.canvas}>
         {entries.length === 0 && <EmptyGallery include={props.config.include} />}
-        {activeEntry && (
-          <Canvas
-            key={activeEntry.id}
-            entry={activeEntry}
-            canOpenInEditor={canOpenInEditor}
-            viewports={props.config.viewports}
-            stage={stage}
-            onStageChange={updateStage}
-            onFailedChange={markFailed}
-            link={pendingLink?.previewId === activeEntry.id ? pendingLink : undefined}
-            snapshotsEnabled={props.config.snapshots}
-            canSaveVariant={host?.supported[VARIANT_SAVE_CAPABILITY] !== undefined}
-          />
-        )}
+        {canvasLayers(entries, shownId, activeId).map(({ entry, pending }) => (
+          // 층이 바뀌어도 key가 같아 다시 마운트하지 않음
+          <div
+            key={entry.id}
+            className={pending ? styles.pendingLayer : styles.layer}
+            aria-hidden={pending || undefined}
+            data-canvas-pending={pending || undefined}
+          >
+            <Canvas
+              entry={entry}
+              canOpenInEditor={canOpenInEditor}
+              viewports={props.config.viewports}
+              stage={stage}
+              onStageChange={updateStage}
+              onFailedChange={markFailed}
+              onSettled={setShownId}
+              link={pendingLink?.previewId === entry.id ? pendingLink : undefined}
+              snapshotsEnabled={props.config.snapshots}
+              canSaveVariant={host?.supported[VARIANT_SAVE_CAPABILITY] !== undefined}
+            />
+          </div>
+        ))}
         </div>
       </div>
     </div>

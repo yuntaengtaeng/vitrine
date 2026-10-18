@@ -53,12 +53,13 @@ test("무대 설정은 다른 프리뷰와 새로고침 뒤에도 유지", async
   await expect(page.getByLabel("Viewport")).toHaveValue("Tablet");
 });
 
-test("frame이 늦게 뜨면 로딩 표시 후 프리뷰로 바뀜", async ({ page }) => {
+test("처음 연 프리뷰의 frame이 늦게 뜨면 로딩 표시 후 프리뷰로 바뀜", async ({ page }) => {
   await page.route("**/__vitrine/frame?**", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await route.continue();
   });
-  await openPreview(page, "Badge");
+  // 다른 프리뷰에서 바꿀 때는 새 frame이 준비될 때까지 이전 화면을 보여주므로 링크로 바로 엶
+  await page.goto(`/__vitrine#preview=${encodeURIComponent("src/Badge.tsx#Badge")}`);
 
   await expect(page.getByRole("status").filter({ hasText: "Loading preview" })).toBeVisible();
   await expect((await previewFrame(page)).getByText("New", { exact: true })).toBeVisible();
@@ -87,4 +88,19 @@ test("variant가 하나 이하인 프리뷰에는 보기 전환이 없고 Single
   await openPreview(page, "Badge");
   await expect(page.getByRole("group", { name: "View" })).toHaveCount(0);
   await expect((await previewFrame(page)).getByText("New", { exact: true })).toBeVisible();
+});
+
+test("프리뷰를 바꾸는 동안 새 frame이 준비될 때까지 이전 프리뷰를 보여줌", async ({ page }) => {
+  await openPreview(page, "Button");
+  await page.route("**/__vitrine/frame?**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    await route.continue();
+  });
+
+  await page.getByRole("navigation", { name: "Previews" }).getByRole("button", { name: "Badge", exact: true }).click();
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Button");
+  await expect(page.getByText("Loading preview")).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Badge");
+  await expect(page.locator("[data-canvas-pending]")).toHaveCount(0);
 });

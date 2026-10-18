@@ -20,6 +20,8 @@ import { usePanelTab } from "./usePanelTab";
 import { encodeStateLink, type StateLink } from "./stateLink";
 import { openInEditor } from "./shared/editorLink";
 
+const SETTLE_TIMEOUT_MS = 1500;
+
 export const Canvas = (props: {
   entry: GalleryPreviewEntry;
   canOpenInEditor: boolean;
@@ -27,6 +29,8 @@ export const Canvas = (props: {
   stage: StageSettings;
   onStageChange: (patch: Partial<StageSettings>) => void;
   onFailedChange: (previewId: string, failed: boolean) => void;
+  /** frame이 준비되거나 실패해 이 프리뷰를 보여줄 수 있을 때 */
+  onSettled: (previewId: string) => void;
   /** 이 프리뷰를 상태 링크로 연 경우 그 상태 */
   link?: StateLink;
   snapshotsEnabled: boolean;
@@ -84,6 +88,15 @@ export const Canvas = (props: {
   };
 
   useEffect(() => onFailedChange(entry.id, error !== null), [entry.id, error, onFailedChange]);
+
+  // frame이 답하지 않아도 화면이 멈춰 보이지 않도록 기다림을 끊음
+  const { onSettled } = props;
+  const settled = session.status.phase !== "loading";
+  useEffect(() => {
+    if (settled) return onSettled(entry.id);
+    const timer = setTimeout(() => onSettled(entry.id), SETTLE_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [settled, entry.id, onSettled]);
 
   // 주소가 늘 지금 상태를 가리켜 새로고침과 Copy link가 같은 화면을 엶, 방문 기록은 쌓지 않음
   // frame 준비 전에 쓰면 링크로 연 variant와 값을 복원하기 전에 지워짐

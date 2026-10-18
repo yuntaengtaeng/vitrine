@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openPreview } from "./helpers";
 
 test("머리말에 프리뷰 이름, group 경로, 파일 표시", async ({ page }) => {
   await page.goto("/__vitrine");
@@ -17,8 +18,7 @@ test("Open in editor는 preview id로 dev server에 요청", async ({ page }) =>
     requestedUrl = route.request().url();
     await route.fulfill({ status: 204 });
   });
-  await page.goto("/__vitrine");
-  await page.getByRole("button", { name: "Danger button", exact: true }).click();
+  await openPreview(page, "Danger button");
   await page.getByRole("button", { name: "Open in editor" }).click();
 
   await expect.poll(() => new URL(requestedUrl || "http://x").searchParams.get("id")).toBe("src/Button.tsx#DangerButton");
