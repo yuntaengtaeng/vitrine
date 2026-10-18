@@ -26,7 +26,9 @@ export const sidebarTitle = style({
   fontWeight: 650,
 });
 
-export const navigation = style({ display: "grid", gap: "0.25rem" });
+export const navigation = style({ display: "grid", gap: "2rem" });
+
+export const navigationGroup = style({ display: "grid", gap: "0.25rem" });
 
 export const navigationLink = style({
   paddingBlock: "0.625rem",
