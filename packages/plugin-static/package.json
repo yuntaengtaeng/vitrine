@@ -1,6 +1,6 @@
 {
   "name": "vitrine-plugin-static",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vitrine plugin that builds your component gallery into static files you can deploy anywhere.",
   "keywords": [
     "vitrine-plugin",
@@ -33,7 +33,9 @@
   "bin": {
     "vitrine-static": "./dist/cli.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "node scripts/build-package.mjs"
   },
