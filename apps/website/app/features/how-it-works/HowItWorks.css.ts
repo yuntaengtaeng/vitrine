@@ -3,7 +3,7 @@ import { vars } from "../../styles/theme.css";
 
 export const wall = style({
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
   gap: "2.5rem",
   margin: "3.5rem 0 0",
   padding: 0,
@@ -11,6 +11,8 @@ export const wall = style({
 });
 
 export const step = style({
+  display: "flex",
+  flexDirection: "column",
   paddingTop: "1.5rem",
   borderTop: `1px solid ${vars.color.border}`,
 });
@@ -18,4 +20,8 @@ export const step = style({
 export const text = style({
   margin: "1rem 0 0",
   color: vars.color.textMuted,
+});
+
+export const code = style({
+  paddingTop: "1.25rem",
 });

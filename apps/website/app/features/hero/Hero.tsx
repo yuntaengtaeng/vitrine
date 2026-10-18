@@ -1,38 +1,54 @@
+import { Link } from "react-router";
 import { SITE } from "../../site";
-import { useI18n } from "../../i18n/locale";
+import { docsPath, useI18n } from "../../i18n/locale";
 import { CopyCommand } from "../../components/CopyCommand";
+import { Placard } from "../../components/Placard";
 import { container } from "../../styles/layout.css";
-import { ExhibitionDemo } from "./ExhibitionDemo";
 import * as styles from "./Hero.css";
 
 export function Hero() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   return (
     <section className={styles.hero}>
       <div className={container}>
+        <p className={styles.label}>{t.hero.label}</p>
+        <h1 className={styles.title}>
+          {t.hero.titleLead}
+          <em className={styles.titleAccent}>{t.hero.titleAccent}</em>
+        </h1>
         <div className={styles.intro}>
-          <div>
-            <p className={styles.label}>{t.hero.label}</p>
-            <h1 className={styles.title}>
-              {t.hero.titleLead}
-              <span className={styles.titleAccent}>{t.hero.titleAccent}</span>
-            </h1>
+          <p className={styles.lead}>{t.hero.lead}</p>
+          <div className={styles.actions}>
+            <a className={styles.primary} href={SITE.demoPath}>
+              {t.hero.demo}
+            </a>
+            <Link className={styles.secondary} to={docsPath(locale)}>
+              {t.hero.start}
+            </Link>
           </div>
-          <div>
-            <p className={styles.lead}>{t.hero.lead}</p>
-            <div className={styles.actions}>
-              <CopyCommand command={SITE.installCommand} copyLabel={t.hero.copy} copiedLabel={t.hero.copied} />
-              <a className={styles.extension} href={SITE.marketplaceUrl}>
-                {t.hero.extension}
-              </a>
-            </div>
+          <CopyCommand command={SITE.installCommand} copyLabel={t.hero.copy} copiedLabel={t.hero.copied} />
+        </div>
+
+        <figure className={styles.exhibit}>
+          <div className={styles.glass}>
+            <picture>
+              <source srcSet="/screenshots/gallery-dark.png" media="(prefers-color-scheme: dark)" />
+              <img
+                className={styles.screenshot}
+                src="/screenshots/gallery.png"
+                alt={t.hero.exhibit.alt}
+                width={2560}
+                height={1600}
+                fetchPriority="high"
+              />
+            </picture>
           </div>
-        </div>
-        <div className={styles.demo}>
-          <ExhibitionDemo />
-          <p className={styles.hint}>{t.hero.demoHint}</p>
-        </div>
+          <div className={styles.plinth} aria-hidden="true" />
+          <figcaption className={styles.caption}>
+            <Placard number={t.hero.exhibit.number} title={t.hero.exhibit.title} medium={t.hero.exhibit.medium} />
+          </figcaption>
+        </figure>
       </div>
     </section>
   );

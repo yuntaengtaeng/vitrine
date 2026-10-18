@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "build": "react-router build",
+    "build": "react-router build && node scripts/add-demo.mjs",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "catalog:website",
+    "@fontsource/instrument-serif": "catalog:website",
     "isbot": "catalog:website",
-    "motion": "catalog:website",
     "pretendard": "catalog:website",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",

@@ -114,6 +114,7 @@ export default defineConfig(
       "apps/vscode-extension/**/*.{js,cjs,mjs,ts,cts,mts}",
       "packages/{protocol,vite-plugin,plugin-static}/src/**/*.{js,cjs,mjs,ts,cts,mts}",
       "packages/*/scripts/**/*.{js,cjs,mjs,ts,cts,mts}",
+      "apps/*/scripts/**/*.{js,cjs,mjs,ts,cts,mts}",
       "**/vite.config.{js,cjs,mjs,ts,cts,mts}",
     ],
     extends: node,
