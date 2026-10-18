@@ -31,9 +31,10 @@
     }
   },
   "bin": {
-    "vitrine-static": "./dist/cli.js"
+    "vitrine-static": "./bin/vitrine-static.js"
   },
   "files": [
+    "bin",
     "dist"
   ],
   "scripts": {

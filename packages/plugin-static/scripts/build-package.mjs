@@ -13,12 +13,10 @@ const external = Object.keys(packageJson.peerDependencies ?? {});
 fs.rmSync(distRoot, { recursive: true, force: true });
 
 const shared = { bundle: true, platform: "node", format: "esm", target: "node18", external, logLevel: "info" };
-await esbuild.build({ ...shared, entryPoints: [path.join(packageRoot, "src", "index.ts")], outdir: distRoot });
 await esbuild.build({
   ...shared,
-  entryPoints: [path.join(packageRoot, "src", "cli.ts")],
+  entryPoints: ["index", "cli"].map((name) => path.join(packageRoot, "src", `${name}.ts`)),
   outdir: distRoot,
-  banner: { js: "#!/usr/bin/env node" },
 });
 
 const declarationRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-static-declarations-"));

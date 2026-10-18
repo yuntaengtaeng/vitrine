@@ -128,7 +128,7 @@ try {
       encoding: "utf8",
     }),
   );
-  for (const filePath of ["README.md", "LICENSE", "dist/index.js", "dist/index.d.ts", "dist/cli.js"]) {
+  for (const filePath of ["README.md", "LICENSE", "bin/vitrine-static.js", "dist/index.js", "dist/index.d.ts", "dist/cli.js"]) {
     assert.ok(
       staticPackResult.files.some((file) => file.path === filePath),
       `packed vitrine-plugin-static is missing ${filePath}`,
