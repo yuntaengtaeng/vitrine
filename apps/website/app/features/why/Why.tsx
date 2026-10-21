@@ -61,6 +61,7 @@ export function Why() {
 function TodayScene({ active, playing }: { active: boolean; playing: boolean }) {
   const { t } = useI18n();
   const state = playing ? "playing" : "done";
+  const path = PATHS[usePageStep(playing)];
 
   return (
     <div className={styles.scene} data-active={active} aria-hidden={!active}>
@@ -82,10 +83,9 @@ function TodayScene({ active, playing }: { active: boolean; playing: boolean }) 
           </div>
         </div>
         <div className={styles.page}>
-          <div className={styles.skeleton} aria-hidden="true">
-            <span style={{ width: "42%" }} />
-            <span style={{ width: "68%" }} />
-            <span style={{ width: "54%" }} />
+          {/* 숫자가 바뀔 때마다 다시 마운트해 로딩 애니메이션을 새 페이지처럼 재생 */}
+          <div key={path} className={styles.skeleton} data-state={state} aria-hidden="true">
+            <PageSkeleton path={path} />
           </div>
           {playing && <span className={styles.click} aria-hidden="true" />}
           <div className={styles.todayToast} data-state={state} role="presentation">
@@ -108,6 +108,119 @@ function TodayScene({ active, playing }: { active: boolean; playing: boolean }) 
         </p>
         <p className={styles.gone} data-state={state}>{t.why.todayGone}</p>
         <p className={styles.text}>{t.why.todayText}</p>
+      </div>
+    </div>
+  );
+}
+
+// 주소와 숫자는 CSS keyframes로 움직이므로 같은 간격의 timer로 페이지 차례를 맞춤
+function usePageStep(playing: boolean): number {
+  const last = PATHS.length - 1;
+  const [step, setStep] = useState(playing ? 0 : last);
+
+  useEffect(() => {
+    if (!playing) return;
+    const timers = PATHS.slice(1).map((_, index) =>
+      setTimeout(() => setStep(index + 1), styles.PAGE_STEP_MS * (index + 1)),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [playing]);
+
+  return step;
+}
+
+function Bone({
+  width = "100%",
+  height = 12,
+  shape,
+  tone,
+}: {
+  width?: number | string;
+  height?: number | string;
+  shape?: "round" | "card";
+  tone?: "accent";
+}) {
+  return <span className={styles.bone} data-shape={shape} data-tone={tone} style={{ width, height }} />;
+}
+
+function PageSkeleton({ path }: { path: string }) {
+  if (path === "/login") {
+    return (
+      <div className={styles.loginForm}>
+        <Bone width={36} height={36} shape="round" />
+        <Bone width="64%" />
+        <Bone height={26} />
+        <Bone height={26} />
+        <Bone height={28} tone="accent" />
+      </div>
+    );
+  }
+
+  if (path === "/products") {
+    return (
+      <>
+        <Bone width="32%" height={14} />
+        <div className={styles.productGrid}>
+          {[0, 1, 2].map((index) => (
+            <div key={index} className={styles.skeletonStack}>
+              <Bone height={84} shape="card" />
+              <Bone width="82%" />
+              <Bone width="44%" />
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  if (path === "/cart") {
+    return (
+      <>
+        <Bone width="26%" height={14} />
+        {[0, 1, 2].map((index) => (
+          <div key={index} className={styles.skeletonRow}>
+            <Bone width={40} height={40} shape="card" />
+            <div className={styles.skeletonStack}>
+              <Bone width="58%" />
+              <Bone width="34%" />
+            </div>
+            <Bone width={48} />
+          </div>
+        ))}
+      </>
+    );
+  }
+
+  if (path === "/checkout") {
+    return (
+      <div className={styles.checkoutColumns}>
+        <div className={styles.skeletonStack}>
+          {[0, 1, 2].map((index) => (
+            <div key={index} className={styles.skeletonStack}>
+              <Bone width="30%" height={10} />
+              <Bone height={24} />
+            </div>
+          ))}
+        </div>
+        <div className={styles.skeletonStack}>
+          <Bone height={80} shape="card" />
+          <Bone width="70%" />
+          <Bone height={28} tone="accent" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.skeletonRow}>
+      <Bone width="min(44%, 200px)" height={112} shape="card" tone="accent" />
+      <div className={styles.skeletonStack}>
+        <Bone height={24} />
+        <div className={styles.skeletonRow}>
+          <Bone height={24} />
+          <Bone height={24} />
+        </div>
+        <Bone width="48%" />
       </div>
     </div>
   );

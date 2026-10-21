@@ -2,7 +2,7 @@ import { useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../../i18n/locale";
 import { useInView } from "../../hooks/useInView";
-import { Placard } from "../../components/Placard";
+import { Caption } from "../../components/Caption";
 import { SectionHeading } from "../../components/SectionHeading";
 import { container, section } from "../../styles/layout.css";
 import { TeamChat } from "./TeamChat";
@@ -40,7 +40,7 @@ export function Benefits() {
               <div className={styles.visual} aria-hidden="true">
                 <CardVisual id={card.id} apiNotReady={t.benefits.apiNotReady} />
               </div>
-              <Placard title={card.title} medium={card.medium} />
+              <Caption title={card.title} medium={card.medium} />
               <p className={styles.text}>{card.text}</p>
             </li>
           ))}
