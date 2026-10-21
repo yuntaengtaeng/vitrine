@@ -2,7 +2,8 @@ import { globalStyle, keyframes, style } from "@vanilla-extract/css";
 import { BRAND, INK, RED } from "@vitrine/brand";
 import { vars } from "../../styles/theme.css";
 
-const PLAY = "7s";
+const PLAY_MS = 7000;
+const PLAY = `${PLAY_MS}ms`;
 const LINE = 28;
 const DIGIT = 56;
 
@@ -102,6 +103,9 @@ const step = (size: number) =>
     "66%, 100%": { transform: `translateY(-${size * 4}px)` },
   });
 
+/** 숫자와 주소가 다음 칸으로 넘어가는 간격 (ms), step의 각 이동 구간 중간 지점 */
+export const PAGE_STEP_MS = PLAY_MS * 0.16;
+
 const addressSteps = step(LINE);
 const digitSteps = step(DIGIT);
 
@@ -132,24 +136,56 @@ export const page = style({
   padding: "1.5rem",
 });
 
+const load = keyframes({
+  from: { opacity: 0, transform: "translateY(6px)" },
+  to: { opacity: 1, transform: "none" },
+});
+
 export const skeleton = style({
   position: "absolute",
   inset: "1.5rem",
   display: "flex",
   flexDirection: "column",
-  gap: "0.625rem",
+  gap: "0.75rem",
+  selectors: {
+    '&[data-state="playing"]': { animation: `${load} 320ms ease-out both` },
+  },
 });
 
-globalStyle(`${skeleton} > span`, {
-  height: "12px",
+export const bone = style({
+  display: "block",
+  maxWidth: "100%",
   borderRadius: "6px",
-  background: vars.color.surface,
+  // 브라우저 페이지 배경에 섞어야 다크 모드에서도 배경과 구분됨
+  background: `color-mix(in srgb, ${vars.color.accent} 14%, ${vars.color.surfaceRaised})`,
+  selectors: {
+    '&[data-shape="round"]': { borderRadius: "50%" },
+    '&[data-shape="card"]': { borderRadius: vars.radius.medium },
+    '&[data-tone="accent"]': { background: `color-mix(in srgb, ${vars.color.accent} 28%, ${vars.color.surfaceRaised})` },
+  },
 });
 
+export const skeletonRow = style({ display: "flex", alignItems: "center", gap: "0.75rem" });
+
+export const skeletonStack = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.5rem",
+  minWidth: 0,
+  selectors: { [`${skeletonRow} > &`]: { flex: 1 } },
+});
+
+export const loginForm = style([skeletonStack, { alignSelf: "center", alignItems: "center", width: "min(52%, 220px)" }]);
+
+export const productGrid = style({ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem" });
+
+export const checkoutColumns = style({ display: "grid", gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)", gap: "1.25rem" });
+
+// 주소가 넘어가기 직전에 눌러야 클릭 때문에 다음 페이지가 열리는 것으로 읽힘
 const pulse = keyframes({
-  "0%, 100%": { opacity: 0, transform: "scale(.4)" },
-  "6%": { opacity: 0.9, transform: "scale(1)" },
-  "16%": { opacity: 0, transform: "scale(1.6)" },
+  "0%, 62%": { opacity: 0, transform: "scale(.4)" },
+  "70%": { opacity: 0.9, transform: "scale(1)" },
+  "86%, 100%": { opacity: 0, transform: "scale(1.6)" },
 });
 
 export const click = style({
@@ -161,7 +197,7 @@ export const click = style({
   borderRadius: "50%",
   border: `2px solid ${vars.color.accent}`,
   opacity: 0,
-  animation: `${pulse} 1.4s ease-out 5`,
+  animation: `${pulse} ${PAGE_STEP_MS}ms ease-out 4`,
 });
 
 const toastLife = keyframes({

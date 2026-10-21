@@ -42,8 +42,7 @@ export const list = style({
   flexWrap: "wrap",
   gap: "0.25rem 1.5rem",
   margin: 0,
-  padding: "0 0 0.75rem",
-  borderBottom: `1px solid ${vars.color.border}`,
+  padding: 0,
   listStyle: "none",
 });
 

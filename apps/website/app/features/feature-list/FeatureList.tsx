@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useI18n } from "../../i18n/locale";
 import { CodeSnippet } from "../../components/CodeSnippet";
-import { Placard } from "../../components/Placard";
+import { Caption } from "../../components/Caption";
 import { SectionHeading } from "../../components/SectionHeading";
 import { container, section } from "../../styles/layout.css";
 import { FeatureShowcase } from "./FeatureShowcase";
@@ -83,7 +83,7 @@ export function FeatureList() {
                 ))}
             </ul>
             <div key={active.id} className={styles.detail}>
-              <Placard title={active.title} medium={active.medium} />
+              <Caption title={active.title} medium={active.medium} />
               <p className={styles.text}>{active.text}</p>
               {code && <CodeSnippet code={code} />}
             </div>
