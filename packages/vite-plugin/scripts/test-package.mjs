@@ -20,6 +20,15 @@ const PUBLIC_FILES = [
   "dist/preview.js",
   "dist/preview.d.ts",
 ];
+// 앱 production build에서는 사라지고 정적 Gallery build에는 남아야 하는 preview() 설정 값
+const PREVIEW_CONFIG_MARKER = "preview-config-marker";
+
+const readBuiltScripts = (outDir) =>
+  fs
+    .readdirSync(path.join(outDir, "assets"))
+    .filter((file) => file.endsWith(".js"))
+    .map((file) => fs.readFileSync(path.join(outDir, "assets", file), "utf8"))
+    .join("\n");
 
 function runPackageCommand(command, args, options) {
   if (process.platform !== "win32") return execFileSync(command, args, options);
@@ -108,6 +117,7 @@ try {
     "dist/gallery/gallery-client.js",
     "dist/gallery/gallery-client.css",
     "dist/gallery/frame-client.js",
+    "dist/preview-runtime.js",
   ]) {
     assert.ok(
       packResult.files.some((file) => file.path === filePath),
@@ -240,16 +250,39 @@ try {
       "",
     ].join("\n"),
   );
+  // dev server 검사의 manifest 개수를 바꾸지 않도록 build 검사용 프리뷰와 앱 진입점은 여기서 추가
+  fs.writeFileSync(
+    path.join(consumerRoot, "src", "Configured.tsx"),
+    [
+      'import { preview } from "vite-plugin-react-vitrine/preview";',
+      "/** @preview */",
+      "export function Configured({ label }: { label: string }) {",
+      "  return <button>{label}</button>;",
+      "}",
+      `preview(Configured, { args: { label: "${PREVIEW_CONFIG_MARKER}" } });`,
+      "",
+    ].join("\n"),
+  );
+  fs.writeFileSync(
+    path.join(consumerRoot, "app-entry.tsx"),
+    'import { createRoot } from "react-dom/client";\nimport { Configured } from "./src/Configured";\ncreateRoot(document.body).render(<Configured label="App" />);\n',
+  );
+  fs.writeFileSync(
+    path.join(consumerRoot, "index.html"),
+    '<!doctype html><script type="module" src="/app-entry.tsx"></script>\n',
+  );
+  runPackageCommand(pnpmCommand, ["exec", "vite", "build", "--logLevel", "warn"], { cwd: consumerRoot, stdio: "inherit" });
+  const appScripts = readBuiltScripts(path.join(consumerRoot, "dist"));
+  assert.ok(appScripts.length > 0, "app build wrote no scripts");
+  assert.ok(!appScripts.includes(PREVIEW_CONFIG_MARKER), "app production build keeps the preview() config");
+
   runPackageCommand(pnpmCommand, ["exec", "vitrine-static", "build"], { cwd: consumerRoot, stdio: "inherit" });
   for (const file of ["index.html", "frame.html"]) {
     assert.ok(fs.existsSync(path.join(consumerRoot, "gallery", file)), `static build did not write ${file}`);
   }
-  const builtScripts = fs
-    .readdirSync(path.join(consumerRoot, "gallery", "assets"))
-    .filter((file) => file.endsWith(".js"))
-    .map((file) => fs.readFileSync(path.join(consumerRoot, "gallery", "assets", file), "utf8"))
-    .join("\n");
+  const builtScripts = readBuiltScripts(path.join(consumerRoot, "gallery"));
   assert.ok(builtScripts.includes("src/Smoke.tsx#Smoke"), "static build does not include the scanned preview");
+  assert.ok(builtScripts.includes(PREVIEW_CONFIG_MARKER), "static build drops the preview() config");
 
   console.log("Vitrine package smoke test passed");
 } finally {

@@ -1,4 +1,5 @@
 import type { ComponentProps, ComponentType, ElementType, ReactNode } from "react";
+import * as runtime from "./preview-runtime.js";
 
 /** setup file이 선언하는 global 하나, Gallery toolbar에서 선택지 중 하나를 고름 */
 export interface PreviewGlobal {
@@ -56,18 +57,18 @@ export interface PreviewConfig<Component extends ElementType> {
   defaultVariant?: string;
 }
 
-const configs = new WeakMap<object, PreviewConfig<ElementType>>();
 type PreviewTarget = object & ElementType;
 
-/** 컴포넌트별 args, controls, wrapper, variants 등록 */
-export function preview<Component extends PreviewTarget>(
+/** 컴포넌트별 args, controls, wrapper, variants 등록 (앱 production build에서는 빈 함수) */
+export const preview: <Component extends PreviewTarget>(
   component: Component,
   config: PreviewConfig<Component>,
-): void {
-  configs.set(component, config as PreviewConfig<ElementType>);
-}
+) => void =
+  // 빈 함수여야 bundler가 사용자 코드의 호출과 설정 객체를 지움, 정적 Gallery build는 runtime 파일로 alias
+  process.env.NODE_ENV === "production"
+    ? () => {}
+    : (component, config) => runtime.preview(component, config as PreviewConfig<ElementType>);
 
 /** 컴포넌트 모듈 평가 후 등록된 프리뷰 설정 조회 */
-export function getPreviewConfig(component: object): PreviewConfig<ElementType> | undefined {
-  return configs.get(component);
-}
+export const getPreviewConfig: (component: object) => PreviewConfig<ElementType> | undefined =
+  runtime.getPreviewConfig;

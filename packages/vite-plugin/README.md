@@ -106,6 +106,10 @@ preview(Button, {
 
 The wrapper only affects the preview. It does not change the exported component.
 
+In a production build `preview()` does nothing, so your bundler removes the call and its config
+from the app. Code that runs while the config is created, such as `args: { onClick: makeHandler() }`,
+still runs and stays in the bundle.
+
 Function props whose names start with `on` and a capital letter, such as `onClick`, are
 recorded: each call shows up in the gallery's Actions tab with its arguments. A function you pass
 in `args` still runs and its return value is kept. Other function props, such as render props or

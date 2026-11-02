@@ -103,6 +103,7 @@ export const MANIFEST_ROUTE = PROTOCOL_MANIFEST_ROUTE;
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const galleryClientPath = path.join(packageRoot, "dist", "gallery", "gallery-client.js");
 const frameClientPath = path.join(packageRoot, "dist", "gallery", "frame-client.js");
+const previewRuntimePath = path.join(packageRoot, "dist", "preview-runtime.js");
 const galleryStylePath = path.join(packageRoot, "dist", "gallery", "gallery-client.css");
 // fs.allow 밖(pnpm store 등)에 있을 수 있는 package 파일을 /@fs로 import하지 않고 직접 서빙
 const GALLERY_STYLE_ROUTE = `${GALLERY_ROUTE}/gallery.css`;
@@ -143,6 +144,13 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
         lib: false,
         ssr: false,
         rollupOptions: { input: [...staticHtml.keys()] },
+      };
+      // production에서 빈 함수가 되는 preview()를 Gallery에는 실제 등록 구현으로 연결
+      // 전역 development 조건 대신 이 subpath만 바꿔야 React 등은 production build를 유지
+      return {
+        resolve: {
+          alias: [{ find: /^vite-plugin-react-vitrine\/preview$/, replacement: previewRuntimePath }],
+        },
       };
     },
 

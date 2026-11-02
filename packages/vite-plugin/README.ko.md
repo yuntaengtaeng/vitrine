@@ -106,6 +106,10 @@ preview(Button, {
 
 Wrapper는 프리뷰에만 적용되며 export한 컴포넌트는 바꾸지 않습니다.
 
+production 빌드에서 `preview()`는 아무 일도 하지 않으므로 bundler가 앱에서 호출과 설정을
+지웁니다. `args: { onClick: makeHandler() }`처럼 설정을 만들면서 실행되는 코드는 그대로
+실행되고 bundle에 남습니다.
+
 `onClick`처럼 `on`과 대문자로 시작하는 함수 prop은 호출이 기록되어 gallery의 Actions 탭에
 인자와 함께 표시됩니다. `args`로 넘긴 함수는 그대로 실행되고 반환값도 유지됩니다. render prop이나
 컴포넌트 prop 같은 다른 함수 prop은 건드리지 않습니다.
