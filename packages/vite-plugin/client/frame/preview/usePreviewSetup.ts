@@ -1,11 +1,11 @@
 /// <reference types="vite/client" />
-import { PREVIEW_SETUP_RECOVER_EVENT, type FrameGlobal } from "@vitrine/protocol";
+import { PREVIEW_SETUP_RECOVER_EVENT, PREVIEW_SETUP_UPDATED_EVENT, type FrameGlobal } from "@vitrine/protocol";
 import { useEffect, useState } from "react";
 import type { PreviewWrapper } from "vite-plugin-react-vitrine/preview";
 import { isPreviewComponent } from "./previewConfig";
 import { parseGlobals } from "./previewGlobals";
 
-/** previews virtual module의 setup file loader, setupFile 옵션이 없으면 undefined */
+/** setup virtual module의 setup file loader, setupFile 옵션이 없으면 undefined */
 export type PreviewSetupLoader = (() => Promise<{ default?: unknown; globals?: unknown }>) | undefined;
 
 /** setup file의 전역 wrapper 로드 상태 */
@@ -41,14 +41,32 @@ export const reloadOnNextHotUpdate = (
   };
 };
 
+/** setup 가상 모듈 갱신 event를 받을 대상 */
+export type SetupUpdateTarget = Pick<EventTarget, "addEventListener" | "removeEventListener">;
+
 /** Setup module의 default wrapper 로드와 runtime 검증, 실패 시 다음 갱신에서 reload */
-export const usePreviewSetup = (loadSetup: PreviewSetupLoader): PreviewSetupState => {
+export const usePreviewSetup = (
+  initialLoader: PreviewSetupLoader,
+  updates: SetupUpdateTarget | undefined = globalThis.window,
+): PreviewSetupState => {
+  const [loadSetup, setLoadSetup] = useState(() => initialLoader);
   const [state, setState] = useState<PreviewSetupState>({
     wrapper: undefined,
     globals: {},
     error: null,
-    loading: Boolean(loadSetup),
+    loading: Boolean(initialLoader),
   });
+
+  // 갱신된 setup은 새 loader로 다시 불러오고, 그동안은 이전 wrapper를 유지
+  useEffect(() => {
+    if (!updates) return;
+    const listener = (event: Event) => {
+      const next = (event as CustomEvent<PreviewSetupLoader>).detail;
+      setLoadSetup(() => next);
+    };
+    updates.addEventListener(PREVIEW_SETUP_UPDATED_EVENT, listener);
+    return () => updates.removeEventListener(PREVIEW_SETUP_UPDATED_EVENT, listener);
+  }, [updates]);
 
   useEffect(() => {
     if (!loadSetup) return;

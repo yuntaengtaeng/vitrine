@@ -1,10 +1,32 @@
-import { PREVIEW_SETUP_RECOVER_EVENT } from "@vitrine/protocol";
+import { PREVIEW_SETUP_RECOVER_EVENT, PREVIEW_SETUP_UPDATED_EVENT } from "@vitrine/protocol";
 import { createElement } from "react";
 import { act, create } from "react-test-renderer";
 import { describe, expect, it } from "vitest";
 import { reloadOnNextHotUpdate, usePreviewSetup } from "./usePreviewSetup";
 
 describe("usePreviewSetup", () => {
+  it("setup 가상 모듈이 넘긴 새 loader로 다시 불러와 globals를 갱신", async () => {
+    const Wrapper = () => null;
+    const updates = new EventTarget();
+    let locales: string[] | undefined;
+    const Probe = () => {
+      const state = usePreviewSetup(async () => ({ default: Wrapper, globals: { locale: { options: ["en"] } } }), updates);
+      locales = state.globals.locale?.options as string[] | undefined;
+      return null;
+    };
+
+    await act(async () => {
+      create(createElement(Probe));
+    });
+    expect(locales).toEqual(["en"]);
+
+    const next = async () => ({ default: Wrapper, globals: { locale: { options: ["en", "ko"] } } });
+    await act(async () => {
+      updates.dispatchEvent(new CustomEvent(PREVIEW_SETUP_UPDATED_EVENT, { detail: next }));
+    });
+    expect(locales).toEqual(["en", "ko"]);
+  });
+
   it("React component가 아닌 default export를 오류로 반환", async () => {
     let message: string | undefined;
     const loadSetup = async () => ({ default: "not a component" });

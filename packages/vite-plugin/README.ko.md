@@ -193,6 +193,30 @@ preview(Greeting, {
 });
 ```
 
+setup file이나 setup file이 import하는 파일을 고치면 앱 page를 새로고침하지 않고 열린 프리뷰만
+갱신합니다. 이때 wrapper를 새로 마운트하므로 프리뷰 안의 state는 초기화됩니다.
+
+React Refresh 규칙을 쓰는 linter는 setup file의 `globals` export를 경고합니다. 이 파일의 갱신은
+Vitrine이 직접 처리하므로 그 파일에서만 `globals`를 허용하면 됩니다.
+
+```js
+// eslint.config.js
+{
+  files: ["src/vitrine.preview.tsx"],
+  rules: { "react-refresh/only-export-components": ["error", { allowExportNames: ["globals"] }] },
+},
+```
+
+```json
+// .oxlintrc.json
+"overrides": [
+  {
+    "files": ["src/vitrine.preview.tsx"],
+    "rules": { "react/only-export-components": ["warn", { "allowExportNames": ["globals"] }] }
+  }
+]
+```
+
 ## Plugin 옵션
 
 ```ts

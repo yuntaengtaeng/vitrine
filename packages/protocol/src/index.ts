@@ -68,6 +68,12 @@ export const GALLERY_MODULE_ID = "virtual:vitrine-preview-gallery";
 /** 실패한 setup module 복구를 Gallery에만 알리는 Vite HMR custom event 이름 */
 export const PREVIEW_SETUP_RECOVER_EVENT = "vitrine:setup-recover";
 
+/** setup file loader만 담는 virtual module 식별자 */
+export const PREVIEW_SETUP_MODULE_ID = "virtual:vitrine-preview-setup";
+
+/** setup module이 갱신되어 새 loader를 frame에 넘기는 window event 이름 */
+export const PREVIEW_SETUP_UPDATED_EVENT = "vitrine:preview-setup-updated";
+
 /** Vitrine runtime 파일 디렉터리 이름 */
 export const PORT_FILE_DIRECTORY = ".vitrine";
 

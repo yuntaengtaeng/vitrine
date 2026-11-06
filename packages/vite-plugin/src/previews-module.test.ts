@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { renderPreviewsModule } from "./previews-module.js";
+import { PREVIEW_SETUP_MODULE_ID } from "@vitrine/protocol";
+import { renderPreviewSetupModule, renderPreviewsModule } from "./previews-module.js";
 
-describe("preview virtual module", () => {
+describe("preview setup virtual module", () => {
   const evaluate = (code: string) =>
     import(`data:text/javascript,${encodeURIComponent(code)}`) as Promise<{
       loadPreviewSetup: (() => Promise<unknown>) | undefined;
     }>;
 
   it("존재하는 setup file을 Vite가 분석하는 정적 경로로 지연 import", () => {
-    const moduleCode = renderPreviewsModule([], {
+    const moduleCode = renderPreviewSetupModule({
       status: "found",
       importPath: "/src/vitrine.preview.tsx",
     });
@@ -16,7 +17,7 @@ describe("preview virtual module", () => {
   });
 
   it("누락된 setup file은 import 없이 안내 메시지로 reject", async () => {
-    const moduleCode = renderPreviewsModule([], {
+    const moduleCode = renderPreviewSetupModule({
       status: "unavailable",
       message: '[vitrine] setupFile not found\n  setupFile: "./src/setup.tsx"',
     });
@@ -28,8 +29,17 @@ describe("preview virtual module", () => {
     );
   });
 
+  it("갱신을 이 모듈에서 받아 setup의 non-component export가 full reload로 번지지 않게 함", () => {
+    expect(renderPreviewSetupModule()).toContain("import.meta.hot.accept");
+    expect(renderPreviewsModule([])).not.toContain("import.meta.hot");
+  });
+
+  it("previews module은 setup loader를 setup 가상 모듈에서 다시 export", () => {
+    expect(renderPreviewsModule([])).toContain(`export { loadPreviewSetup } from ${JSON.stringify(PREVIEW_SETUP_MODULE_ID)}`);
+  });
+
   it("setupFile 옵션이 없으면 loader를 제공하지 않음", async () => {
-    const { loadPreviewSetup } = await evaluate(renderPreviewsModule([]));
+    const { loadPreviewSetup } = await evaluate(renderPreviewSetupModule());
     expect(loadPreviewSetup).toBeUndefined();
   });
 });
@@ -44,8 +54,9 @@ describe("renderPreviewsModule entries", () => {
     endLine: 9,
     controls: { label: { type: "text" as const, optional: false, defaultValue: "" } },
   };
+  // data URL module은 virtual module을 해석할 수 없어 setup loader 재export 줄은 빼고 평가
   const evaluateEntries = async (code: string) =>
-    ((await import(`data:text/javascript,${encodeURIComponent(code.replace(/import\(/g, "(async () => ({}))("))}`)) as {
+    ((await import(`data:text/javascript,${encodeURIComponent(code.replace(/^export \{ loadPreviewSetup \} from .*$/m, "").replace(/import\(/g, "(async () => ({}))("))}`)) as {
       default: Record<string, unknown>[];
     }).default;
 

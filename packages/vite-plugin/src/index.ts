@@ -11,6 +11,7 @@ import {
   MANIFEST_ROUTE as PROTOCOL_MANIFEST_ROUTE,
   OPEN_IN_EDITOR_ROUTE,
   PREVIEWS_MODULE_ID,
+  PREVIEW_SETUP_MODULE_ID,
   PREVIEW_SETUP_RECOVER_EVENT,
   SNAPSHOTS_CHANGED_EVENT,
   SNAPSHOTS_ROUTE,
@@ -21,7 +22,7 @@ import {
 } from "@vitrine/protocol";
 import { normalizePath, type Logger, type Plugin } from "vite";
 import { DEFAULT_INCLUDE, createPreviewScanner, type PreviewScanner } from "./scan.js";
-import { renderPreviewsModule } from "./previews-module.js";
+import { renderPreviewSetupModule, renderPreviewsModule } from "./previews-module.js";
 import { createPreviewTracker, type PreviewTracker } from "./preview-tracker.js";
 import { removePortFile, writePortFile } from "./port-file.js";
 import {
@@ -93,6 +94,7 @@ export interface VitrinePluginOptions {
 }
 
 const RESOLVED_PREVIEWS_MODULE_ID = "\0" + PREVIEWS_MODULE_ID;
+const RESOLVED_PREVIEW_SETUP_MODULE_ID = "\0" + PREVIEW_SETUP_MODULE_ID;
 const RESOLVED_GALLERY_CONFIG_MODULE_ID = "\0" + GALLERY_CONFIG_MODULE_ID;
 const SCRIPT_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 // re-export 대신 값으로 선언해야 공개 declaration에 private protocol 참조가 남지 않음
@@ -185,6 +187,7 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
     resolveId(id) {
       if (staticHtml.has(id)) return id;
       if (id === PREVIEWS_MODULE_ID) return RESOLVED_PREVIEWS_MODULE_ID;
+      if (id === PREVIEW_SETUP_MODULE_ID) return RESOLVED_PREVIEW_SETUP_MODULE_ID;
       if (id === GALLERY_CONFIG_MODULE_ID) return RESOLVED_GALLERY_CONFIG_MODULE_ID;
       if (id === GALLERY_MODULE_ID) return GALLERY_MODULE_ID;
       if (id === FRAME_MODULE_ID) return FRAME_MODULE_ID;
@@ -193,12 +196,14 @@ export default function vitrine(options: VitrinePluginOptions = {}): Plugin {
 
     async load(id) {
       if (id === RESOLVED_PREVIEWS_MODULE_ID) {
-        const entries = await tracker.getLatestEntries();
+        return renderPreviewsModule(await tracker.getLatestEntries());
+      }
+      if (id === RESOLVED_PREVIEW_SETUP_MODULE_ID) {
         const setupModule = previewSetup
           ? getPreviewSetupModule(previewSetup, root, isRegularFile(previewSetup))
           : undefined;
         if (setupModule?.status === "unavailable") logger?.warn(setupModule.message);
-        return renderPreviewsModule(entries, setupModule);
+        return renderPreviewSetupModule(setupModule);
       }
       if (id === RESOLVED_GALLERY_CONFIG_MODULE_ID) return galleryConfigModule;
       const html = staticHtml.get(id);
@@ -284,8 +289,10 @@ ${client}` : client;
       };
 
       const reloadPreviewsModule = () => {
-        const mod = server.moduleGraph.getModuleById(RESOLVED_PREVIEWS_MODULE_ID);
-        if (mod) server.moduleGraph.invalidateModule(mod);
+        for (const id of [RESOLVED_PREVIEWS_MODULE_ID, RESOLVED_PREVIEW_SETUP_MODULE_ID]) {
+          const mod = server.moduleGraph.getModuleById(id);
+          if (mod) server.moduleGraph.invalidateModule(mod);
+        }
         server.ws.send({ type: "full-reload" });
       };
 
@@ -341,7 +348,7 @@ ${client}` : client;
           })
           .catch(logScanError);
       };
-      // setup 내용 변경은 Vite HMR이 처리하고, 생성과 삭제만 previews module의 loader를 바꿈
+      // setup 내용 변경은 setup 가상 모듈이 HMR로 받고, 생성과 삭제만 그 loader를 바꿈
       const onSetupFileToggle = (file: string) => {
         if (isPreviewSetupFile(file)) reloadPreviewsModule();
       };
