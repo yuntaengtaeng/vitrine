@@ -104,3 +104,39 @@ test("프리뷰를 바꾸는 동안 새 frame이 준비될 때까지 이전 프�
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Badge");
   await expect(page.locator("[data-canvas-pending]")).toHaveCount(0);
 });
+
+const stageEdges = (page: Page) =>
+  page.evaluate(() => {
+    const frameElement = document.querySelector("[data-stage-frame]")!;
+    const stage = frameElement.parentElement!.parentElement!;
+    stage.scrollLeft = 0;
+    const frameBox = frameElement.getBoundingClientRect();
+    const stageBox = stage.getBoundingClientRect();
+    return {
+      frameLeft: frameBox.left,
+      frameCenter: frameBox.left + frameBox.width / 2,
+      stageLeft: stageBox.left,
+      stageCenter: stageBox.left + stageBox.width / 2,
+      scrollable: stage.scrollWidth > stage.clientWidth,
+    };
+  });
+
+test("무대보다 넓은 viewport는 왼쪽이 잘리지 않고 가로 스크롤로 전부 볼 수 있음", async ({ page }) => {
+  await page.setViewportSize({ width: 1100, height: 800 });
+  await openButtonPreview(page);
+  await page.getByLabel("Viewport").selectOption("Desktop");
+  await expect(page.locator("[data-stage-width-label]")).toHaveText("1280px");
+
+  const edges = await stageEdges(page);
+  expect(edges.scrollable).toBe(true);
+  expect(edges.frameLeft).toBeGreaterThanOrEqual(edges.stageLeft);
+});
+
+test("무대보다 좁은 viewport는 무대 가운데에 놓임", async ({ page }) => {
+  await openButtonPreview(page);
+  await page.getByLabel("Viewport").selectOption("Mobile");
+  await expect(page.locator("[data-stage-width-label]")).toHaveText("375px");
+
+  const edges = await stageEdges(page);
+  expect(Math.abs(edges.frameCenter - edges.stageCenter)).toBeLessThan(2);
+});

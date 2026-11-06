@@ -10,7 +10,8 @@ export const root = style({
   padding: `2.25rem ${vars.space.xxl} ${vars.space.xxl}`,
   display: "flex",
   alignItems: "flex-start",
-  justifyContent: "center",
+  // 가운데 정렬은 자식의 auto margin이 맡음, justifyContent center는 무대보다 넓은 자식의 왼쪽을
+  // 스크롤로도 닿지 않게 자르고 safe center는 최소 지원 VS Code의 Chromium에 없음
   backgroundColor: vars.color.surface,
   backgroundImage: `radial-gradient(${vars.color.stageDot} 1px, transparent 1px)`,
   backgroundSize: "14px 14px",
@@ -21,6 +22,7 @@ export const root = style({
 export const frameSlot = style({
   position: "relative",
   flexShrink: 0,
+  marginInline: "auto",
   selectors: { "&[hidden]": { display: "none" } },
 });
 
