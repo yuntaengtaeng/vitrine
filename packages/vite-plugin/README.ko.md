@@ -160,6 +160,22 @@ vitrine({ setupFile: "./src/vitrine.preview.tsx" });
 상태도 유지됩니다. 다른 프리뷰를 선택하면 새로운 프리뷰 tree가 마운트됩니다. 한 컴포넌트에만
 provider가 필요하면 `preview(Component, { wrapper: ComponentWrapper })`를 사용합니다.
 
+## 배치
+
+프리뷰는 2rem padding을 둔 일반 문서 흐름으로 렌더링되어 page 안의 컴포넌트와 같은 방식으로
+놓입니다. block 요소는 너비를 채우고, 작은 요소는 왼쪽 위에 놓입니다. 프리뷰를 가운데에 두려면
+setup file에서 감쌉니다.
+
+```tsx
+export default function PreviewSetup({ children }: PreviewWrapperProps) {
+  return <div style={{ display: "flex", justifyContent: "center" }}>{children}</div>;
+}
+```
+
+wrapper는 자신이 어느 보기에서 렌더링되는지 모르므로 Variants, Matrix, History 보기의 칸도 모두
+가운데에 놓입니다. 일부 프리뷰만 가운데에 두려면 `preview(Component, { wrapper })`로 wrapper를
+넘깁니다.
+
 ## Globals
 
 Globals는 테마나 언어처럼 앱 전체의 provider가 정하는 값입니다. setup file에 선언해 두면 파일을

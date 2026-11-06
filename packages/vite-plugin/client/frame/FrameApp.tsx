@@ -22,11 +22,9 @@ import { useReportedHeight } from "./bridge/useReportedHeight";
 import { formatActionArg } from "./bridge/actionArgs";
 
 const Styled = {
-  // 작은 컴포넌트는 무대 가운데에 보이고, 너비 100% 컴포넌트는 frame 너비를 채움
+  // 앱의 부모 요소처럼 일반 문서 흐름이어야 block 컴포넌트가 앱과 같은 너비로 보임,
+  // padding은 자식 margin이 root 밖으로 겹쳐 높이 측정이 어긋나는 것도 막음
   Root: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
     padding: "2rem",
     boxSizing: "border-box",
   } satisfies CSSProperties,
