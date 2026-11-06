@@ -4,6 +4,7 @@ import { vars } from "../../shared/theme/theme.css";
 export const root = style({
   width: "100%",
   maxWidth: 720,
+  marginInline: "auto",
   padding: `${vars.space.lg} 1.25rem`,
   border: `1px solid ${vars.color.errorBorder}`,
   borderRadius: vars.radius.lg,

@@ -16,6 +16,7 @@ export const select = style([field, { width: "auto", height: 26, padding: "0 0.4
 
 export const notice = style({
   maxWidth: 520,
+  marginInline: "auto",
   padding: `${vars.space.lg} 1.25rem`,
   border: `1px solid ${vars.color.border}`,
   borderRadius: vars.radius.lg,
