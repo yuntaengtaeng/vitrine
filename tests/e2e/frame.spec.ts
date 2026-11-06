@@ -48,3 +48,22 @@ test("Gallery가 보낸 render 상태로 variant와 바꾼 값을 반영하고 r
   expect(types).toContain("frameReady");
   expect(types).toContain("frameSize");
 });
+
+test("block 컴포넌트는 앱에서처럼 frame 너비를 채우고 작은 컴포넌트는 왼쪽 위에 놓임", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await page.goto(frameUrl("src/Greeting.tsx#Greeting"));
+  const root = page.locator('[data-vitrine-frame="ready"]');
+  await expect(root).toBeVisible();
+
+  const { rootContent, paragraph } = await root.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const content = element.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    return { rootContent: content, paragraph: element.querySelector("p")!.getBoundingClientRect().width };
+  });
+  expect(Math.abs(paragraph - rootContent)).toBeLessThan(1);
+
+  await page.goto(frameUrl("src/Button.tsx#Button"));
+  const button = await page.getByRole("button", { name: "Confirm" }).boundingBox();
+  const rootBox = await page.locator('[data-vitrine-frame="ready"]').boundingBox();
+  expect(button!.x - rootBox!.x).toBeLessThan(40);
+});

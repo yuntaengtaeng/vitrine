@@ -162,6 +162,22 @@ The wrapper remains mounted while controls update the selected preview's props, 
 providers keep their state. Selecting another preview mounts a fresh preview tree. Use
 `preview(Component, { wrapper: ComponentWrapper })` when only one component needs a provider.
 
+## Layout
+
+Previews render in normal document flow with 2rem of padding, the way your components sit inside a
+page: block elements fill the width, and smaller elements sit at the top left. To center previews,
+wrap them in the setup file:
+
+```tsx
+export default function PreviewSetup({ children }: PreviewWrapperProps) {
+  return <div style={{ display: "flex", justifyContent: "center" }}>{children}</div>;
+}
+```
+
+A wrapper doesn't know which view it renders in, so this also centers every cell in the Variants,
+Matrix and History views. To center only some previews, pass the wrapper through
+`preview(Component, { wrapper })` instead.
+
 ## Globals
 
 Globals are values that a provider sets for the whole app, such as theme or locale. Declare them
