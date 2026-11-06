@@ -34,9 +34,9 @@ describe("mergeControls", () => {
     expect(result.tone).toEqual({ type: "radio", options: ["info", "success"], optional: false, defaultValue: "info" });
   });
 
-  it("추론 대상이 아닌 prop도 controls 객체형 설정으로 직접 추가", () => {
+  it("추론 대상이 아닌 prop도 controls 객체형 설정으로 직접 추가, 필수 여부를 모르므로 optional로 표시하지 않음", () => {
     const result = mergeControls({}, { mode: { type: "radio", options: ["compact", "comfortable"] } });
-    expect(result.mode).toEqual({ type: "radio", options: ["compact", "comfortable"], optional: true });
+    expect(result.mode).toEqual({ type: "radio", options: ["compact", "comfortable"], optional: false });
   });
 
   it("override가 없으면 추론 결과를 그대로 유지", () => {

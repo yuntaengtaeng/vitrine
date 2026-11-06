@@ -44,7 +44,8 @@ export function mergeControls(
     if (!override) continue;
     const normalized = typeof override === "string" ? { type: override } : override;
     const existing = result[name];
-    result[name] = existing ? { ...existing, ...normalized } : { optional: true, ...normalized };
+    // 타입 분석이 없는 prop은 필수 여부를 모르므로 optional로 단정하지 않음
+    result[name] = existing ? { ...existing, ...normalized } : { optional: false, ...normalized };
   }
   return result;
 }
