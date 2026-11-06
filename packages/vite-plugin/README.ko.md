@@ -156,6 +156,11 @@ vitrine({ setupFile: "./src/vitrine.preview.tsx" });
 경로와 Vite root가 표시됩니다. 파일을 만들거나 파일의 오류를 고치면 gallery가 자동으로 다시
 로드됩니다.
 
+프리뷰는 앱과 같은 dev server에서 열리므로 앱과 origin이 같습니다. 프리뷰 코드가 `localStorage`,
+`sessionStorage`, IndexedDB, cookie에 쓰는 값은 앱이 읽는 값도 바꿉니다. setup file뿐 아니라 마운트할
+때 값을 저장하는 언어 감지기나 인증 SDK 같은 컴포넌트 안의 코드도 마찬가지입니다. 테마나 언어처럼
+프리뷰에서만 쓸 상태는 저장소에 쓰지 말고 [globals](#globals)로 넘기세요.
+
 같은 프리뷰의 control이 prop을 바꾸는 동안 wrapper는 마운트 상태를 유지하므로 stateful provider의
 상태도 유지됩니다. 다른 프리뷰를 선택하면 새로운 프리뷰 tree가 마운트됩니다. 한 컴포넌트에만
 provider가 필요하면 `preview(Component, { wrapper: ComponentWrapper })`를 사용합니다.
