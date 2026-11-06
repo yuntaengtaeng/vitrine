@@ -1,5 +1,11 @@
 # vite-plugin-react-vitrine
 
+## 0.2.1
+
+### Patch Changes
+
+- 64e777d: `preview()` now does nothing in production builds, so bundlers remove the call and its config from your app. Previously the config object stayed in the bundle whenever the app imported a component that called `preview()`. The static Gallery build keeps the configs.
+
 ## 0.2.0
 
 ### Minor Changes
