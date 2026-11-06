@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import ts from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { analyzeProps, createTypeContext } from "./props-controls.js";
 
@@ -90,5 +91,93 @@ describe("analyzeProps", () => {
     const outside = path.join(root, "Outside.tsx");
     fs.writeFileSync(outside, "export const Box = (props: { label: string }) => null;\n");
     expect(analyzeProps(outside, "Box", createTypeContext(root))).toEqual({ controls: {}, actions: [] });
+  });
+});
+
+describe("analyzeProps의 tsconfig project references", () => {
+  let root: string;
+
+  // create-vite react-ts 템플릿의 tsconfig.app.json 옵션
+  const APP_OPTIONS = {
+    tsBuildInfoFile: "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    target: "ES2022",
+    lib: ["ES2022", "DOM", "DOM.Iterable"],
+    module: "ESNext",
+    skipLibCheck: true,
+    moduleResolution: "bundler",
+    allowImportingTsExtensions: true,
+    verbatimModuleSyntax: true,
+    moduleDetection: "force",
+    noEmit: true,
+    jsx: "react-jsx",
+    strict: true,
+  };
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vitrine-props-references-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  function writeJson(relative: string, value: unknown) {
+    fs.mkdirSync(path.dirname(path.join(root, relative)), { recursive: true });
+    fs.writeFileSync(path.join(root, relative), JSON.stringify(value));
+  }
+
+  /** 컴포넌트 파일을 만들고 그 파일의 추론된 controls 반환 */
+  function controlsAt(relative: string, filePath = path.join(root, relative)) {
+    fs.mkdirSync(path.dirname(path.join(root, relative)), { recursive: true });
+    fs.writeFileSync(path.join(root, relative), 'export const Box = (props: { tone: "a" | "b" }) => null;\n');
+    return analyzeProps(filePath, "Box", createTypeContext(root)).controls;
+  }
+
+  const TONE = { tone: { type: "select", options: ["a", "b"], optional: false, defaultValue: "a" } };
+
+  it("create-vite 템플릿처럼 files가 비고 references만 있는 루트 tsconfig", () => {
+    writeJson("tsconfig.json", { files: [], references: [{ path: "./tsconfig.app.json" }, { path: "./tsconfig.node.json" }] });
+    writeJson("tsconfig.app.json", { compilerOptions: APP_OPTIONS, include: ["src"] });
+    writeJson("tsconfig.node.json", { compilerOptions: { ...APP_OPTIONS, lib: ["ES2023"] }, include: ["vite.config.ts"] });
+    expect(controlsAt("src/Box.tsx")).toEqual(TONE);
+  });
+
+  it("디렉터리를 가리키는 reference", () => {
+    writeJson("tsconfig.json", { files: [], references: [{ path: "./app" }] });
+    writeJson("app/tsconfig.json", { compilerOptions: APP_OPTIONS, include: ["src"] });
+    expect(controlsAt("app/src/Box.tsx")).toEqual(TONE);
+  });
+
+  it("references 안에 다시 references가 있는 solution 구성", () => {
+    writeJson("tsconfig.json", { files: [], references: [{ path: "./solution" }] });
+    writeJson("solution/tsconfig.json", { files: [], references: [{ path: "../tsconfig.app.json" }] });
+    writeJson("tsconfig.app.json", { compilerOptions: APP_OPTIONS, include: ["src"] });
+    expect(controlsAt("src/Box.tsx")).toEqual(TONE);
+  });
+
+  it("서로를 참조하는 순환 references에서도 멈추고 분석", () => {
+    writeJson("tsconfig.json", { files: [], references: [{ path: "./tsconfig.app.json" }] });
+    writeJson("tsconfig.app.json", { compilerOptions: APP_OPTIONS, include: ["src"], references: [{ path: "./tsconfig.json" }] });
+    expect(controlsAt("src/Box.tsx")).toEqual(TONE);
+  });
+
+  it("루트가 자기 파일과 references를 함께 가지면 루트 프로젝트 사용", () => {
+    writeJson("tsconfig.json", { compilerOptions: APP_OPTIONS, include: ["src"], references: [{ path: "./tsconfig.node.json" }] });
+    writeJson("tsconfig.node.json", { compilerOptions: APP_OPTIONS, include: ["vite.config.ts"] });
+    expect(controlsAt("src/Box.tsx")).toEqual(TONE);
+  });
+
+  it("없는 tsconfig를 가리키는 reference는 건너뜀", () => {
+    writeJson("tsconfig.json", { files: [], references: [{ path: "./missing.json" }, { path: "./tsconfig.app.json" }] });
+    writeJson("tsconfig.app.json", { compilerOptions: APP_OPTIONS, include: ["src"] });
+    expect(controlsAt("src/Box.tsx")).toEqual(TONE);
+  });
+
+  it.runIf(!ts.sys.useCaseSensitiveFileNames)("대소문자 구분이 없는 파일 시스템에서는 경로 대소문자가 달라도 분석", () => {
+    writeJson("tsconfig.json", { files: [], references: [{ path: "./tsconfig.app.json" }] });
+    writeJson("tsconfig.app.json", { compilerOptions: APP_OPTIONS, include: ["src"] });
+    const file = path.join(root, "src", "Box.tsx");
+    const swapped = file.replace(/^[a-z]/i, (drive) => (drive === drive.toLowerCase() ? drive.toUpperCase() : drive.toLowerCase()));
+    expect(controlsAt("src/Box.tsx", swapped)).toEqual(TONE);
   });
 });
