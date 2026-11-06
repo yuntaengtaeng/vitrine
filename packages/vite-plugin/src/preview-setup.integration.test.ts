@@ -1,12 +1,13 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { PREVIEW_SETUP_RECOVER_EVENT, PREVIEWS_MODULE_ID } from "@vitrine/protocol";
+import { PREVIEW_SETUP_MODULE_ID, PREVIEW_SETUP_RECOVER_EVENT, PREVIEWS_MODULE_ID } from "@vitrine/protocol";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createServer, type Plugin, type ViteDevServer } from "vite";
 import vitrine from "./index.js";
 
 const PREVIEWS_URL = `/@id/__x00__${PREVIEWS_MODULE_ID}`;
+const SETUP_URL = `/@id/__x00__${PREVIEW_SETUP_MODULE_ID}`;
 const SETUP_IMPORT = /loadPreviewSetup = \(\) => import\("([^"]+)"\)/;
 
 const delay = (milliseconds: number) =>
@@ -107,10 +108,10 @@ describe("preview setup Vite integration", () => {
   };
 
   const requestSetupModule = async (request: Awaited<ReturnType<typeof startServer>>["request"]) => {
-    const previews = await request(PREVIEWS_URL);
-    expect(previews.status, previews.body).toBe(200);
-    const importUrl = previews.body.match(SETUP_IMPORT)?.[1];
-    expect(importUrl, previews.body).toBeDefined();
+    const loader = await request(SETUP_URL);
+    expect(loader.status, loader.body).toBe(200);
+    const importUrl = loader.body.match(SETUP_IMPORT)?.[1];
+    expect(importUrl, loader.body).toBeDefined();
     return request(importUrl!);
   };
 
@@ -119,7 +120,8 @@ describe("preview setup Vite integration", () => {
       "./src/설정 파일.tsx",
     );
 
-    const missing = await request(PREVIEWS_URL);
+    expect((await request(PREVIEWS_URL)).status).toBe(200);
+    const missing = await request(SETUP_URL);
     expect(missing.status, missing.body).toBe(200);
     expect(missing.body).toContain("setupFile not found");
 
@@ -144,13 +146,13 @@ describe("preview setup Vite integration", () => {
       "./src/setup.tsx",
       { "src/setup.tsx": "export default function PreviewSetup(props) { return props.children; }\n" },
     );
-    expect((await request(PREVIEWS_URL)).body).toMatch(SETUP_IMPORT);
+    expect((await request(SETUP_URL)).body).toMatch(SETUP_IMPORT);
 
     const before = fullReloadCount();
     fs.rmSync(path.join(projectRoot, "src", "setup.tsx"));
     await waitForFullReload(before);
 
-    expect((await request(PREVIEWS_URL)).body).toContain("setupFile not found");
+    expect((await request(SETUP_URL)).body).toContain("setupFile not found");
   });
 
   it.each([
@@ -209,9 +211,10 @@ describe("preview setup Vite integration", () => {
   ])("%s는 dev server를 막지 않고 갤러리 안내로 표시", async (_label, setupFile, guidance) => {
     const { request } = await startServer(setupFile);
 
-    const previews = await request(PREVIEWS_URL);
-    expect(previews.status, previews.body).toBe(200);
-    expect(previews.body).toContain(guidance);
-    expect(previews.body).not.toMatch(SETUP_IMPORT);
+    expect((await request(PREVIEWS_URL)).status).toBe(200);
+    const loader = await request(SETUP_URL);
+    expect(loader.status, loader.body).toBe(200);
+    expect(loader.body).toContain(guidance);
+    expect(loader.body).not.toMatch(SETUP_IMPORT);
   });
 });

@@ -68,12 +68,31 @@
 - 상태: 해결, 회귀 테스트로 방지 중
 - 과거 증상: 설정 파일이 없으면 previews virtual module 요청이 500으로 실패하고 Gallery가 열리지 않음
 - 원인: Vite import analysis가 virtual module 안의 정적 dynamic import를 미리 resolve함
-- 현재 대응: previews module load 시 파일 존재를 확인해 없으면 import 대신 안내 메시지로 reject하는
-  loader를 생성. 설정 파일의 생성과 삭제만 previews module을 무효화하고, 내용 변경은 Vite HMR에 맡김
+- 현재 대응: setup virtual module load 시 파일 존재를 확인해 없으면 import 대신 안내 메시지로 reject하는
+  loader를 생성. 설정 파일의 생성과 삭제만 previews module과 setup module을 무효화하고, 내용 변경은
+  setup module이 HMR로 받음
 - 피해야 할 대응: `@vite-ignore`로 분석을 숨기거나 파일 내용을 별도 virtual module로 복제. 실제
   파일이 module graph에서 빠져 transform, 상대 import, HMR을 다시 구현해야 함
 - 검증: `preview-setup.integration.test.ts`가 실제 Vite server에서 누락 중 응답, 생성과 삭제 후 재로드,
   TypeScript transform과 상대 import 로드를 확인
+
+## setupFile을 고치면 앱 page까지 새로고침됨
+
+- 상태: 해결, 회귀 테스트로 방지 중
+- 과거 증상: setup file이나 setup file이 import하는 컴포넌트가 아닌 파일을 고치면 Vite가 dev server의
+  모든 page에 full reload를 보내 사용자의 앱 탭도 새로고침됨
+- 원인: `globals` 같은 컴포넌트가 아닌 export 때문에 React Refresh가 setup module을 invalidate하고,
+  위쪽 module 중 갱신을 받는 곳이 없음
+- 현재 대응: setup loader만 담은 `virtual:vitrine-preview-setup`이 `import.meta.hot.accept`로 갱신을
+  받아 멈추고, 새 loader를 `vitrine:preview-setup-updated` event로 frame에 넘김
+- 피해야 할 대응
+  - setup module 자신에 accept 추가: React Refresh의 invalidate가 먼저 실행되어 효과가 없음
+  - previews module에 accept 추가: Fast Refresh가 안 되는 `@preview` 파일 갱신까지 받아 버려 변경이
+    조용히 반영되지 않음
+  - setup file을 변환해 `globals` export 제거: 앱 코드가 `globals`를 import하면 dev에서만 깨짐
+- 검증: `tests/e2e/setup-hot.spec.ts`가 setup file과 그 의존 파일을 고쳐도 앱 page와 Gallery가 유지되고
+  새 globals가 반영되는지 확인. 공유 setup file을 고치므로 Playwright `setup-hot` project로 다른
+  test 뒤에 실행
 
 ## setupFile 오류를 고쳐도 Gallery가 오류 화면에 남음
 

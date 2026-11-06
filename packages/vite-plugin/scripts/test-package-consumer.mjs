@@ -105,7 +105,11 @@ try {
   assert.equal(previewsModuleResponse.status, 200);
   const previewsModule = await previewsModuleResponse.text();
   assert.match(previewsModule, /src\/Smoke\.tsx#Smoke/);
-  assert.match(previewsModule, /src\/preview-setup\.tsx/);
+  assert.ok(previewsModule.includes(contract.PREVIEW_SETUP_MODULE_ID));
+
+  const setupModuleResponse = await request(`${baseUrl}/@id/__x00__${contract.PREVIEW_SETUP_MODULE_ID}`);
+  assert.equal(setupModuleResponse.status, 200);
+  assert.match(await setupModuleResponse.text(), /src\/preview-setup\.tsx/);
 
   const virtualPreviews = await server.ssrLoadModule(contract.PREVIEWS_MODULE_ID);
   const previewSetup = await virtualPreviews.loadPreviewSetup();

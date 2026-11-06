@@ -147,7 +147,8 @@ smoke test는 Plugin tarball 하나만 설치한 소비자에서 protocol 참조
 다음 계약은 `@vitrine/protocol`에서 공유한다.
 
 - `/__vitrine`, `/__vitrine/manifest` route
-- `virtual:vitrine-previews`, `virtual:vitrine-preview-gallery` module id
+- `virtual:vitrine-previews`, `virtual:vitrine-preview-setup`, `virtual:vitrine-preview-gallery` module id
+- setup module이 갱신되어 새 loader를 frame에 넘기는 `vitrine:preview-setup-updated` window event
 - manifest entry의 전송 필드
 - `.vitrine/port.json`의 파일명과 `{ port, pid }` 형식
 - `previewSelected`, `selectPreview`, `switchProject` message

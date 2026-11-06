@@ -196,6 +196,30 @@ preview(Greeting, {
 });
 ```
 
+Editing the setup file, or a file it imports, updates the open previews without reloading your
+app's pages. The wrappers remount, so state inside previews resets.
+
+Linters with the React Refresh rule report the `globals` export in the setup file. Vitrine handles
+updates to that file itself, so allow `globals` there:
+
+```js
+// eslint.config.js
+{
+  files: ["src/vitrine.preview.tsx"],
+  rules: { "react-refresh/only-export-components": ["error", { allowExportNames: ["globals"] }] },
+},
+```
+
+```json
+// .oxlintrc.json
+"overrides": [
+  {
+    "files": ["src/vitrine.preview.tsx"],
+    "rules": { "react/only-export-components": ["warn", { "allowExportNames": ["globals"] }] }
+  }
+]
+```
+
 ## Plugin options
 
 ```ts
