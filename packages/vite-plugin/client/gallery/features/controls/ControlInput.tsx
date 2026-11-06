@@ -1,5 +1,6 @@
 import type { FrameControl } from "@vitrine/protocol";
 import { BooleanControl } from "./BooleanControl";
+import { canUnset } from "./controlType";
 import { NumberControl } from "./NumberControl";
 import { RadioControl } from "./RadioControl";
 import { SelectControl } from "./SelectControl";
@@ -25,7 +26,7 @@ export const ControlInput = (props: {
           label={name}
           value={value}
           options={control.options ?? []}
-          optional={control.optional}
+          allowUnset={canUnset(control)}
           onChange={onChange}
         />
       );

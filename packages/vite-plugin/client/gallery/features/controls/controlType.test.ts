@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { controlTypeLabel } from "./controlType";
+import { canUnset, controlTypeLabel } from "./controlType";
 
 describe("controlTypeLabel", () => {
   it("기본 control은 TypeScript 타입 이름", () => {
@@ -17,5 +17,19 @@ describe("controlTypeLabel", () => {
     expect(controlTypeLabel({ type: "select", options: ["a", "b", "c", "d", "e"], optional: false })).toBe(
       '"a" | "b" | "c" | 2 more',
     );
+  });
+});
+
+describe("canUnset", () => {
+  it("타입으로 확인된 optional control은 비울 수 있음", () => {
+    expect(canUnset({ type: "select", options: ["a"], optional: true })).toBe(true);
+  });
+
+  it("필수로 분석되어 기본값이 있는 control은 비울 수 없음", () => {
+    expect(canUnset({ type: "select", options: ["a", "b"], optional: false, defaultValue: "a" })).toBe(false);
+  });
+
+  it("직접 선언해 기본값이 없는 control은 optional이 아니어도 비울 수 있음", () => {
+    expect(canUnset({ type: "select", options: ["a", "b"], optional: false })).toBe(true);
   });
 });
