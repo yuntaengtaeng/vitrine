@@ -158,6 +158,12 @@ Include the file extension. The file must live inside the Vite root, and its pat
 while the gallery and the terminal show the resolved path and the Vite root. The gallery reloads
 once you create the file or fix an error in it.
 
+Previews run on the same origin as your app, because your dev server serves both. Anything preview
+code writes to `localStorage`, `sessionStorage`, IndexedDB or cookies also changes what your app
+reads. That includes writes from the setup file and from components themselves, such as a language
+detector or an auth SDK that saves on mount. Keep preview-only state, such as a theme or locale, in
+[globals](#globals) instead of writing it to storage.
+
 The wrapper remains mounted while controls update the selected preview's props, so stateful
 providers keep their state. Selecting another preview mounts a fresh preview tree. Use
 `preview(Component, { wrapper: ComponentWrapper })` when only one component needs a provider.

@@ -174,3 +174,14 @@
 - 증상: panel이 project A를 보여줄 때 project B 파일로 cursor를 옮겨도 반응하지 않음
 - 근거: 자동 전환이 사용자의 명시적인 Switch Project 선택과 경쟁하지 않게 함
 - 재검토 조건: 실제 사용에서 자동 전환 기대가 명시적 선택 보존보다 중요하다는 근거가 생김
+
+## 프리뷰가 앱의 저장소 값을 바꿈
+
+- 상태: 알려진 현재 제약
+- 증상: setup file이나 프리뷰 안 컴포넌트가 `localStorage`, cookie 등에 쓴 값이 앱의 테마, 언어,
+  로그인 상태를 바꿈
+- 원인: frame은 사용자의 dev server가 서빙하므로([ADR 007](adr/007-preview-frame.md)) 앱과 origin이 같음
+- 현재 대응: README에 이 제약을 밝히고, 프리뷰에서만 쓸 상태는 globals로 넘기도록 안내
+- 피해야 할 대응: frame을 `sandbox` iframe의 opaque origin으로 띄우기. module 로드와 Gallery bridge의
+  origin 확인이 깨짐
+- 재검토 조건: 프리뷰 저장소를 앱과 분리해 달라는 요구가 많고, module 로드를 유지하는 격리 방법이 생김
